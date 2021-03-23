@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/webgraph-big-3.6.6.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/webgraph-3.6.10.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/sux4j-5.2.3.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/slf4j-api-1.7.30.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/logback-core-1.2.3.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/logback-classic-1.2.3.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jsap-20210129.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jheaps-0.13.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jgraphx-4.1.0.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jgrapht-unimi-dsi-1.5.1.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jgrapht-opt-1.5.1.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jgrapht-io-1.5.1.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jgrapht-guava-1.5.1.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jgrapht-ext-1.5.1.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jgrapht-demo-1.5.1.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/jgrapht-core-1.5.1.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/guava-29.0-jre.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/fastutil-8.5.2.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/dsiutils-2.6.17.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/commons-text-1.8.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/commons-lang3-3.9.jar"/>
+	<classpathentry kind="lib" path="E:/JavaWorkspace/mocha-simulation-engine/lib/antlr4-runtime-4.8-1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
