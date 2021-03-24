@@ -1,4 +1,4 @@
-package uk.ac.york.mocha.simulator.simulation;
+package uk.ac.york.mocha.simulator.allocation;
 
 import java.util.List;
 
@@ -9,6 +9,6 @@ public abstract class AllocationMethod {
 	
 	protected abstract int compareNode(Node c1, Node c2);
 
-	protected abstract List<Node> getEligibileNode(List<Node> readyNodes, int procNum);
+	public abstract List<Node> getEligibileNode(List<Node> readyNodes, int procNum);
 
 }

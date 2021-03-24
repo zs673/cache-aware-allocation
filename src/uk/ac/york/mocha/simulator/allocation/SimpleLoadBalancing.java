@@ -1,15 +1,16 @@
-package uk.ac.york.mocha.simulator.simulation;
+package uk.ac.york.mocha.simulator.allocation;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.simulation.Utils;
 
 public class SimpleLoadBalancing extends AllocationMethod {
 
 	@Override
-	protected List<Node> getEligibileNode(List<Node> readyNodes, int procNum) {
+	public List<Node> getEligibileNode(List<Node> readyNodes, int procNum) {
 
 		/*
 		 * sort ready nodes list by FPS+WF, take first procNum nodes to execute.

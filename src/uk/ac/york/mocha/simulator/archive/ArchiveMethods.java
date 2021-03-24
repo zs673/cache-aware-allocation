@@ -1,4 +1,4 @@
-package archive;
+package uk.ac.york.mocha.simulator.archive;
 
 public class ArchiveMethods {
 

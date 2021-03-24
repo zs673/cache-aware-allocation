@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import uk.ac.york.mocha.simulator.allocation.AllocationMethod;
+import uk.ac.york.mocha.simulator.allocation.SimpleLoadBalancing;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Recency;
@@ -342,7 +344,7 @@ public class Simualtor {
 
 	public static void main(String args[]) {
 
-		int cores = 8;
+		int cores = 4;
 
 		SystemGenerator gen = new SystemGenerator(100, 1000, cores, 2, true, 1000);
 		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP();
