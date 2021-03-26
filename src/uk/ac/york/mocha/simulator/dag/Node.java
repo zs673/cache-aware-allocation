@@ -17,7 +17,7 @@ public class Node implements Serializable {
 	private final int id;
 	private final int dagID;
 	private int dagInstNo = Integer.MIN_VALUE;
-	
+
 	private final int layer;
 	private final NodeType type;
 
@@ -62,9 +62,14 @@ public class Node implements Serializable {
 		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET;
 	}
 
-	public String printExeInfo() {
+	public String getExeInfo() {
 		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: "
 				+ finishAt;
+	}
+
+	public void printExeInfo(String prefix) {
+		System.out.printf(prefix+" Node %2d_%2d_%2d    ---    WCET: %5d, starts: %5d, finishes: %5d \n", dagID, dagInstNo, id, WCET, start,
+				finishAt);
 	}
 
 	/*

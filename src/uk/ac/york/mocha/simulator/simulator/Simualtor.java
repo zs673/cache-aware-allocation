@@ -1,11 +1,12 @@
-package uk.ac.york.mocha.simulator.simulation;
+package uk.ac.york.mocha.simulator.simulator;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import uk.ac.york.mocha.simulator.allocation.AllocationMethod;
-import uk.ac.york.mocha.simulator.allocation.SimpleLoadBalancing;
+import uk.ac.york.mocha.simulator.allocation.LoadBalancing;
+import uk.ac.york.mocha.simulator.allocation.SimpleCacheAware;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Recency;
@@ -18,23 +19,38 @@ import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 
 public class Simualtor {
 
-	public static List<DirectedAcyclicGraph> dags;
-
-	private enum SimuType {
-		WCET, ET
+	/**********************************************************************
+	 ********************** Simualtor Configuration ***********************
+	 **********************************************************************/
+	public enum SimuType {
+		CLOCK_LEVEL, NODE_LEVEL
 	};
 
-	private enum Allocation {
+	public enum Hardware {
+		PROC_ONLY, PROC_CACHE
+	};
+
+	public enum Allocation {
 		LOAD_BALANCE, CACHE_AWARE
 	};
+
+	private SimuType type;
+	private Hardware hardware;
+	private Allocation alloc;
 
 	/**********************************************************************
 	 ***** The gloabl recency table and cache hierarchy of the system *****
 	 **********************************************************************/
 	private static Recency table;
 
-	public static final int Level2procNum = 4;
-	List<List<Integer>> cacheHierarchy;
+
+
+
+
+	/**********************************************************************
+	 ************************ DAGs to be executed *************************
+	 **********************************************************************/
+	public List<DirectedAcyclicGraph> dags;
 
 	/**********************************************************************
 	 *********************** Current system time **************************
@@ -64,60 +80,62 @@ public class Simualtor {
 
 	/********************* Runtime queues *********************************/
 
-	public Simualtor(List<DirectedAcyclicGraph> dags, int procNum, int seed) {
+	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, List<DirectedAcyclicGraph> dags, int procNum,
+			int seed) {
 		if (procNum % 4 != 0 || procNum / 4 < 1) {
 			System.err.println("Number of cores must be 4, 8, 16, 20...");
 			System.exit(-1);
 		}
 
-		Simualtor.dags = new ArrayList<>(dags);
+		this.type = type;
+		this.hardware = hardware;
+		this.alloc = alloc;
 
-		sleepingDAGs = new ArrayList<>(dags);
-		readyDAGs = new ArrayList<>();
-		readyNodes = new ArrayList<>();
-		currentExe = new Node[procNum];
-		allProcs = new long[procNum];
+		this.dags = new ArrayList<>(dags);
 
-		cacheHierarchy = new ArrayList<>();
+		this.sleepingDAGs = new ArrayList<>(dags);
+		this.readyDAGs = new ArrayList<>();
+		this.readyNodes = new ArrayList<>();
+		this.currentExe = new Node[procNum];
+		this.allProcs = new long[procNum];
 
-		int procID = 0;
-		for (int i = 0; i < procNum / 4; i++) {
-			List<Integer> procPerLevel2 = new ArrayList<>();
-			for (int j = 0; j < Level2procNum; j++) {
-				procPerLevel2.add(procID);
-				procID++;
-			}
-			cacheHierarchy.add(procPerLevel2);
-		}
+		table = new Recency(procNum, seed);
 
-		table = new Recency(1000);
-
-		history = new ArrayList<>();
+		this.history = new ArrayList<>();
 		for (int i = 0; i < procNum; i++) {
 			List<Node> oneProc = new ArrayList<>();
-			history.add(oneProc);
+			this.history.add(oneProc);
 		}
 	}
 
-	public void simulate(Allocation alloc, SimuType type) {
+	public String simulate() {
+
+		/*
+		 * Reset Run-time parameters of DAGs and their nodes
+		 */
+		for (DirectedAcyclicGraph dag : dags)
+			dag.reset();
 
 		boolean cacheAware = false;
 		AllocationMethod allocM = null;
 
 		switch (alloc) {
 		case LOAD_BALANCE:
-			allocM = new SimpleLoadBalancing();
+			allocM = new LoadBalancing();
+			break;
+		case CACHE_AWARE:
+			allocM = new SimpleCacheAware();
 			break;
 		default:
 			System.err.println("The simualtion method is NOT supported ! ");
-			return;
+			return null;
 		}
 
-		switch (type) {
-		case WCET:
+		switch (hardware) {
+		case PROC_ONLY:
 			cacheAware = false;
 			break;
-		case ET:
+		case PROC_CACHE:
 			cacheAware = true;
 		default:
 			break;
@@ -145,6 +163,14 @@ public class Simualtor {
 			 */
 			oneTick();
 		}
+
+		/*
+		 * We summarise and report the simualtion results here
+		 */
+		String result = reprotSimulationResult();
+
+		return result;
+
 	}
 
 	/******************************************************************
@@ -155,7 +181,7 @@ public class Simualtor {
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		List<Node> eligibile = allocM.getEligibileNode(readyNodes, availableProc.size());
+		List<Node> eligibile = allocM.getEligibileNode(dags, readyNodes, availableProc, history, table);
 		assert (eligibile.size() <= availableProc.size());
 
 		for (int i = 0; i < availableProc.size(); i++) {
@@ -166,7 +192,7 @@ public class Simualtor {
 
 			n.start = systemTime;
 			currentExe[availableProc.get(i)] = n;
-			allProcs[availableProc.get(i)] = n.finishAt = systemTime + computeET(n, availableProc.get(i), cacheAware);
+			allProcs[availableProc.get(i)] = n.finishAt = systemTime + table.computeET(history, n, availableProc.get(i), cacheAware);
 
 			readyNodes.remove(n);
 		}
@@ -208,7 +234,7 @@ public class Simualtor {
 				 * A DAG is finished when its SINK node finishes execution
 				 */
 				if (n.getType().equals(NodeType.SINK)) {
-					Utils.getDagByIndex(n.getDagID(), n.getDagInstNo()).finishTime = systemTime;
+					Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo()).finishTime = systemTime;
 				}
 			}
 		}
@@ -234,7 +260,6 @@ public class Simualtor {
 			DirectedAcyclicGraph dag = readyDAGs.get(i);
 			if (dag.finishTime <= systemTime) {
 				readyDAGs.remove(dag);
-				System.out.println(dag.printExeInfo());
 				i--;
 			}
 		}
@@ -270,87 +295,78 @@ public class Simualtor {
 		return available;
 	}
 
-	private long computeET(Node n, int proc, boolean cacheAware) {
+	/******************************************************************
+	 ****************** Summarise and report results ******************
+	 ******************************************************************/
+	private String reprotSimulationResult() {
+		String res = "Simulation type: " + type.toString() + "    " + "Allocation: " + alloc;
 
-		long ET = n.getWCET();
+		System.out.println("*****************************************************************");
+		System.out.println(res);
+		System.out.println("*****************************************************************");
 
-		if (!cacheAware)
-			return ET;
+		res += "\n\n";
 
-		/**
-		 * Compute recency distance at each cache level
-		 */
-		/* level 1 recency distance */
-		int level1Distance = history.get(proc).size() - history.get(proc).lastIndexOf(n);
+		System.out.println(
+				"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
-		/* level 2 recency distance */
-		List<Integer> Level2Procs = new ArrayList<>();
+		List<List<Long>> finishTimes = new ArrayList<>();
 
-		for (List<Integer> group : cacheHierarchy) {
-			if (group.contains(proc)) {
-				Level2Procs.addAll(group);
-				break;
+		for (List<Node> nodes : history) {
+			List<Long> finishPerProc = nodes.stream().map(c -> c.finishAt).collect(Collectors.toList());
+			finishTimes.add(finishPerProc);
+		}
+
+		res += "Execuation Trace: \n\n";
+
+		for (int i = 0; i < history.size(); i++) {
+
+			if (i % 4 == 0) {
+				res += "Level 2 Cache Group: " + i + "\n";
+				System.out.println(">>> Level 2 Cache Group: " + i + ":");
 			}
+			res += "    Processor: " + i + "\n";
+			System.out.println(">>>   Processor: " + i);
+
+			for (Node n : history.get(i)) {
+				res += "        " + n.getExeInfo() + ", \n";
+				n.printExeInfo(">>>     ");
+			}
+
+			res += "\n";
+		}
+		System.out.println(
+				">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace End <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
+
+		System.out.println(
+				"--------------------------------------- DAG Execution Summary ---------------------------------------------");
+
+		res += "DAG Execution Summary: \n\n";
+
+		for (DirectedAcyclicGraph dag : dags) {
+			res += "DAG_" + dag.id + "_" + dag.instanceNo + "   finishes at  dag.finishTime. \n";
+			System.out.printf(
+					"---  DAG_" + dag.id + "_" + dag.instanceNo
+							+ "starts at t=%8d,   finishes at t=%8d,   duration t=%8d. \n",
+					dag.startTime, dag.finishTime, (dag.finishTime - dag.startTime));
 		}
 
-		if (Level2Procs.size() == 0) {
-			System.err.println("Simualtor.computeET()" + ": " + "Processor not found!");
-			System.exit(-1);
-		}
+		System.out.println(
+				"--------------------------------------- DAG Execution Summary ---------------------------------------------");
 
-		List<Node> finishedNodes = new ArrayList<>();
-		for (Integer index : Level2Procs) {
-			finishedNodes.addAll(history.get(index));
-		}
-		finishedNodes.sort((c1, c2) -> compareNodeForRecency(c1, c2, n));
-
-		int level2Distance = finishedNodes.size() - finishedNodes.lastIndexOf(n);
-
-		/* level 3 recency distance */
-		List<Node> allhistory = history.stream().flatMap(c -> c.stream()).collect(Collectors.toList());
-
-		allhistory.sort((c1, c2) -> compareNodeForRecency(c1, c2, n));
-		int level3Distance = allhistory.size() - allhistory.lastIndexOf(n);
-
-		if (level1Distance <= Recency.recencyDepth[0]) {
-			long ET1 = (long) Math.ceil((double) n.getWCET() * table.recencyTable.get(0).get(level1Distance - 1));
-			ET = ET < ET1 ? ET : ET1;
-		}
-		if (level2Distance <= Recency.recencyDepth[1]) {
-			long ET2 = (long) Math.ceil((double) n.getWCET() * table.recencyTable.get(1).get(level2Distance - 1));
-			ET = ET < ET2 ? ET : ET2;
-		}
-		if (level3Distance <= Recency.recencyDepth[2]) {
-			long ET3 = (long) Math.ceil((double) n.getWCET() * table.recencyTable.get(2).get(level3Distance - 1));
-			ET = ET < ET3 ? ET : ET3;
-		}
-
-		return ET;
-	}
-
-	private int compareNodeForRecency(Node n1, Node n2, Node current) {
-
-		int compare = -Long.compare(n1.finishAt, n2.finishAt);
-
-		if (compare == 0) {
-			if (n1.equals(current))
-				compare = -1;
-			if (n2.equals(current))
-				compare = 1;
-		}
-
-		return compare;
+		return res;
 	}
 
 	public static void main(String args[]) {
 
-		int cores = 4;
+		int cores = 8;
 
 		SystemGenerator gen = new SystemGenerator(100, 1000, cores, 2, true, 1000);
-		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP();
+		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(-1);
 
-		Simualtor sim = new Simualtor(dags, cores, 1000);
-		sim.simulate(Allocation.LOAD_BALANCE, SimuType.ET);
+		Simualtor sim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.LOAD_BALANCE, dags, cores,
+				1000);
+		sim.simulate();
 		System.out.println("finished");
 	}
 

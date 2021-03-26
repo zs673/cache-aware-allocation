@@ -32,6 +32,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	private final StructuralParameters dag_param;
 
 	/* DAG parameters */
+	private long WCET = -1;
 	private Node source;
 	private Node sink;
 
@@ -46,13 +47,13 @@ public class DirectedAcyclicGraph implements Serializable {
 
 	private Random rng;
 
+	private boolean instantiated = false;
+
 	/*
 	 * Run-time parameters
 	 */
 	public long startTime = 0;
 	public long finishTime = Long.MAX_VALUE;
-
-	private boolean instantiated = false;
 
 	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed) {
 
@@ -78,9 +79,19 @@ public class DirectedAcyclicGraph implements Serializable {
 
 	}
 
+	public void reset() {
+		this.finishTime = Long.MAX_VALUE;
+		for (Node n : flatNodes) {
+			n.start = -1;
+			n.finish = false;
+			n.finishAt = -1;
+		}
+
+	}
+
 	/*****************************************************************
-	 ******* Get Mutliple instances of one sporadic DAG task *********
-	 ********** NOTE: This method can only be invoked once! **********
+	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This method
+	 * can only be invoked once! **********
 	 *****************************************************************/
 	public List<DirectedAcyclicGraph> getInstances(int instanceNum) {
 
@@ -113,8 +124,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/******************************************************************
-	 ******************** Generate DAG structure **********************
-	 ******** This method does notdepend on external library! *********
+	 ******************** Generate DAG structure ********************** This method does notdepend on
+	 * external library! *********
 	 ******************************************************************/
 	private void constructDAG() {
 		if (nodes.size() > 0) {
@@ -323,7 +334,7 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		for (List<Node> nodesPerLayer : this.nodes) {
 			for (Node n : nodesPerLayer) {
-				out += n.printExeInfo() + "    ";
+				out += n.getExeInfo() + "    ";
 			}
 			out += "\n";
 		}
@@ -361,5 +372,13 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		System.out.println("finished");
 
+	}
+
+	public long getWCET() {
+		return WCET;
+	}
+
+	public void setWCET(long sum) {
+		WCET = sum;
 	}
 }

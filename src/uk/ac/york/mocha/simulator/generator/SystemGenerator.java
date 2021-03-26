@@ -37,21 +37,41 @@ public class SystemGenerator {
 		this.ran = new Random(seed);
 	}
 
-	public List<DirectedAcyclicGraph> generatedDAGInstancesInOneHP() {
+	public List<DirectedAcyclicGraph> generatedDAGInstancesInOneHP(int forceInstanceNum) {
+
+		if (print)
+			System.out.println(
+					"*********************************** Scheduling parameters ***********************************");
 
 		List<DirectedAcyclicGraph> dagTasks = generateSporadicDAGs();
 
+		if (print)
+			System.out.println(
+					"*********************************************************************************************");
+
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
+		
+		if(forceInstanceNum > 0) {
+			for (DirectedAcyclicGraph dag : dagTasks) {
+				int instances = forceInstanceNum;
+				assert (instances > 0);
 
-		long hyperPeriod = getHyperPeriod(
-				dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
-
-		for (DirectedAcyclicGraph dag : dagTasks) {
-			int instances = (int) (hyperPeriod / dag.getSchedParameters().getPeriod());
-			assert (instances > 0);
-
-			dags.addAll(dag.getInstances(instances));
+				dags.addAll(dag.getInstances(instances));
+			}
 		}
+		else {
+			long hyperPeriod = getHyperPeriod(
+					dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
+
+			for (DirectedAcyclicGraph dag : dagTasks) {
+				int instances = (int) (hyperPeriod / dag.getSchedParameters().getPeriod());
+				assert (instances > 0);
+
+				dags.addAll(dag.getInstances(instances));
+			}
+		}
+
+
 
 		return dags;
 	}
@@ -115,13 +135,18 @@ public class SystemGenerator {
 
 		generateWCETs(dags);
 
-		for (DirectedAcyclicGraph d : dags)
-			System.out.println(d.toString());
+//		for (DirectedAcyclicGraph d : dags)
+//			System.out.println(d.toString());
 
 		return dags;
 	}
 
 	private void generateWCETs(List<DirectedAcyclicGraph> dags) {
+
+		if (print) {
+			System.out.println("Assigned and generated WCET (in us):");
+			System.out.println("-----------------------------------------------------------------------------");
+		}
 
 		for (DirectedAcyclicGraph d : dags) {
 
@@ -147,9 +172,15 @@ public class SystemGenerator {
 				node.get(i).setWCET(cNode);
 			}
 
-			System.out.println("Assigned WCET: " + totalWCET + "   Actual WCET: " + sum);
+			d.setWCET(sum);
+			if (print)
+				System.out.printf("|    DAG_%2d   |   Assigned WCET: %10d   |   Actual WCET: %10d   |\n", d.id,
+						totalWCET, sum);
 
 		}
+
+		if (print)
+			System.out.println("-----------------------------------------------------------------------------");
 	}
 
 	/*
@@ -164,13 +195,13 @@ public class SystemGenerator {
 		while (true) {
 
 			if (isHarmonic) {
-				/* harmonic period */
 
+				/* harmonic period, same periods are allowed */
 				List<Long> harmonicPeriods = new ArrayList<>();
 
 				for (long i = 1; i <= MAX_PERIOD; ++i) {
 					if (MAX_PERIOD % i == 0 && i >= 10) {
-						harmonicPeriods.add(i);
+						harmonicPeriods.add(i * 1000);
 					}
 				}
 //				
@@ -206,7 +237,7 @@ public class SystemGenerator {
 		periods.sort((p1, p2) -> Double.compare(p1, p2));
 
 		if (print) {
-			System.out.print("task periods: ");
+			System.out.print("task periods & deadline (in us): ");
 			for (int i = 0; i < periods.size(); i++) {
 				long p = periods.get(i);
 				System.out.print(p + "   ");
@@ -239,7 +270,8 @@ public class SystemGenerator {
 				tt += utils.get(i);
 				System.out.print(utils.get(i) + "   ");
 			}
-			System.out.println("\n total uitls: " + tt);
+			System.out.println();
+			System.out.println("total uitls: " + tt);
 		}
 
 		/*
@@ -279,7 +311,7 @@ public class SystemGenerator {
 
 	public static void main(String args[]) {
 		SystemGenerator gen = new SystemGenerator(100, 1000, 32, 16, true, 1000);
-		gen.generatedDAGInstancesInOneHP();
+		gen.generatedDAGInstancesInOneHP(-1);
 	}
 
 }
