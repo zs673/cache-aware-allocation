@@ -43,10 +43,6 @@ public class Simualtor {
 	 **********************************************************************/
 	private static Recency table;
 
-
-
-
-
 	/**********************************************************************
 	 ************************ DAGs to be executed *************************
 	 **********************************************************************/
@@ -108,7 +104,7 @@ public class Simualtor {
 		}
 	}
 
-	public String simulate() {
+	public List<Long> simulate(boolean printSim) {
 
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
@@ -167,9 +163,16 @@ public class Simualtor {
 		/*
 		 * We summarise and report the simualtion results here
 		 */
-		String result = reprotSimulationResult();
+		if (printSim) {
+			reprotSimulationResult();
+		}
+		
+		/*
+		 * Summarise finish time of each DAG instance
+		 */
+		List<Long> finishTimes = dags.stream().map(c -> c.finishTime).collect(Collectors.toList());
 
-		return result;
+		return finishTimes;
 
 	}
 
@@ -192,7 +195,8 @@ public class Simualtor {
 
 			n.start = systemTime;
 			currentExe[availableProc.get(i)] = n;
-			allProcs[availableProc.get(i)] = n.finishAt = systemTime + table.computeET(history, n, availableProc.get(i), cacheAware);
+			allProcs[availableProc.get(i)] = n.finishAt = systemTime
+					+ table.computeET(history, n, availableProc.get(i), cacheAware);
 
 			readyNodes.remove(n);
 		}
@@ -366,7 +370,7 @@ public class Simualtor {
 
 		Simualtor sim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.LOAD_BALANCE, dags, cores,
 				1000);
-		sim.simulate();
+		sim.simulate(false);
 		System.out.println("finished");
 	}
 

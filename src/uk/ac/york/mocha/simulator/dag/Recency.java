@@ -81,22 +81,28 @@ public class Recency {
 	}
 
 	public long computeET(List<List<Node>> history, Node n, int proc, boolean cacheAware) {
-
-		long ET = n.getWCET();
-
-		if (!cacheAware)
-			return ET;
-
 		/**
 		 * Compute recency distance at each cache level
 		 */
-		/* level 1 recency distance */
+
+		long ET = n.getWCET();
+		if (!cacheAware)
+			return ET;
+
+		/*
+		 * level 1 recency distance
+		 */
 		int level1Distance = getNodeLastIndex(history.get(proc), n) == -1 ? Integer.MAX_VALUE
 				: history.get(proc).size() - getNodeLastIndex(history.get(proc), n);
 
-		/* level 2 recency distance */
-		List<Integer> Level2Procs = new ArrayList<>();
+		if (level1Distance <= Recency.recencyDepth[0]) {
+			return (long) Math.ceil((double) n.getWCET() * recencyTable.get(0).get(level1Distance - 1));
+		}
 
+		/*
+		 * level 2 recency distance
+		 */
+		List<Integer> Level2Procs = new ArrayList<>();
 		for (List<Integer> group : cacheHierarchy) {
 			if (group.contains(proc)) {
 				Level2Procs.addAll(group);
@@ -119,24 +125,21 @@ public class Recency {
 		int level2Distance = getNodeLastIndex(finishedNodes, n) == -1 ? Integer.MAX_VALUE
 				: finishedNodes.size() - getNodeLastIndex(finishedNodes, n);
 
-		/* level 3 recency distance */
+		if (level2Distance <= Recency.recencyDepth[1]) {
+			return (long) Math.ceil((double) n.getWCET() * recencyTable.get(1).get(level2Distance - 1));
+		}
+
+		/*
+		 * level 3 recency distance
+		 */
 		List<Node> allhistory = history.stream().flatMap(c -> c.stream()).collect(Collectors.toList());
 
 		allhistory.sort((c1, c2) -> compareNodeForRecency(c1, c2, n));
 		int level3Distance = getNodeLastIndex(allhistory, n) == -1 ? Integer.MAX_VALUE
 				: allhistory.size() - getNodeLastIndex(allhistory, n);
 
-		if (level1Distance <= Recency.recencyDepth[0]) {
-			long ET1 = (long) Math.ceil((double) n.getWCET() * recencyTable.get(0).get(level1Distance - 1));
-			ET = ET < ET1 ? ET : ET1;
-		}
-		if (level2Distance <= Recency.recencyDepth[1]) {
-			long ET2 = (long) Math.ceil((double) n.getWCET() * recencyTable.get(1).get(level2Distance - 1));
-			ET = ET < ET2 ? ET : ET2;
-		}
 		if (level3Distance <= Recency.recencyDepth[2]) {
-			long ET3 = (long) Math.ceil((double) n.getWCET() * recencyTable.get(2).get(level3Distance - 1));
-			ET = ET < ET3 ? ET : ET3;
+			return (long) Math.ceil((double) n.getWCET() * recencyTable.get(2).get(level3Distance - 1));
 		}
 
 		return ET;

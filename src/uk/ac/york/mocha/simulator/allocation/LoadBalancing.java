@@ -1,7 +1,6 @@
 package uk.ac.york.mocha.simulator.allocation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
