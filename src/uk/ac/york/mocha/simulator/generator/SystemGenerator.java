@@ -134,6 +134,11 @@ public class SystemGenerator {
 		}
 
 		generateWCETs(dags);
+		
+		for(DirectedAcyclicGraph d : dags) {
+			d.findPath(true);
+			d.findPath(false);
+		}
 
 //		for (DirectedAcyclicGraph d : dags)
 //			System.out.println(d.toString());

@@ -7,11 +7,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
@@ -35,18 +39,21 @@ public class DirectedAcyclicGraph implements Serializable {
 	private long WCET = -1;
 	private Node source;
 	private Node sink;
-
-	private List<Node> flatNodes;
-	private List<List<Node>> nodes;
-	private List<ImmutablePair<Node, Node>> edges;
-
 	private int nodeNum;
 	private int layers;
 
-	private List<Node> criticalPath; // TODO: compute ciritcal path
+	/* Self-defined list structure */
+	private List<Node> flatNodes;
+	private List<List<Node>> layeredNodes;
+	private List<ImmutablePair<Node, Node>> edges;
+
+	/* Third party graph structure */
+	private Graph<Node, DefaultEdge> graph;
+
+	private List<Node> longestPath;
+	private List<Node> shortestPath;
 
 	private Random rng;
-
 	private boolean instantiated = false;
 
 	/*
@@ -65,18 +72,18 @@ public class DirectedAcyclicGraph implements Serializable {
 		this.sched_param = sched_param;
 		this.dag_param = dag_param;
 
-		this.nodes = new ArrayList<>();
+		this.layeredNodes = new ArrayList<>();
 		this.edges = new ArrayList<>();
 
 		this.layers = dag_param.getLayers();
 
+		this.graph = new DefaultDirectedGraph<Node, DefaultEdge>(DefaultEdge.class);
+
+
+		this.longestPath = new ArrayList<>();
+		this.shortestPath = new ArrayList<>();
+
 		constructDAG();
-
-		this.flatNodes = nodes.stream().flatMap(s -> s.stream()).collect(Collectors.toList());
-		this.nodeNum = flatNodes.size();
-
-		this.criticalPath = new ArrayList<>();
-
 	}
 
 	public void reset() {
@@ -128,7 +135,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	 * external library! *********
 	 ******************************************************************/
 	private void constructDAG() {
-		if (nodes.size() > 0) {
+		if (layeredNodes.size() > 0) {
 			System.err.println("The DAG task has already being generated!");
 			return;
 		}
@@ -146,10 +153,11 @@ public class DirectedAcyclicGraph implements Serializable {
 		 * initialize source and sink node
 		 */
 		this.source = new Node(0, NodeType.SOURCE, 0, id);
+//		this.graph.addVertex(source);
 
 		List<Node> firstLayer = new ArrayList<>();
 		firstLayer.add(source);
-		this.nodes.add(firstLayer);
+		this.layeredNodes.add(firstLayer);
 
 		parents = firstLayer;
 		childless.addAll(parents);
@@ -167,17 +175,19 @@ public class DirectedAcyclicGraph implements Serializable {
 
 			for (int k = 0; k < nodeNum; k++) {
 				Node n = new Node(l, NodeType.NORMAL, nodeCounter, id);
+
 				nodePerLayer.add(n);
 				nodeCounter++;
 			}
 
-			this.nodes.add(nodePerLayer);
+			this.layeredNodes.add(nodePerLayer);
 			orphans.addAll(nodePerLayer);
 
 			/*
 			 * generate edges for these nodes
 			 */
 			for (Node n : nodePerLayer) {
+
 				/*
 				 * generate edges for these nodes
 				 */
@@ -187,7 +197,9 @@ public class DirectedAcyclicGraph implements Serializable {
 						 * connect two nodes
 						 */
 						ImmutablePair<Node, Node> e = new ImmutablePair<Node, Node>(parent, n);
+
 						edges.add(e);
+
 						parent.addChildren(n);
 						n.addParent(parent);
 
@@ -209,8 +221,8 @@ public class DirectedAcyclicGraph implements Serializable {
 			/* connect orphans to the source node */
 			for (Node n : orphans) {
 				ImmutablePair<Node, Node> e = new ImmutablePair<Node, Node>(source, n);
-				edges.add(e);
 
+				edges.add(e);
 				source.addChildren(n);
 				n.addParent(source);
 			}
@@ -222,7 +234,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		this.sink = new Node(layers + 1, NodeType.SINK, nodeCounter, id); // TODO add links, make it random.
 		List<Node> lastLayer = new ArrayList<>();
 		lastLayer.add(sink);
-		this.nodes.add(lastLayer);
+		this.layeredNodes.add(lastLayer);
 
 		/*
 		 * Link all childless nodes to the sink node
@@ -234,6 +246,100 @@ public class DirectedAcyclicGraph implements Serializable {
 			sink.addParent(n);
 		}
 		childless.clear();
+
+		this.flatNodes = layeredNodes.stream().flatMap(s -> s.stream()).collect(Collectors.toList());
+		flatNodes.sort((n1, n2) -> Integer.compare(n1.getId(), n2.getId()));
+		this.nodeNum = flatNodes.size();
+
+		for (Node n : flatNodes)
+			this.graph.addVertex(n);
+
+		for (ImmutablePair<Node, Node> e : edges)
+			this.graph.addEdge(e.left, e.right);
+	}
+
+	int[] path; // used to store temporary path
+	int[] bestPath; // used to store temporary path
+
+	int length = 0; // length of the path
+	int bestLength = 0; // length of the longest path
+
+	long distance = 0; // distance of the path
+	long bestDistance; // distance of the longest path
+
+	int[] visited; // used to mark a node as visited
+
+	public void findPath(boolean longest) {
+		visited = new int[flatNodes.size()];
+
+		path = new int[layers];
+		bestPath = new int[layers];
+
+		/*
+		 * compute a longest path from begin to end
+		 */
+		bestDistance = longest ? Long.MIN_VALUE : Long.MAX_VALUE;
+		dsf(source, longest);
+		if (bestDistance != Long.MIN_VALUE && bestDistance != Long.MAX_VALUE) {
+			for (Integer id : bestPath) {
+				if (id != -1) {
+					if (longest)
+						longestPath.add(flatNodes.get(id));
+					else
+						shortestPath.add(flatNodes.get(id));
+				}
+
+			}
+
+			System.out.println("Critical Path: " + (longest? Arrays.toString(longestPath.toArray()): Arrays.toString(shortestPath.toArray())));
+			System.out.println("distance: " + bestDistance + "      edges: " + bestLength);
+		}
+
+		else {
+			System.err.println("Did not find critical path");
+			System.exit(-1);
+		}
+	}
+
+	private void dsf(Node current, boolean longest) {
+		visited[current.getId()] = 1;
+		path[length++] = current.getId();
+
+		if (current.getId() == sink.getId()) {
+
+			System.out.println("Path: " + Arrays.toString(Arrays.copyOfRange(path, 0, length)));
+
+			if ((longest && distance > bestDistance) || (!longest && distance < bestDistance)) {
+
+				System.out.println("previous longest path: " + Arrays.toString(bestPath) + "  length: " + bestDistance);
+
+				for (int i = 0; i < length; i++)
+					bestPath[i] = path[i];
+				for (int i = length; i < bestPath.length; i++)
+					bestPath[i] = -1;
+
+				bestLength = length;
+				bestDistance = distance;
+
+				System.out.println("previous longest path: " + Arrays.toString(bestPath) + "  length: " + bestDistance);
+//				
+			}
+		} else {
+			List<Node> succ = current.getChildren();
+
+			for (int i = 0; i < succ.size(); i++) {
+				Node suc = succ.get(i);
+
+				if (visited[suc.getId()] == 0) {
+					distance += current.getWCET();
+					dsf(suc, longest);
+					distance -= current.getWCET();
+				}
+			}
+		}
+
+		visited[current.getId()] = 0;
+		length--;
 	}
 
 	public Node getSource() {
@@ -250,10 +356,6 @@ public class DirectedAcyclicGraph implements Serializable {
 
 	public StructuralParameters getDAGParameters() {
 		return dag_param;
-	}
-
-	public List<Node> getCriticalPath() {
-		return criticalPath;
 	}
 
 	public int getNodeNum() {
@@ -296,7 +398,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		out += this.name + ": \n";
 		out += "Nodes by layer: \n";
 
-		for (List<Node> nodesPerLayer : this.nodes) {
+		for (List<Node> nodesPerLayer : this.layeredNodes) {
 			for (Node n : nodesPerLayer) {
 				out += n.toString() + "    ";
 			}
@@ -306,7 +408,7 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		out += "Edges by Nodes: \n";
 
-		for (List<Node> nodesPerLayer : this.nodes) {
+		for (List<Node> nodesPerLayer : this.layeredNodes) {
 			for (Node n : nodesPerLayer) {
 				List<ImmutablePair<Node, Node>> childrenEdge = new ArrayList<>();
 				for (ImmutablePair<Node, Node> edge : edges) {
@@ -332,7 +434,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		out += this.name + " starts at " + source.start + ", finishes at " + finishTime + " \n";
 		out += "Nodes by layer: \n";
 
-		for (List<Node> nodesPerLayer : this.nodes) {
+		for (List<Node> nodesPerLayer : this.layeredNodes) {
 			for (Node n : nodesPerLayer) {
 				out += n.getExeInfo() + "    ";
 			}

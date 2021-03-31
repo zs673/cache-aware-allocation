@@ -30,36 +30,18 @@ public class SimpleCacheAware extends AllocationMethod {
 //		return eligibile;
 //	}
 
-	/*
-	 * A prioritised load balancing policy
-	 */
-	protected int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
-
-		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
-		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
-
-		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
-			return -1;
-		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
-			return 1;
-		} else {
-			return -Long.compare(c1.getWCET(), c2.getWCET());
-		}
-
-	}
-
 	@Override
 	public List<Node> getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes,
 			List<Integer> availableProcs, List<List<Node>> history, Recency table) {
 
-		if(readyNodes.size()==0)
+		if (readyNodes.size() == 0)
 			return new ArrayList<>();
-		
+
 		/*
 		 * sort ready nodes list by FPS+WF, take first procNum nodes to execute.
 		 */
 		readyNodes.sort((c1, c2) -> compareNode(dags, c1, c2));
-		
+
 		if (availableProcs.size() == 1 || readyNodes.size() == 1) {
 			List<Node> singleNode = new ArrayList<>();
 			singleNode.add(readyNodes.get(0));
@@ -73,7 +55,6 @@ public class SimpleCacheAware extends AllocationMethod {
 				break;
 			preEligible.add(readyNodes.get(i));
 		}
-		
 
 		List<Node> eligibile = new ArrayList<>();
 
@@ -93,6 +74,24 @@ public class SimpleCacheAware extends AllocationMethod {
 		}
 
 		return eligibile;
+	}
+
+	/*
+	 * A prioritised load balancing policy
+	 */
+	private int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+
+		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+
+		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
+			return -1;
+		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
+			return 1;
+		} else {
+			return -Long.compare(c1.getWCET(), c2.getWCET());
+		}
+
 	}
 
 	private int getIndexOfMaximum(List<Long> l) {

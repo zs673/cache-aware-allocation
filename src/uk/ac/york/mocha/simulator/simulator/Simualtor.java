@@ -160,13 +160,20 @@ public class Simualtor {
 			oneTick();
 		}
 
+		assert (sleepingDAGs.size() == 0);
+		assert (readyDAGs.size() == 0);
+		assert (readyNodes.size() == 0);
+		for (int i = 0; i < currentExe.length; i++) {
+			assert (currentExe[i] == null);
+		}
+
 		/*
 		 * We summarise and report the simualtion results here
 		 */
 		if (printSim) {
 			reprotSimulationResult();
 		}
-		
+
 		/*
 		 * Summarise finish time of each DAG instance
 		 */
