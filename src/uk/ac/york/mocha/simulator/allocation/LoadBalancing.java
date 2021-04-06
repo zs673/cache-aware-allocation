@@ -1,6 +1,5 @@
 package uk.ac.york.mocha.simulator.allocation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
@@ -11,23 +10,24 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 public class LoadBalancing extends AllocationMethod {
 
 	@Override
-	public List<Node> getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs, List<List<Node>> history, Recency table){
+	public void getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs, List<List<Node>> history, Recency table){
 
 		/*
 		 * sort ready nodes list by FPS+WF, take first procNum nodes to execute.
 		 */
 		readyNodes.sort((c1, c2) -> compareNode(dags, c1, c2));
 
-		List<Node> eligibile = new ArrayList<>();
+//		List<Node> eligibile = new ArrayList<>();
 
 		for (int i = 0; i < availableProcs.size(); i++) {
 			if (i >= readyNodes.size())
 				break;
-			eligibile.add(readyNodes.get(i));
+//			eligibile.add(readyNodes.get(i));
+			readyNodes.get(i).partition = availableProcs.get(i);
 		}
 
 //		Collections.shuffle(eligibile);
-		return eligibile;
+//		return eligibile;
 	}
 
 	/*

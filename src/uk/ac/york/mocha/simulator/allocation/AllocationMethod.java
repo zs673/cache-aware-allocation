@@ -11,6 +11,6 @@ public abstract class AllocationMethod {
 	
 //	protected abstract int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2);
 
-	public abstract List<Node> getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs, List<List<Node>> history, Recency table);
+	public abstract void getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs, List<List<Node>> history, Recency table);
 
 }

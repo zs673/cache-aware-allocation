@@ -92,6 +92,7 @@ public class DirectedAcyclicGraph implements Serializable {
 			n.start = -1;
 			n.finish = false;
 			n.finishAt = -1;
+			n.partition = -1;
 		}
 
 	}
@@ -436,7 +437,7 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		for (List<Node> nodesPerLayer : this.layeredNodes) {
 			for (Node n : nodesPerLayer) {
-				out += n.getExeInfo() + "    ";
+				out += n.getExeInfo() + "    \n";
 			}
 			out += "\n";
 		}

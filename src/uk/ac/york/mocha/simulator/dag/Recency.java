@@ -12,7 +12,7 @@ public class Recency {
 	public static final double[] costFactorMAX = { 0.5, 0.6, 0.7 };
 
 	public static final int cacheLevel = 3;
-	public static final int[] recencyDepth = { 5, 10, 20 };
+	public static final int[] recencyDepth = { 6, 20, 50 };
 
 	public static final int Level2procNum = 4;
 

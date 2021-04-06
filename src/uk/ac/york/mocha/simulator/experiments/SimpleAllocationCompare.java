@@ -33,15 +33,19 @@ public class SimpleAllocationCompare {
 
 		Simualtor cacheLBSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.LOAD_BALANCE, dags,
 				cores, 1000);
-		List<Long> cacheLBSim_res = cacheLBSim.simulate(printSim);
+		List<Long> cacheLBSim_res = cacheLBSim.simulate(true);
+
+		dags.stream().forEach(d -> System.out.println(d.printExeInfo()));
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE, dags,
 				cores, 1000);
-		List<Long> cacheCASim_res = cacheCASim.simulate(printSim);
+		List<Long> cacheCASim_res = cacheCASim.simulate(true);
+
+		dags.stream().forEach(d -> System.out.println(d.printExeInfo()));
 
 		String out = "";
 		System.out.println(
-				"\n\n\n************************************ Simualtion Summary *************************************");
+				"\n\n\n************************************ Execution Duration *************************************");
 		out += Arrays.toString(dags.stream().map(c -> c.id + "_" + c.instanceNo).collect(Collectors.toList()).toArray())
 				+ "\n";
 		System.out.println(out);
@@ -52,6 +56,6 @@ public class SimpleAllocationCompare {
 		out += Arrays.toString(cacheCASim_res.toArray());
 		System.out.println(Arrays.toString(cacheCASim_res.toArray()));
 		System.out.println(
-				"*********************************************************************************************");
+				"****************************************************************************************************");
 	}
 }

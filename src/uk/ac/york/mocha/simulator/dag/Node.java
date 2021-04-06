@@ -32,6 +32,7 @@ public class Node implements Serializable {
 	public long start = -1;
 	public boolean finish = false;
 	public long finishAt = -1;
+	public int partition = -1;
 
 	public Node(int layer, NodeType type, int id, int dagID) {
 		this(-1, layer, type, id, dagID);
@@ -54,6 +55,7 @@ public class Node implements Serializable {
 		copy.start = start;
 		copy.finish = finish;
 		copy.finishAt = finishAt;
+		copy.partition = partition;
 		return copy;
 	}
 
@@ -64,12 +66,12 @@ public class Node implements Serializable {
 
 	public String getExeInfo() {
 		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: "
-				+ finishAt;
+				+ finishAt + ", duration: " + (finishAt - start) + ", partition: " + partition; 
 	}
 
 	public void printExeInfo(String prefix) {
-		System.out.printf(prefix+" Node %2d_%2d_%2d    ---    WCET: %5d, starts: %5d, finishes: %5d \n", dagID, dagInstNo, id, WCET, start,
-				finishAt);
+		System.out.printf(prefix+" Node %2d_%2d_%2d    ---    WCET: %5d, starts: %5d, finishes: %5d, duration: %5d, partition: %2d \n", dagID, dagInstNo, id, WCET, start,
+				finishAt, (finishAt - start), partition);
 	}
 
 	/*

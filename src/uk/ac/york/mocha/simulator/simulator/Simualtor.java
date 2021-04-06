@@ -163,6 +163,7 @@ public class Simualtor {
 		assert (sleepingDAGs.size() == 0);
 		assert (readyDAGs.size() == 0);
 		assert (readyNodes.size() == 0);
+		
 		for (int i = 0; i < currentExe.length; i++) {
 			assert (currentExe[i] == null);
 		}
@@ -177,7 +178,7 @@ public class Simualtor {
 		/*
 		 * Summarise finish time of each DAG instance
 		 */
-		List<Long> finishTimes = dags.stream().map(c -> c.finishTime).collect(Collectors.toList());
+		List<Long> finishTimes = dags.stream().map(c -> (c.finishTime-c.startTime)).collect(Collectors.toList());
 
 		return finishTimes;
 
@@ -191,19 +192,20 @@ public class Simualtor {
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		List<Node> eligibile = allocM.getEligibileNode(dags, readyNodes, availableProc, history, table);
-		assert (eligibile.size() <= availableProc.size());
+		allocM.getEligibileNode(dags, readyNodes, availableProc, history, table);
+//		assert (eligibile.size() <= availableProc.size());
 
-		for (int i = 0; i < availableProc.size(); i++) {
-			if (i >= eligibile.size())
+		for (int i = 0; i < readyNodes.size(); i++) {
+			if (i >= availableProc.size())
 				break;
 
-			Node n = eligibile.get(i);
+			Node n = readyNodes.get(i);
 
 			n.start = systemTime;
-			currentExe[availableProc.get(i)] = n;
-			allProcs[availableProc.get(i)] = n.finishAt = systemTime
-					+ table.computeET(history, n, availableProc.get(i), cacheAware);
+			
+			currentExe[n.partition] = n;
+			allProcs[n.partition] = n.finishAt = systemTime
+					+ table.computeET(history, n, n.partition, cacheAware);
 
 			readyNodes.remove(n);
 		}
