@@ -7,17 +7,14 @@ import java.util.stream.Collectors;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
+import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class SystemGenerator {
-	public final static int MAX_PRIORITY = 1000;
-	public final static int MAX_PERIOD = 1440;
-	public final static int MIN_PERIOD = 120;
 
 	private boolean isHarmonic; // distribution of periods
-	private int maxT;
-	private int minT;
 
 	private int total_tasks;
 	private double totalUtil;
@@ -26,41 +23,62 @@ public class SystemGenerator {
 	private Random ran;
 
 	private boolean print;
+	private int cores;
 
-	public SystemGenerator(int minT, int maxT, int total_partitions, int totalTasks, boolean isPeriodLogUni, int seed) {
-		this.minT = minT;
-		this.maxT = maxT;
-		this.totalUtil = 0.5 * (double) totalTasks;
+	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, int seed, boolean print) {
+
+		this.totalUtil = 1.0 * (double) totalTasks;
 		this.total_tasks = totalTasks;
-		this.isHarmonic = isPeriodLogUni;
-		this.print = true;
+		this.isHarmonic = isHarmonic;
+		this.print = print;
 		this.ran = new Random(seed);
+		this.cores = total_partitions;
 	}
 
-	public List<DirectedAcyclicGraph> generatedDAGInstancesInOneHP(int forceInstanceNum) {
+	public List<DirectedAcyclicGraph> generatedDAGInstancesInOneHP(int forceInstanceNum, int hyperPeriodNum,
+			List<Long> periods) {
+
+		if (periods != null && periods.size() != total_tasks) {
+			System.err
+					.println("SystemGenerator.generatedDAGInstancesInOneHP(): # of given periods != # of total tasks");
+			System.exit(-1);
+		}
 
 		if (print)
 			System.out.println(
-					"*********************************** Scheduling parameters ***********************************");
+					"----------------------------------- Scheduling parameters -----------------------------------");
 
-		List<DirectedAcyclicGraph> dagTasks = generateSporadicDAGs();
-
-		if (print)
-			System.out.println(
-					"*********************************************************************************************");
+		List<DirectedAcyclicGraph> dagTasks = generateSporadicDAGs(periods);
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
-		
-		if(forceInstanceNum > 0) {
+
+		if (hyperPeriodNum > 0) {
+			
+			long hyperPeriod = Utils.getHyperPeriod(
+					dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
+
+			long totoalDuration = hyperPeriod * hyperPeriodNum;
+
 			for (DirectedAcyclicGraph dag : dagTasks) {
-				int instances = forceInstanceNum;
-				assert (instances > 0);
+				long instances = totoalDuration / dag.getSchedParameters().getPeriod();
+
+				dag.totalInstNum = instances > forceInstanceNum? instances : forceInstanceNum;
+				
+				if(dag.totalInstNum <=0) {
+					System.err.println("SystemGenerator.generatedDAGInstancesInOneHP(): DAG instances is less or equal to 0!");
+					System.exit(-1);
+				}
 
 				dags.addAll(dag.getInstances(instances));
 			}
-		}
-		else {
-			long hyperPeriod = getHyperPeriod(
+
+		} else if (forceInstanceNum > 0) {
+			for (DirectedAcyclicGraph dag : dagTasks) {
+				dag.totalInstNum = forceInstanceNum;
+				dags.addAll(dag.getInstances(forceInstanceNum));
+			}
+		} else {
+			long hyperPeriod = Utils.getHyperPeriod(
 					dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
 
 			for (DirectedAcyclicGraph dag : dagTasks) {
@@ -71,52 +89,18 @@ public class SystemGenerator {
 			}
 		}
 
-
+		if (dags == null || dags.size() == 0) {
+			System.out.println("SystemGenerator.generatedDAGInstancesInOneHP()");
+			System.exit(-1);
+		}
 
 		return dags;
 	}
 
-	/*
-	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a complete
-	 * hyperperiod.
-	 */
-	private long getHyperPeriod(List<Long> periods) {
-		List<Long> period_copy = new ArrayList<>(periods);
-		long lcm = 1;
-		int divisor = 2;
-
-		while (true) {
-			int counter = 0;
-			boolean divisible = false;
-
-			for (int i = 0; i < period_copy.size(); i++) {
-
-				if (period_copy.get(i) == 1) {
-					counter++;
-				}
-
-				if (period_copy.get(i) % divisor == 0) {
-					divisible = true;
-					period_copy.set(i, period_copy.get(i) / divisor);
-				}
-			}
-
-			if (divisible) {
-				lcm = lcm * divisor;
-			} else {
-				divisor++;
-			}
-
-			if (counter == period_copy.size()) {
-				return lcm;
-			}
-		}
-	}
-
-	private List<DirectedAcyclicGraph> generateSporadicDAGs() {
+	private List<DirectedAcyclicGraph> generateSporadicDAGs(List<Long> periods) {
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
-		List<SchedulingParameters> schedParam = generateSchedParam();
+		List<SchedulingParameters> schedParam = generateSchedParam(periods);
 
 		/*
 		 * Assign scheduling parameters to each DAG
@@ -134,8 +118,8 @@ public class SystemGenerator {
 		}
 
 		generateWCETs(dags);
-		
-		for(DirectedAcyclicGraph d : dags) {
+
+		for (DirectedAcyclicGraph d : dags) {
 			d.findPath(true);
 			d.findPath(false);
 		}
@@ -191,53 +175,58 @@ public class SystemGenerator {
 	/*
 	 * generate scheduling parameters for DAGs
 	 */
-	private List<SchedulingParameters> generateSchedParam() {
-
+	private List<SchedulingParameters> generateSchedParam(List<Long> periodsT) {
 		/*
 		 * generates uniformly distributed periods
 		 */
-		List<Long> periods = new ArrayList<>(total_tasks);
-		while (true) {
+		List<Long> periods;
+		if (periodsT == null) {
+			periods = new ArrayList<>(total_tasks);
+			while (true) {
 
-			if (isHarmonic) {
+				if (isHarmonic) {
 
-				/* harmonic period, same periods are allowed */
-				List<Long> harmonicPeriods = new ArrayList<>();
+					/* harmonic period, same periods are not allowed */
+					List<Long> harmonicPeriods = new ArrayList<>();
 
-				for (long i = 1; i <= MAX_PERIOD; ++i) {
-					if (MAX_PERIOD % i == 0 && i >= 10) {
-						harmonicPeriods.add(i * 1000);
+					for (long i = SystemParameters.MIN_PERIOD; i <= SystemParameters.MAX_PERIOD; ++i) {
+						if (SystemParameters.MAX_PERIOD % i == 0) {
+							harmonicPeriods.add(i * 1000);
+						}
 					}
+
+					if (harmonicPeriods.size() <= total_tasks) {
+						System.err.println("not enough harmonic periods");
+						System.exit(-1);
+					}
+
+					long period = harmonicPeriods.get(ran.nextInt(harmonicPeriods.size()));
+					if (!periods.contains(period))
+						periods.add(period);
+
+				} else {
+					/* log Uniform distrubtion */
+					double a1 = Math.log(SystemParameters.minT);
+					double a2 = Math.log(SystemParameters.maxT + 1);
+					double scaled = ran.nextDouble() * (a2 - a1);
+					double shifted = scaled + a1;
+					double exp = Math.exp(shifted);
+
+					int result = (int) exp;
+					result = Math.max(SystemParameters.minT, result);
+					result = Math.min(SystemParameters.maxT, result);
+
+					long period = result * 1000;
+					if (!periods.contains(period))
+						periods.add(period);
 				}
-//				
-//				if (harmonicPeriods.size() <= total_tasks) {
-//					System.err.println("not enough harmonic periods");
-//					System.exit(-1);
-//				}
 
-				long period = harmonicPeriods.get(ran.nextInt(harmonicPeriods.size()));
-				if (!periods.contains(period))
-					periods.add(period);
-
-			} else {
-				/* log Uniform distrubtion */
-				double a1 = Math.log(minT);
-				double a2 = Math.log(maxT + 1);
-				double scaled = ran.nextDouble() * (a2 - a1);
-				double shifted = scaled + a1;
-				double exp = Math.exp(shifted);
-
-				int result = (int) exp;
-				result = Math.max(minT, result);
-				result = Math.min(maxT, result);
-
-				long period = result * 1000;
-				if (!periods.contains(period))
-					periods.add(period);
+				if (periods.size() >= total_tasks)
+					break;
 			}
 
-			if (periods.size() >= total_tasks)
-				break;
+		} else {
+			periods = new ArrayList<>(periodsT);
 		}
 		periods.sort((p1, p2) -> Double.compare(p1, p2));
 
@@ -254,7 +243,7 @@ public class SystemGenerator {
 		 * generate utils by UUifastDiscard
 		 */
 		List<Double> utils = null;
-		UUnifastDiscard unifastDiscard = new UUnifastDiscard(totalUtil, total_tasks, 1000, ran);
+		UUnifastDiscard unifastDiscard = new UUnifastDiscard(totalUtil, total_tasks, 1000, cores, ran);
 		while (true) {
 			utils = unifastDiscard.getUtils();
 
@@ -284,7 +273,7 @@ public class SystemGenerator {
 		 */
 		List<Integer> priorities = new ArrayList<>();
 		for (int i = 0; i < total_tasks; i++)
-			priorities.add(MAX_PRIORITY - (i + 1) * 2);
+			priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
 		priorities.sort((p1, p2) -> -Integer.compare(p1, p2));
 
 		if (print) {
@@ -309,14 +298,14 @@ public class SystemGenerator {
 			schedParams.add(param);
 		}
 
-		schedParams.sort((p1, p2) -> Long.compare(p1.getWCET(), p2.getWCET()));
+//		schedParams.sort((p1, p2) -> Long.compare(p1.getWCET(), p2.getWCET()));
 
 		return schedParams;
 	}
 
-	public static void main(String args[]) {
-		SystemGenerator gen = new SystemGenerator(100, 1000, 32, 16, true, 1000);
-		gen.generatedDAGInstancesInOneHP(-1);
-	}
+//	public static void main(String args[]) {
+//		SystemGenerator gen = new SystemGenerator(100, 1000, 32, 16, true, 1000);
+//		gen.generatedDAGInstancesInOneHP(-1, -1, null);
+//	}
 
 }

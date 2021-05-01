@@ -10,12 +10,28 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 public class LoadBalancing extends AllocationMethod {
 
 	@Override
-	public void getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs, List<List<Node>> history, Recency table){
+	public void getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
+			long[] procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
+			List<List<Node>> allocHistory, Recency table, long currentTime, boolean affinity) {
+
+		if (readyNodes.size() == 0 || availableProcs.size() == 0)
+			return;
+
+		/*
+		 * Entry for debugging a single node
+		 */
+		for (Node n : readyNodes) {
+			if (n.getDagID() == 0 && n.getDagInstNo() == 6 && n.getId() == 7) {
+				break;
+			}
+		}
 
 		/*
 		 * sort ready nodes list by FPS+WF, take first procNum nodes to execute.
 		 */
 		readyNodes.sort((c1, c2) -> compareNode(dags, c1, c2));
+
+		readyNodes.stream().forEach(c -> c.partition = -1);
 
 //		List<Node> eligibile = new ArrayList<>();
 
@@ -28,12 +44,14 @@ public class LoadBalancing extends AllocationMethod {
 
 //		Collections.shuffle(eligibile);
 //		return eligibile;
+
+//		System.out.println();
 	}
 
 	/*
 	 * A prioritised load balancing policy
 	 */
-	protected int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+	private int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
 
 		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
 		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
@@ -43,7 +61,15 @@ public class LoadBalancing extends AllocationMethod {
 		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
 			return 1;
 		} else {
-			return -Long.compare(c1.getWCET(), c2.getWCET());
+
+			int c = -Long.compare(c1.getWCET(), c2.getWCET());
+
+			if (c != 0)
+				return c;
+			else {
+				return Integer.compare(c1.getDagInstNo(), c1.getDagInstNo());
+			}
+
 		}
 
 	}

@@ -15,13 +15,15 @@ public class UUnifastDiscard {
 	private boolean shallDiscard;
 	private int discardNum;
 	private Random r;
+	private int cores;
 
-	public UUnifastDiscard(double util, int num, int discard, Random ran) {
+	public UUnifastDiscard(double util, int num, int discard, int cores, Random ran) {
 		this.uUtil = util;
 		this.uNum = num;
 		this.uUs = new ArrayList<Double>();
 		this.shallDiscard = false;
 		this.discardNum = discard;
+		this.cores = cores;
 		this.r = ran;
 	}
 
@@ -58,7 +60,7 @@ public class UUnifastDiscard {
 
 			nextSum = sumU * Math.pow(r.nextDouble(), (1.0 / (this.uNum - i)));
 			temp = sumU - nextSum;
-			if (temp > 1) {
+			if (temp > cores) {
 				this.shallDiscard = true;
 				break;
 			}
@@ -66,7 +68,7 @@ public class UUnifastDiscard {
 			sumU = nextSum;
 		}
 		if (!shallDiscard) {
-			if (sumU < 1)
+			if (sumU <= cores)
 				uUs.add(sumU);
 			else
 				shallDiscard = true;

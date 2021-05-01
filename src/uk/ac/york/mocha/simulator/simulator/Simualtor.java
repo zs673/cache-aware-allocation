@@ -2,16 +2,16 @@ package uk.ac.york.mocha.simulator.simulator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import uk.ac.york.mocha.simulator.allocation.AllocationMethod;
+import uk.ac.york.mocha.simulator.allocation.CacheAwareAlloc;
 import uk.ac.york.mocha.simulator.allocation.LoadBalancing;
-import uk.ac.york.mocha.simulator.allocation.SimpleCacheAware;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.Recency;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
-import uk.ac.york.mocha.simulator.generator.SystemGenerator;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
+import uk.ac.york.mocha.simulator.dag.Recency;
 
 /*
  * This is a Multiprocessor Non-preemptive Multi-DAG Simulator
@@ -72,16 +72,23 @@ public class Simualtor {
 	long[] allProcs;
 
 	/* a list recording all executed nodes on each processor */
-	List<List<Node>> history;
+	List<List<Node>> allocNodes;
+
+	/* Control for enable/disable week cluster-level affinity */
+	boolean affinity;
+
+	/* Execution history by cache level */
+	List<List<Node>> history_level1;
+	List<List<Node>> history_level2;
+	List<Node> history_level3;
+
+	/* A list containg allocation history, for printing and debugging. */
+	List<String[]> allocHistory;
 
 	/********************* Runtime queues *********************************/
 
-	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, List<DirectedAcyclicGraph> dags, int procNum,
-			int seed) {
-		if (procNum % 4 != 0 || procNum / 4 < 1) {
-			System.err.println("Number of cores must be 4, 8, 16, 20...");
-			System.exit(-1);
-		}
+	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
+			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean affinity) {
 
 		this.type = type;
 		this.hardware = hardware;
@@ -90,21 +97,37 @@ public class Simualtor {
 		this.dags = new ArrayList<>(dags);
 
 		this.sleepingDAGs = new ArrayList<>(dags);
+		sleepingDAGs.sort((c1, c2) -> Long.compare(c1.releaseTime, c2.releaseTime));
 		this.readyDAGs = new ArrayList<>();
 		this.readyNodes = new ArrayList<>();
 		this.currentExe = new Node[procNum];
 		this.allProcs = new long[procNum];
+		this.affinity = affinity;
 
-		table = new Recency(procNum, seed);
+		table = new Recency(recency, procNum, recencySeed);
 
-		this.history = new ArrayList<>();
+		this.history_level1 = new ArrayList<>();
+		this.history_level2 = new ArrayList<>();
+		this.history_level3 = new ArrayList<>();
+
+		this.allocNodes = new ArrayList<>();
+		this.allocHistory = new ArrayList<>();
+
 		for (int i = 0; i < procNum; i++) {
 			List<Node> oneProc = new ArrayList<>();
-			this.history.add(oneProc);
+			this.history_level1.add(oneProc);
+
+			List<Node> oneProcAlloc = new ArrayList<>();
+			this.allocNodes.add(oneProcAlloc);
+		}
+
+		for (int i = 0; i < (procNum / SystemParameters.Level2procNum); i++) {
+			List<Node> oneCluster = new ArrayList<>();
+			this.history_level2.add(oneCluster);
 		}
 	}
 
-	public List<Long> simulate(boolean printSim) {
+	public List<DirectedAcyclicGraph> simulate(boolean printSim) {
 
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
@@ -120,10 +143,11 @@ public class Simualtor {
 			allocM = new LoadBalancing();
 			break;
 		case CACHE_AWARE:
-			allocM = new SimpleCacheAware();
+			allocM = new CacheAwareAlloc();
 			break;
 		default:
 			System.err.println("The simualtion method is NOT supported ! ");
+			System.exit(-1);
 			return null;
 		}
 
@@ -157,15 +181,7 @@ public class Simualtor {
 			/*
 			 * advance to next time unit.
 			 */
-			oneTick();
-		}
-
-		assert (sleepingDAGs.size() == 0);
-		assert (readyDAGs.size() == 0);
-		assert (readyNodes.size() == 0);
-		
-		for (int i = 0; i < currentExe.length; i++) {
-			assert (currentExe[i] == null);
+			advance();
 		}
 
 		/*
@@ -178,9 +194,22 @@ public class Simualtor {
 		/*
 		 * Summarise finish time of each DAG instance
 		 */
-		List<Long> finishTimes = dags.stream().map(c -> (c.finishTime-c.startTime)).collect(Collectors.toList());
+//		List<Long> duration = dags.stream().map(c -> (c.finishTime - c.startTime)).collect(Collectors.toList());
+//		List<Long> makespan = dags.stream().map(c -> c.getFlatNodes().stream().mapToLong(c1 -> c1.finishAt - c1.start).sum()).collect(Collectors.toList());
+//		List<Long> finish = dags.stream().map(c -> (c.finishTime)).collect(Collectors.toList());
+//
+//		List<List<Long>> res = new ArrayList<>();
+//		res.add(duration);
+//		res.add(makespan);
+//		res.add(finish);
 
-		return finishTimes;
+		List<DirectedAcyclicGraph> result = new ArrayList<>();
+
+		for (DirectedAcyclicGraph d : dags) {
+			result.add(d.deepCopy());
+		}
+
+		return result;
 
 	}
 
@@ -192,22 +221,58 @@ public class Simualtor {
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		allocM.getEligibileNode(dags, readyNodes, availableProc, history, table);
-//		assert (eligibile.size() <= availableProc.size());
+		allocM.getEligibileNode(dags, readyNodes, availableProc, allProcs, history_level1, history_level2,
+				history_level3, allocNodes, table, systemTime, affinity);
+
+		String[] oneSched = new String[allProcs.length];
+		for (int i = 0; i < oneSched.length; i++) {
+			if(allProcs[i] > systemTime) {
+				oneSched[i] = "*";
+			}
+			else{
+				oneSched[i] = "-";
+			}
+		}
+		boolean add = false;
 
 		for (int i = 0; i < readyNodes.size(); i++) {
-			if (i >= availableProc.size())
-				break;
+					
+			if (readyNodes.get(i).partition == -1)
+				continue;
 
 			Node n = readyNodes.get(i);
 
-			n.start = systemTime;
-			
 			currentExe[n.partition] = n;
-			allProcs[n.partition] = n.finishAt = systemTime
-					+ table.computeET(history, n, n.partition, cacheAware);
+			allocNodes.get(n.partition).add(n);
+			
+			n.start = systemTime;
+			long realET = table.computeET(history_level1, history_level2, history_level3, n, n.partition, cacheAware);
+			
+			if(alloc.equals(Allocation.CACHE_AWARE) && realET != n.expectedET)
+			{
+				System.out.println("Simualtor.ExecuteReadyNodes(): realET does not equals to expectedET");
+				System.exit(-1);
+			}
+			
+			/*
+			 * A DAG is started when its SOURCE node starts execution
+			 */
+			if (n.getType().equals(NodeType.SOURCE)) {
+				Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo()).startTime = systemTime;
+			}
+			
+			allProcs[n.partition] = n.finishAt = systemTime + realET;
+			
+			oneSched[n.partition] = n.getDagID() + "_" + n.getId();
+			add = true;
 
 			readyNodes.remove(n);
+			i--;
+		}
+
+		if (add) {
+//			List<Node> readys = new ArrayList<>(readyNodes);
+			allocHistory.add(oneSched);
 		}
 
 	}
@@ -227,7 +292,14 @@ public class Simualtor {
 				currentExe[i] = null;
 				n.finish = true;
 
-				history.get(i).add(n);
+				/* add the node to history for each cache level */
+				history_level1.get(i).add(n);
+				int clusterID = i / SystemParameters.Level2procNum;
+				history_level2.get(clusterID).add(n);
+				history_level3.add(n);
+
+				DirectedAcyclicGraph d = Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo());
+				d.allocNodes.add(n);
 
 				/*
 				 * A node can execute if all its parents are finished
@@ -257,7 +329,7 @@ public class Simualtor {
 		 */
 		for (int i = 0; i < sleepingDAGs.size(); i++) {
 			DirectedAcyclicGraph dag = sleepingDAGs.get(i);
-			if (dag.startTime <= systemTime) {
+			if (dag.releaseTime <= systemTime) {
 
 				sleepingDAGs.remove(dag);
 				readyDAGs.add(dag);
@@ -281,22 +353,57 @@ public class Simualtor {
 	/****************************************************************
 	 *** Advance to next time unit. Sometimes we jump, time flies ***
 	 ****************************************************************/
-	private void oneTick() {
+	private void advance() {
+		long oldTime = systemTime;
 		/*
 		 * We jump to the next available time if all cores are busy.
 		 */
 		boolean jump = true;
-		long min = Long.MAX_VALUE;
+		long firstFinish = Long.MAX_VALUE;
 		for (long i : allProcs) {
-			min = min < i ? min : i;
+			firstFinish = firstFinish < i ? firstFinish : i;
 			if (i <= systemTime)
 				jump = false;
 		}
 
 		if (jump)
-			systemTime = min;
-		else
-			systemTime++;
+			systemTime = firstFinish;
+		else {
+
+			if (readyNodes.size() > 0) {
+				System.out.println(
+						"Simualtor.advance(): timing error. It this not possible to still have ready nodes wating here");
+				System.exit(-1);
+			}
+
+			long earliestFinish = Long.MAX_VALUE;
+
+			/*
+			 * earliest finish of executing node.
+			 */
+			for (long i : allProcs) {
+				if (i > systemTime)
+					earliestFinish = earliestFinish < i ? earliestFinish : i;
+			}
+
+			/*
+			 * earliest release of sleeping node
+			 */
+			long earliestRelease = sleepingDAGs.size() > 0 ? sleepingDAGs.get(0).releaseTime : Long.MAX_VALUE;
+
+			systemTime = earliestFinish < earliestRelease ? earliestFinish : earliestRelease;
+		}
+
+		if (systemTime == oldTime) {
+			System.out.println("Simualtor.advance(): timing error. The system time is not advanced! ");
+			System.exit(-1);
+		}
+
+		if (systemTime == Long.MAX_VALUE && (sleepingDAGs.size() > 0 || readyNodes.size() > 0)) {
+			System.out.println(
+					"Simualtor.advance(): timing error. The system time is Long Max but there is still waiting nodes/DAGs ! ");
+			System.exit(-1);
+		}
 	}
 
 	private List<Integer> getAvailableCores() {
@@ -320,36 +427,71 @@ public class Simualtor {
 
 		res += "\n\n";
 
+//		System.out.println(
+//				"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+//
+//		List<List<Long>> finishTimes = new ArrayList<>();
+//
+//		for (List<Node> nodes : history) {
+//			List<Long> finishPerProc = nodes.stream().map(c -> c.finishAt).collect(Collectors.toList());
+//			finishTimes.add(finishPerProc);
+//		}
+//
+//		res += "Execuation Trace: \n\n";
+//
+//		for (int i = 0; i < history.size(); i++) {
+//
+//			if (i % 4 == 0) {
+//				res += "Level 2 Cache Group: " + i + "\n";
+//				System.out.println(">>> Level 2 Cache Group: " + i + ":");
+//			}
+//			res += "    Processor: " + i + "\n";
+//			System.out.println(">>>   Processor: " + i);
+//
+//			for (Node n : history.get(i)) {
+//				res += "        " + n.getExeInfo() + ", \n";
+//				n.printExeInfo(">>>     ");
+//			}
+//
+//			res += "\n";
+//		}
+//		System.out.println(
+//				">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace End <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
+
 		System.out.println(
-				"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+				"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Allocation Info <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
-		List<List<Long>> finishTimes = new ArrayList<>();
+		for (int i = 0; i < history_level1.size(); i++) {
+			System.out.printf("%10s    ", "Core:" + i);
+		}
+		System.out.println();
 
-		for (List<Node> nodes : history) {
-			List<Long> finishPerProc = nodes.stream().map(c -> c.finishAt).collect(Collectors.toList());
-			finishTimes.add(finishPerProc);
+		for (String[] oneSched : allocHistory) {
+
+			for (String s : oneSched) {
+				System.out.printf("%10s    ", s);
+			}
+			System.out.println();
 		}
 
-		res += "Execuation Trace: \n\n";
+//		int maxSize = history.stream().mapToInt(c -> c.size()).max().getAsInt();
+//		for (int j = 0; j < maxSize; j++) {
+//			for (int i = 0; i < history.size(); i++) {
+//				try {
+//					if (history.get(i).get(j).getDagID() == 0)
+//						System.out.printf("%10s    ", history.get(i).get(j).getFullName());
+//					else
+//						System.out.printf("%10s    ", history.get(i).get(j).getFullName());
+//				} catch (Exception e) {
+//					System.out.printf("%10s    ", "-");
+//				}
+//
+//			}
+//			System.out.println();
+//		}
 
-		for (int i = 0; i < history.size(); i++) {
-
-			if (i % 4 == 0) {
-				res += "Level 2 Cache Group: " + i + "\n";
-				System.out.println(">>> Level 2 Cache Group: " + i + ":");
-			}
-			res += "    Processor: " + i + "\n";
-			System.out.println(">>>   Processor: " + i);
-
-			for (Node n : history.get(i)) {
-				res += "        " + n.getExeInfo() + ", \n";
-				n.printExeInfo(">>>     ");
-			}
-
-			res += "\n";
-		}
 		System.out.println(
-				">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace End <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
+				"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Allocation Info <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
 		System.out.println(
 				"--------------------------------------- DAG Execution Summary ---------------------------------------------");
@@ -361,7 +503,7 @@ public class Simualtor {
 			System.out.printf(
 					"---  DAG_" + dag.id + "_" + dag.instanceNo
 							+ "starts at t=%8d,   finishes at t=%8d,   duration t=%8d. \n",
-					dag.startTime, dag.finishTime, (dag.finishTime - dag.startTime));
+					dag.releaseTime, dag.finishTime, (dag.finishTime - dag.releaseTime));
 		}
 
 		System.out.println(
@@ -370,17 +512,21 @@ public class Simualtor {
 		return res;
 	}
 
-	public static void main(String args[]) {
-
-		int cores = 8;
-
-		SystemGenerator gen = new SystemGenerator(100, 1000, cores, 2, true, 1000);
-		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(-1);
-
-		Simualtor sim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.LOAD_BALANCE, dags, cores,
-				1000);
-		sim.simulate(false);
-		System.out.println("finished");
-	}
+//	public static void main(String args[]) {
+//
+//		int cores = 8;
+//
+//		SystemGenerator gen = new SystemGenerator(100, 1000, cores, 2, true, 1000);
+//		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(-1, -1, null);
+//
+//		Simualtor sim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.LOAD_BALANCE,
+//				RecencyType.ORDER, dags, cores, 1000, true, true);
+//		sim.simulate(true, true);
+//
+//		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+//				RecencyType.ORDER, dags, cores, 1000, true, true);
+//		sim1.simulate(true, true);
+//		System.out.println("finished");
+//	}
 
 }

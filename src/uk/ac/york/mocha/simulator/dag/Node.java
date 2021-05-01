@@ -10,8 +10,7 @@ public class Node implements Serializable {
 
 	/* NodeType */
 	public enum NodeType {
-		SOURCE, SINK, NORMAL // TODO: a bit of more work could be done here to provide a finer-grained node
-								// type classification
+		SOURCE, SINK, NORMAL
 	}
 
 	private final int id;
@@ -32,7 +31,12 @@ public class Node implements Serializable {
 	public long start = -1;
 	public boolean finish = false;
 	public long finishAt = -1;
+
 	public int partition = -1;
+	public int affinity = -1;
+	
+	public int delayed = -1;
+	public long expectedET = -1;
 
 	public Node(int layer, NodeType type, int id, int dagID) {
 		this(-1, layer, type, id, dagID);
@@ -56,22 +60,30 @@ public class Node implements Serializable {
 		copy.finish = finish;
 		copy.finishAt = finishAt;
 		copy.partition = partition;
+		copy.affinity = affinity;
+		copy.delayed = delayed;
 		return copy;
 	}
 
 	@Override
 	public String toString() {
-		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET;
+		return "Node " + dagID + "-" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
+	}
+	
+	public String getFullName() {
+		return "N " + dagID + "_" + dagInstNo + "_" + id ;
 	}
 
 	public String getExeInfo() {
 		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: "
-				+ finishAt + ", duration: " + (finishAt - start) + ", partition: " + partition; 
+				+ finishAt + ", duration: " + (finishAt - start) + ", partition: " + partition + ", affinity: "
+				+ affinity;
 	}
 
 	public void printExeInfo(String prefix) {
-		System.out.printf(prefix+" Node %2d_%2d_%2d    ---    WCET: %5d, starts: %5d, finishes: %5d, duration: %5d, partition: %2d \n", dagID, dagInstNo, id, WCET, start,
-				finishAt, (finishAt - start), partition);
+		System.out.printf(prefix
+				+ " Node %2d_%2d_%2d    ---    WCET: %5d, starts: %5d, finishes: %5d, duration: %5d, partition: %2d, affinity: %2d\n",
+				dagID, dagInstNo, id, WCET, start, finishAt, (finishAt - start), partition, affinity);
 	}
 
 	/*

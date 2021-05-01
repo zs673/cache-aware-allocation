@@ -7,7 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -26,7 +25,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	private static final long serialVersionUID = -4076503208112904549L;
 
 	public final int id;
-	public int instanceNo = Integer.MIN_VALUE;
+	public int instanceNo = -1;
+	public long totalInstNum = -1;
 	public final String name;
 
 	/* Shceduling parameters of Sporadic DAG task */
@@ -59,8 +59,10 @@ public class DirectedAcyclicGraph implements Serializable {
 	/*
 	 * Run-time parameters
 	 */
-	public long startTime = 0;
+	public long releaseTime = Long.MAX_VALUE;
+	public long startTime = Long.MAX_VALUE;
 	public long finishTime = Long.MAX_VALUE;
+	public List<Node> allocNodes = new ArrayList<>();
 
 	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed) {
 
@@ -79,7 +81,6 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		this.graph = new DefaultDirectedGraph<Node, DefaultEdge>(DefaultEdge.class);
 
-
 		this.longestPath = new ArrayList<>();
 		this.shortestPath = new ArrayList<>();
 
@@ -87,21 +88,26 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	public void reset() {
+		this.startTime = Long.MAX_VALUE;
 		this.finishTime = Long.MAX_VALUE;
+		this.allocNodes.clear();
+
 		for (Node n : flatNodes) {
 			n.start = -1;
 			n.finish = false;
 			n.finishAt = -1;
 			n.partition = -1;
+			n.affinity = -1;
+			n.delayed = -1;
 		}
 
 	}
 
 	/*****************************************************************
 	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This method
-	 * can only be invoked once! **********
+	 * can only be invoked once! ***********
 	 *****************************************************************/
-	public List<DirectedAcyclicGraph> getInstances(int instanceNum) {
+	public List<DirectedAcyclicGraph> getInstances(long instanceNum) {
 
 		/*
 		 * Check whether it is the FIRST call
@@ -120,7 +126,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		for (int i = 0; i < instanceNum; i++) {
 			DirectedAcyclicGraph ins = deepCopy();
 			ins.instanceNo = i;
-			ins.startTime = i * sched_param.getPeriod();
+			ins.releaseTime = i * sched_param.getPeriod();
 
 			for (Node n : ins.flatNodes)
 				n.setDagInstNo(i);
@@ -292,8 +298,8 @@ public class DirectedAcyclicGraph implements Serializable {
 
 			}
 
-			System.out.println("Critical Path: " + (longest? Arrays.toString(longestPath.toArray()): Arrays.toString(shortestPath.toArray())));
-			System.out.println("distance: " + bestDistance + "      edges: " + bestLength);
+//			System.out.println("Critical Path: " + (longest? Arrays.toString(longestPath.toArray()): Arrays.toString(shortestPath.toArray())));
+//			System.out.println("distance: " + bestDistance + "      edges: " + bestLength);
 		}
 
 		else {
@@ -308,11 +314,11 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		if (current.getId() == sink.getId()) {
 
-			System.out.println("Path: " + Arrays.toString(Arrays.copyOfRange(path, 0, length)));
+//			System.out.println("Path: " + Arrays.toString(Arrays.copyOfRange(path, 0, length)));
 
 			if ((longest && distance > bestDistance) || (!longest && distance < bestDistance)) {
 
-				System.out.println("previous longest path: " + Arrays.toString(bestPath) + "  length: " + bestDistance);
+//				System.out.println("previous longest path: " + Arrays.toString(bestPath) + "  length: " + bestDistance);
 
 				for (int i = 0; i < length; i++)
 					bestPath[i] = path[i];
@@ -322,7 +328,7 @@ public class DirectedAcyclicGraph implements Serializable {
 				bestLength = length;
 				bestDistance = distance;
 
-				System.out.println("previous longest path: " + Arrays.toString(bestPath) + "  length: " + bestDistance);
+//				System.out.println("previous longest path: " + Arrays.toString(bestPath) + "  length: " + bestDistance);
 //				
 			}
 		} else {
@@ -374,16 +380,27 @@ public class DirectedAcyclicGraph implements Serializable {
 	/*****************************************************************
 	 ************** A good way to deep copy an object ****************
 	 *****************************************************************/
-	private DirectedAcyclicGraph deepCopy() {
+	public DirectedAcyclicGraph deepCopy() {
 
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ObjectOutputStream oos = new ObjectOutputStream(baos);
 			oos.writeObject(this);
-			oos.flush();
+
 			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 			ObjectInputStream ois = new ObjectInputStream(bais);
-			return (DirectedAcyclicGraph) ois.readObject();
+
+			DirectedAcyclicGraph dag = (DirectedAcyclicGraph) ois.readObject();
+
+			oos.flush();
+			baos.flush();
+
+			baos.close();
+			oos.close();
+			bais.close();
+			ois.close();
+
+			return dag;
 		} catch (EOFException eof) {
 			eof.printStackTrace();
 			return null;
@@ -448,35 +465,6 @@ public class DirectedAcyclicGraph implements Serializable {
 		return out;
 	}
 
-	public static void main(String args[]) {
-		int seed = 1000;
-		Random rng = new Random(seed);
-
-		for (int i = 0; i < 1; i++) {
-			int minLayer = rng.nextInt(10);
-			int maxLayer = minLayer + rng.nextInt(15) + 5;
-			int parallelism = rng.nextInt(10) + 5;
-			double connectProb = (double) rng.nextInt(9) / 10 + 0.2;
-
-			SchedulingParameters sched_param = new SchedulingParameters(10, 100, 100, 50000, 1, 0);
-			StructuralParameters dag_param = new StructuralParameters(maxLayer, minLayer, parallelism, connectProb,
-					seed);
-			DirectedAcyclicGraph dag = new DirectedAcyclicGraph(sched_param, dag_param, 0, rng.nextInt());
-
-			System.out.println(dag.toString());
-
-			System.out.println("\n\n------------------------------------------------------\n\n");
-
-			List<DirectedAcyclicGraph> instances = dag.getInstances(10);
-
-			for (DirectedAcyclicGraph d : instances)
-				System.out.println(d.instanceNo + "   " + d.startTime);
-		}
-
-		System.out.println("finished");
-
-	}
-
 	public long getWCET() {
 		return WCET;
 	}
@@ -484,4 +472,33 @@ public class DirectedAcyclicGraph implements Serializable {
 	public void setWCET(long sum) {
 		WCET = sum;
 	}
+
+//	public static void main(String args[]) {
+//		int seed = 1000;
+//		Random rng = new Random(seed);
+//
+//		for (int i = 0; i < 1; i++) {
+//			int minLayer = rng.nextInt(10);
+//			int maxLayer = minLayer + rng.nextInt(15) + 5;
+//			int parallelism = rng.nextInt(10) + 5;
+//			double connectProb = (double) rng.nextInt(9) / 10 + 0.2;
+//
+//			SchedulingParameters sched_param = new SchedulingParameters(10, 100, 100, 50000, 1, 0);
+//			StructuralParameters dag_param = new StructuralParameters(maxLayer, minLayer, parallelism, connectProb,
+//					seed);
+//			DirectedAcyclicGraph dag = new DirectedAcyclicGraph(sched_param, dag_param, 0, rng.nextInt());
+//
+//			System.out.println(dag.toString());
+//
+//			System.out.println("\n\n------------------------------------------------------\n\n");
+//
+//			List<DirectedAcyclicGraph> instances = dag.getInstances(10);
+//
+//			for (DirectedAcyclicGraph d : instances)
+//				System.out.println(d.instanceNo + "   " + d.startTime);
+//		}
+//
+//		System.out.println("finished");
+//
+//	}
 }
