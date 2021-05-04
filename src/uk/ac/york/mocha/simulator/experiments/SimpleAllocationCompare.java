@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
@@ -18,16 +19,14 @@ import uk.ac.york.mocha.simulator.simulator.Simualtor.Hardware;
 import uk.ac.york.mocha.simulator.simulator.Simualtor.SimuType;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-import org.apache.commons.math3.util.Pair;
-
 public class SimpleAllocationCompare {
 
 	public enum expName {
 		taskNum, periods, tasks
 	}
 
-	static int NoS = 1000;
-	static boolean printSim = true;
+	static int NoS = 100;
+	static boolean printSim = false;
 	static boolean printGen = true;
 
 	static DecimalFormat df = new DecimalFormat("#.###");
@@ -35,19 +34,19 @@ public class SimpleAllocationCompare {
 	public static void main(String args[]) {
 
 //		changePeriodsRunner(5);
-		changeTaskNumRunner(8);
+		changeTaskNumRunner(4);
 	}
 
 	public static void changeTaskNumRunner(int numMax) {
 
-		int intanceNum = 10;
-		int hyperPeriodNum = 3;
+		int intanceNum = 20;
+		int hyperPeriodNum = -1;
 		int seed = 1000;
 		int NoP = 8;
 
 		List<Long> harmonicPeriods = new ArrayList<>();
 
-		for (long i = 120; i <= SystemParameters.MAX_PERIOD; ++i) {
+		for (long i = SystemParameters.MIN_PERIOD; i <= SystemParameters.MAX_PERIOD; ++i) {
 			if (SystemParameters.MAX_PERIOD % i == 0) {
 				harmonicPeriods.add(i * 1000);
 			}
@@ -56,6 +55,8 @@ public class SimpleAllocationCompare {
 		List<Thread> threads = new ArrayList<>();
 
 		for (int i = 1; i <= numMax; i++) {
+
+//			if (i == 1 || i == 4 || i == 8) {
 			final int num = i;
 
 			List<Long> periods = new ArrayList<>();
@@ -67,9 +68,11 @@ public class SimpleAllocationCompare {
 			threads.add(new Thread(new Runnable() {
 				@Override
 				public void run() {
-					RunOneGroup(num, intanceNum, hyperPeriodNum, NoP, seed, seed, periods, expName.taskNum);
+					RunOneGroup(num, intanceNum, hyperPeriodNum, NoP, seed, seed, null, expName.taskNum);
 				}
 			}));
+//			}
+
 		}
 
 		for (Thread t : threads)
@@ -121,28 +124,28 @@ public class SimpleAllocationCompare {
 	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, int procNum, int taskSeed,
 			int tableSeed, List<Long> periods, expName name) {
 
-		List<List<String>> duration = new ArrayList<>();
+		List<List<String>> makespan = new ArrayList<>();
+		List<List<String>> util = new ArrayList<>();
 		List<List<String>> finishTime = new ArrayList<>();
 
-		List<List<String>> util = new ArrayList<>();
+		List<List<String>> makespanCompare = new ArrayList<>();
 		List<List<String>> utilCompare = new ArrayList<>();
-
-		List<List<String>> durationCompare = new ArrayList<>();
 		List<List<String>> finishTimeCompare = new ArrayList<>();
 
-		long[] instanceNo = new long[taskNum];
+		int[] instanceNo = new int[taskNum];
 
-		if(periods != null) {
+		if (periods != null && hyperperiodNum > 0) {
 			long totalHP = Utils.getHyperPeriod(periods) * hyperperiodNum;
 
 			for (int i = 0; i < periods.size(); i++) {
-				long insNo = (totalHP / periods.get(i));
-				instanceNo[i] = insNo;
+				int insNo = (int) (totalHP / periods.get(i));
+				instanceNo[i] = insNo > intanceNum ? insNo : intanceNum;
 			}
-		}
-		else {
-			for(int i=0; i<instanceNo.length; i++)
+		} else if (intanceNum > 0) {
+			for (int i = 0; i < instanceNo.length; i++)
 				instanceNo[i] = intanceNum;
+		} else {
+			System.out.println("Cannot get same instances number for randomly generated periods.");
 		}
 
 //		List<List<DirectedAcyclicGraph>> allSystems = new ArrayList<>();
@@ -159,7 +162,7 @@ public class SimpleAllocationCompare {
 
 		for (int i = 0; i < NoS; i++) {
 
-			if (i == 29) {
+			if (i == 66) {
 				System.out.println("here");
 			}
 
@@ -170,30 +173,30 @@ public class SimpleAllocationCompare {
 			SystemGenerator gen = new SystemGenerator(procNum, taskNum, true, taskSeed, printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum, periods);
 
-			List<String> out = testOneCase(dags, taskNum, intanceNum, procNum, taskSeed, tableSeed, periods);
+			List<String> out = testOneCase(dags, taskNum, instanceNo, procNum, taskSeed, tableSeed, periods);
 
-			String[] durationOneCase = out.get(0).split("\n");
+			String[] makespanOneCase = out.get(0).split("\n");
 			List<String> d = new ArrayList<>();
-			for (int j = 0; j < durationOneCase.length; j++)
-				d.add(durationOneCase[j]);
-			duration.add(d);
+			for (int j = 0; j < makespanOneCase.length; j++)
+				d.add(makespanOneCase[j]);
+			makespan.add(d);
 
-			String[] durationCompareOneCase = out.get(1).split("\n");
+			String[] makespanCompareOneCase = out.get(1).split("\n");
 			List<String> ds = new ArrayList<>();
-			for (int j = 0; j < durationCompareOneCase.length; j++)
-				ds.add(durationCompareOneCase[j]);
-			durationCompare.add(ds);
+			for (int j = 0; j < makespanCompareOneCase.length; j++)
+				ds.add(makespanCompareOneCase[j]);
+			makespanCompare.add(ds);
 
-			String[] UtilOneCase = out.get(2).split("\n");
+			String[] utilOneCase = out.get(2).split("\n");
 			List<String> u = new ArrayList<>();
-			for (int j = 0; j < UtilOneCase.length; j++)
-				u.add(UtilOneCase[j]);
+			for (int j = 0; j < utilOneCase.length; j++)
+				u.add(utilOneCase[j]);
 			util.add(u);
 
-			String[] UtilCompareOneCase = out.get(3).split("\n");
+			String[] utilCompareOneCase = out.get(3).split("\n");
 			List<String> us = new ArrayList<>();
-			for (int j = 0; j < UtilCompareOneCase.length; j++)
-				us.add(UtilCompareOneCase[j]);
+			for (int j = 0; j < utilCompareOneCase.length; j++)
+				us.add(utilCompareOneCase[j]);
 			utilCompare.add(us);
 
 			String[] finishOneCase = out.get(4).split("\n");
@@ -217,8 +220,8 @@ public class SimpleAllocationCompare {
 			theDir.mkdirs();
 		}
 
-		resultAnalyzer(duration, folder, "duration_" + taskNum + ".txt");
-		resultAnalyzer(durationCompare, folder, "duration_compare_" + taskNum + ".txt");
+		resultAnalyzer(makespan, folder, "makespan_" + taskNum + ".txt");
+		resultAnalyzer(makespanCompare, folder, "makespan_compare_" + taskNum + ".txt");
 
 		resultAnalyzer(util, folder, "util_" + taskNum + ".txt");
 		resultAnalyzer(utilCompare, folder, "util_compare_" + taskNum + ".txt");
@@ -239,59 +242,93 @@ public class SimpleAllocationCompare {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static List<String> testOneCase(List<DirectedAcyclicGraph> dags, int tasks, int NoInstances, int cores,
+	public static List<String> testOneCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
 			int taskSeed, int tableSeed, List<Long> periods) {
 
 		Simualtor cacheLBSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.LOAD_BALANCE,
-				RecencyType.TIME, dags, cores, tableSeed, false);
-		List<DirectedAcyclicGraph> method1 = cacheLBSim.simulate(printSim);
+				RecencyType.TIME, dags, cores, tableSeed, false, false);
+		Pair<List<DirectedAcyclicGraph>, long[]> pair1 = cacheLBSim.simulate(printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME, dags, cores, tableSeed, true);
-		List<DirectedAcyclicGraph> method2 = cacheCASim.simulate(printSim);
+				RecencyType.TIME, dags, cores, tableSeed, false, false);
+		Pair<List<DirectedAcyclicGraph>, long[]> pair2 = cacheCASim.simulate(printSim);
+
+		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
+		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 
 		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
+
+		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
+		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+
+		/*
+		 * get a number of instances from each DAG based on long[] NoInstances.
+		 */
+		int count = 0;
+		int currentID = -1;
+		for (int i = 0; i < dags.size(); i++) {
+			if (currentID != dags.get(i).id) {
+//				System.out.println("DAG " + currentID + "instances: " + count);
+
+				currentID = dags.get(i).id;
+				count = 0;
+			}
+
+			if (count < NoInstances[dags.get(i).id]) {
+				method1.add(m1.get(i));
+				method2.add(m2.get(i));
+				count++;
+			}
+		}
+//		System.out.println("DAG " + currentID + "instances: " + count);
+
 		allMethods.add(method1);
 		allMethods.add(method2);
+
+//		for(int i=0; i<method1.size();i++) {
+//			System.out.println(method1.get(i).getName());
+//		}
 
 		/**
 		 * Get the max duration & finish of each DAG task for normalizaiton.
 		 */
 		int maxID = dags.stream().mapToInt(c -> c.id).max().getAsInt();
-		long[] maxDuration = new long[maxID + 1];
 		long[] maxMakespan = new long[maxID + 1];
+		long[] maxUtil = new long[maxID + 1];
 		long[] maxFinish = new long[maxID + 1];
 
-		for (int i = 0; i < maxDuration.length; i++) {
-			maxDuration[i] = Long.MIN_VALUE;
-			maxFinish[i] = Long.MIN_VALUE;
+		for (int i = 0; i < maxMakespan.length; i++) {
 			maxMakespan[i] = Long.MIN_VALUE;
+			maxFinish[i] = Long.MIN_VALUE;
+			maxUtil[i] = Long.MIN_VALUE;
 		}
 
 		for (int i = 0; i < method1.size(); i++) {
 			int id = method1.get(i).id;
 
+			long dagMakespan = method1.get(i).finishTime - method1.get(i).startTime > method2.get(i).finishTime
+					- method2.get(i).startTime ? method1.get(i).finishTime - method1.get(i).startTime
+							: method2.get(i).finishTime - method2.get(i).startTime;
+
+			long util_m1 = method1.get(i).getFlatNodes().stream().mapToLong(c -> c.finishAt - c.start).sum();
+			long util_m2 = method1.get(i).getFlatNodes().stream().mapToLong(c -> c.finishAt - c.start).sum();
+			long dagUtil = util_m1 > util_m2 ? util_m1 : util_m2;
+
 			long dagFinish = method1.get(i).finishTime - method1.get(i).releaseTime > method2.get(i).finishTime
 					- method2.get(i).releaseTime ? method1.get(i).finishTime - method1.get(i).releaseTime
 							: method2.get(i).finishTime - method2.get(i).releaseTime;
 
-			long makespan_m1 = method1.get(i).getFlatNodes().stream().mapToLong(c -> c.finishAt - c.start).sum();
-			long makespan_m2 = method1.get(i).getFlatNodes().stream().mapToLong(c -> c.finishAt - c.start).sum();
-			long dagMakespan = makespan_m1 > makespan_m2 ? makespan_m1 : makespan_m2;
-
-			long dagDuration = method1.get(i).finishTime - method1.get(i).startTime > method2.get(i).finishTime
-					- method2.get(i).startTime ? method1.get(i).finishTime - method1.get(i).startTime
-							: method2.get(i).finishTime - method2.get(i).startTime;
-
-			if (maxDuration[id] < dagDuration)
-				maxDuration[id] = dagDuration;
-
 			if (maxMakespan[id] < dagMakespan)
 				maxMakespan[id] = dagMakespan;
+
+			if (maxUtil[id] < dagUtil)
+				maxUtil[id] = dagUtil;
 
 			if (maxFinish[id] < dagFinish)
 				maxFinish[id] = dagFinish;
 		}
+
+//		long[][] maxValues = ResultFactory.getMaxValues(allMethods);
 
 		/*
 		 * Summarize duration and finish for all tested results all together.
@@ -303,76 +340,80 @@ public class SimpleAllocationCompare {
 			 * we normalize duration of instances for each DAG so that the variations caused
 			 * by different WCETs can be removed.
 			 */
-			List<Double> duration = oneMethod.stream()
+			List<Double> makespan = oneMethod.stream()
 					.map(c -> Double.parseDouble(
-							df.format(((double) (c.finishTime - c.releaseTime)) / (double) maxDuration[c.id])))
+							df.format(((double) (c.finishTime - c.startTime)) / (double) maxMakespan[c.id])))
 					.collect(Collectors.toList());
 
-			List<Double> sumC = oneMethod.stream()
-					.map(c -> 
-					
-					Double.parseDouble(df.format((((double) c.getFlatNodes().stream().mapToLong(c1 -> c1.finishAt - c1.start).sum()
-									/ (double) c.getSchedParameters().getPeriod()) / ((double) maxMakespan[c.id] / (double) c.getSchedParameters().getPeriod()))))
-					
-					
-							)
-					.collect(Collectors.toList());
+			/*
+			 * Here we compute the real utilisation of the task
+			 */
+			List<Double> util = oneMethod.stream()
+					.map(c -> Double.parseDouble(
+							df.format((((double) c.getFlatNodes().stream().mapToLong(c1 -> c1.finishAt - c1.start).sum()
+									/ (double) c.getSchedParameters().getPeriod())
+									/ ((double) maxUtil[c.id] / (double) c.getSchedParameters().getPeriod()))))
+
+					).collect(Collectors.toList());
 
 			/*
 			 * we don't normalize finish time as each instance as a very different finish
 			 * time.
 			 */
 			List<Double> finish = oneMethod.stream()
-					.map(c -> Double.parseDouble(df.format(((double) c.finishTime) /* / (double) maxFinish[c.id] */ )))
+					.map(c -> Double
+							.parseDouble(df.format(((double) c.finishTime - c.startTime) / (double) maxFinish[c.id])))
 					.collect(Collectors.toList());
 
 			List<List<Double>> res = new ArrayList<>();
-			res.add(duration);
-			res.add(sumC);
+			res.add(makespan);
+			res.add(util);
 			res.add(finish);
 
 			results.add(res);
+
 		}
 
-		Pair<StringBuilder, StringBuilder> duration_builder = createBuffer(results, 0);
+		Pair<StringBuilder, StringBuilder> makespan_builder = createBuffer(results, 0);
 		Pair<StringBuilder, StringBuilder> util_builder = createBuffer(results, 1);
 		Pair<StringBuilder, StringBuilder> finish_builder = createBuffer(results, 2);
 
 		/*
 		 * Print organized results to console
 		 */
-		System.out.println("----------------------------------- Execution Summary -----------------------------------");
-		dags.stream().forEach(c -> {
-			System.out.print(c.id + "_" + c.instanceNo + " ");
-		});
-		System.out.println();
-
-		System.out.println("Duration");
-		System.out.print(duration_builder.getFirst().toString());
-		System.out.println("Duration Comparsion");
-		System.out.print(duration_builder.getSecond().toString());
-
-		System.out.println("Util");
-		System.out.print(util_builder.getFirst().toString());
-		System.out.println("Util Comparsion");
-		System.out.print(util_builder.getSecond().toString());
-
-		System.out.println("Finish");
-		System.out.print(finish_builder.getFirst().toString());
-		System.out.println("Finish Comparsion");
-		System.out.print(finish_builder.getSecond().toString());
-		System.out.println(
-				"****************************************************************************************************");
+//		System.out.println("----------------------------------- Execution Summary -----------------------------------");
+//		dags.stream().forEach(c -> {
+//			System.out.print(c.id + "_" + c.instanceNo + " ");
+//		});
+//		System.out.println();
+//
+//		System.out.println("Makespan");
+//		System.out.print(makespan_builder.getFirst().toString());
+//		System.out.println("Makespan Comparsion");
+//		System.out.print(makespan_builder.getSecond().toString());
+//
+//		System.out.println("Util");
+//		System.out.print(util_builder.getFirst().toString());
+//		System.out.println("Util Comparsion");
+//		System.out.print(util_builder.getSecond().toString());
+//
+//		System.out.println("Finish");
+//		System.out.print(finish_builder.getFirst().toString());
+//		System.out.println("Finish Comparsion");
+//		System.out.print(finish_builder.getSecond().toString());
+//		System.out.println(
+//				"****************************************************************************************************");
 
 		List<String> res = new ArrayList<>();
-		res.add(duration_builder.getFirst().toString());
-		res.add(duration_builder.getSecond().toString());
+		res.add(makespan_builder.getFirst().toString());
+		res.add(makespan_builder.getSecond().toString());
 
 		res.add(util_builder.getFirst().toString());
 		res.add(util_builder.getSecond().toString());
 
 		res.add(finish_builder.getFirst().toString());
 		res.add(finish_builder.getSecond().toString());
+
 		return res;
 	}
 
@@ -414,8 +455,8 @@ public class SimpleAllocationCompare {
 		StringBuilder raw_data = new StringBuilder();
 		StringBuilder out = new StringBuilder();
 
-		System.out.println("\n\n********************************************************************");
-		System.out.println("Data:");
+//		System.out.println("\n\n********************************************************************");
+//		System.out.println("Data:");
 
 		/*
 		 * Organise results by method for all test cases.
@@ -424,11 +465,11 @@ public class SimpleAllocationCompare {
 			final int index = i;
 
 			res.stream().forEach(c1 -> {
-				System.out.println(c1.get(index));
+//				System.out.println(c1.get(index));
 				raw_data.append(c1.get(index) + "\n");
 			});
 
-			System.out.println("\n");
+//			System.out.println("\n");
 			raw_data.append("\n");
 		}
 
@@ -436,10 +477,10 @@ public class SimpleAllocationCompare {
 		 * Analysis the data of each method in terms of average, median, maximum and
 		 * minmum values
 		 */
-		System.out.println("\n\nData analysis for each instance:");
+//		System.out.println("\n\nData analysis for each instance:");
 		out.append("\n\nData analysis for each instance£º \n");
 
-		System.out.printf("%10s    %10s    %10s    %10s    \n", "AVG", "MED", "MAX", "MIN");
+//		System.out.printf("%10s    %10s    %10s    %10s    \n", "AVG", "MED", "MAX", "MIN");
 		out.append("AVG,MED,MAX,MIN\n");
 
 		List<List<List<Double>>> analysedDataEachMethod = new ArrayList<>();
@@ -481,28 +522,28 @@ public class SimpleAllocationCompare {
 				summary.add(min);
 				summaryAll.add(summary);
 
-				System.out.printf("%10s    ", df.format(avg));
+//				System.out.printf("%10s    ", df.format(avg));
 				out.append(df.format(avg) + ",");
 
-				System.out.printf("%10s    ", df.format(med));
+//				System.out.printf("%10s    ", df.format(med));
 				out.append(df.format(med) + ",");
 
-				System.out.printf("%10s    ", df.format(max));
+//				System.out.printf("%10s    ", df.format(max));
 				out.append(df.format(max) + ",");
 
-				System.out.printf("%10s \n", df.format(min));
+//				System.out.printf("%10s \n", df.format(min));
 				out.append(df.format(min) + ",\n");
 
 			});
 
-			System.out.println("\n");
+//			System.out.println("\n");
 			out.append("\n\n");
 			analysedDataEachMethod.add(summaryAll);
 		}
 
-		System.out.println("\n\nFurther Data analysis of all test cases:");
+//		System.out.println("\n\nFurther Data analysis of all test cases:");
 		out.append("\n\nFurther Data analysis of all test cases£º \n");
-		System.out.printf("     %10s    %10s    %10s    %10s \n", "avg", "med", "max", "min");
+//		System.out.printf("     %10s    %10s    %10s    %10s \n", "avg", "med", "max", "min");
 		out.append("avg med max min \n");
 
 		for (int k = 0; k < analysedDataEachMethod.size(); k++) {
@@ -534,35 +575,35 @@ public class SimpleAllocationCompare {
 
 				switch (count) {
 				case 0:
-					System.out.print("AVGs ");
+//					System.out.print("AVGs ");
 					out.append("AVGs,");
 					break;
 				case 1:
-					System.out.print("MEDs ");
+//					System.out.print("MEDs ");
 					out.append("MEDs,");
 					break;
 				case 2:
-					System.out.print("MAXs ");
+//					System.out.print("MAXs ");
 					out.append("MAXs,");
 					break;
 				case 3:
-					System.out.print("MINs ");
+//					System.out.print("MINs ");
 					out.append("MINs,");
 					break;
 				default:
 					break;
 				}
 
-				System.out.printf("%10s    ", df.format(avg));
+//				System.out.printf("%10s    ", df.format(avg));
 				out.append(df.format(avg) + ",");
 
-				System.out.printf("%10s    ", df.format(med));
+//				System.out.printf("%10s    ", df.format(med));
 				out.append(df.format(med) + ",");
 
-				System.out.printf("%10s    ", df.format(max));
+//				System.out.printf("%10s    ", df.format(max));
 				out.append(df.format(max) + ",");
 
-				System.out.printf("%10s \n", df.format(min));
+//				System.out.printf("%10s \n", df.format(min));
 				out.append(df.format(min) + ",\n");
 
 			});

@@ -3,6 +3,8 @@ package uk.ac.york.mocha.simulator.simulator;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.util.Pair;
+
 import uk.ac.york.mocha.simulator.allocation.AllocationMethod;
 import uk.ac.york.mocha.simulator.allocation.CacheAwareAlloc;
 import uk.ac.york.mocha.simulator.allocation.LoadBalancing;
@@ -85,10 +87,15 @@ public class Simualtor {
 	/* A list containg allocation history, for printing and debugging. */
 	List<String[]> allocHistory;
 
+	/* cache performance */
+	long[] cachePerformance;
+
+	boolean fault = false;
+
 	/********************* Runtime queues *********************************/
 
 	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
-			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean affinity) {
+			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean affinity, boolean fault) {
 
 		this.type = type;
 		this.hardware = hardware;
@@ -125,9 +132,12 @@ public class Simualtor {
 			List<Node> oneCluster = new ArrayList<>();
 			this.history_level2.add(oneCluster);
 		}
+
+		this.cachePerformance = new long[4];
+		this.fault = fault;
 	}
 
-	public List<DirectedAcyclicGraph> simulate(boolean printSim) {
+	public Pair<List<DirectedAcyclicGraph>, long[]> simulate(boolean printSim) {
 
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
@@ -209,7 +219,7 @@ public class Simualtor {
 			result.add(d.deepCopy());
 		}
 
-		return result;
+		return new Pair<>(result, cachePerformance);
 
 	}
 
@@ -222,21 +232,20 @@ public class Simualtor {
 		 * get ready nodes to execute by the specified allocation method
 		 */
 		allocM.getEligibileNode(dags, readyNodes, availableProc, allProcs, history_level1, history_level2,
-				history_level3, allocNodes, table, systemTime, affinity);
+				history_level3, allocNodes, table, systemTime, affinity, fault);
 
 		String[] oneSched = new String[allProcs.length];
 		for (int i = 0; i < oneSched.length; i++) {
-			if(allProcs[i] > systemTime) {
+			if (allProcs[i] > systemTime) {
 				oneSched[i] = "*";
-			}
-			else{
+			} else {
 				oneSched[i] = "-";
 			}
 		}
 		boolean add = false;
 
 		for (int i = 0; i < readyNodes.size(); i++) {
-					
+
 			if (readyNodes.get(i).partition == -1)
 				continue;
 
@@ -244,25 +253,30 @@ public class Simualtor {
 
 			currentExe[n.partition] = n;
 			allocNodes.get(n.partition).add(n);
-			
+
 			n.start = systemTime;
-			long realET = table.computeET(history_level1, history_level2, history_level3, n, n.partition, cacheAware);
-			
-			if(alloc.equals(Allocation.CACHE_AWARE) && realET != n.expectedET)
-			{
-				System.out.println("Simualtor.ExecuteReadyNodes(): realET does not equals to expectedET");
-				System.exit(-1);
-			}
-			
+			Pair<Long, Integer> ETWithCache = table.computeET(history_level1, history_level2, history_level3, n,
+					n.partition, cacheAware, false);
+			long realET = ETWithCache.getFirst();
+			int cacheEffects = ETWithCache.getSecond();
+
+//			if(alloc.equals(Allocation.CACHE_AWARE) && realET != n.expectedET)
+//			{
+//				System.out.println("Simualtor.ExecuteReadyNodes(): realET does not equals to expectedET");
+//				System.exit(-1);
+//			}
+
+			cachePerformance[cacheEffects - 1] = cachePerformance[cacheEffects - 1] + 1;
+
 			/*
 			 * A DAG is started when its SOURCE node starts execution
 			 */
 			if (n.getType().equals(NodeType.SOURCE)) {
 				Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo()).startTime = systemTime;
 			}
-			
+
 			allProcs[n.partition] = n.finishAt = systemTime + realET;
-			
+
 			oneSched[n.partition] = n.getDagID() + "_" + n.getId();
 			add = true;
 

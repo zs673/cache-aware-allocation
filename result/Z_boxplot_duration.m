@@ -1,8 +1,8 @@
 close all;
 
-folder = 'duration_';
-taskNum = 8;
-systemPerMethod = 1000;
+folder = 'makespan_';
+taskNum = 4;
+systemPerMethod = 100;
 colors=['r','b','k'];
 
 comparingMethod=['Worst-fit','Cache-aware online', 'Cache-aware offline'];
@@ -72,5 +72,5 @@ for duration = 1 : taskNum
 %     legend([c(3),c(4)],'LNF','Cache-aware','FontAngle','italic','location','northeast');
     
     set(gcf, 'PaperSize', [25 25])
-    saveas(gcf,strcat('taskNum/','Z_',folder,num2str(duration),'.pdf'));
+    saveas(gcf,strcat('taskNum/','Z_',folder,num2str(duration),'.png'));
 end

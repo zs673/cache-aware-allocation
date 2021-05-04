@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
@@ -87,4 +88,5 @@ public class Utils {
 		writer.println(result);
 		writer.close();
 	}
+
 }

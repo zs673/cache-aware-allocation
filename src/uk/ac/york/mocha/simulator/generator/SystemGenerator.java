@@ -27,7 +27,7 @@ public class SystemGenerator {
 
 	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, int seed, boolean print) {
 
-		this.totalUtil = 1.0 * (double) totalTasks;
+		this.totalUtil = SystemParameters.utilPerTask * (double) totalTasks;
 		this.total_tasks = totalTasks;
 		this.isHarmonic = isHarmonic;
 		this.print = print;
@@ -53,7 +53,7 @@ public class SystemGenerator {
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
 
 		if (hyperPeriodNum > 0) {
-			
+
 			long hyperPeriod = Utils.getHyperPeriod(
 					dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
 
@@ -62,10 +62,11 @@ public class SystemGenerator {
 			for (DirectedAcyclicGraph dag : dagTasks) {
 				long instances = totoalDuration / dag.getSchedParameters().getPeriod();
 
-				dag.totalInstNum = instances > forceInstanceNum? instances : forceInstanceNum;
-				
-				if(dag.totalInstNum <=0) {
-					System.err.println("SystemGenerator.generatedDAGInstancesInOneHP(): DAG instances is less or equal to 0!");
+				dag.totalInstNum = instances > forceInstanceNum ? instances : forceInstanceNum;
+
+				if (dag.totalInstNum <= 0) {
+					System.err.println(
+							"SystemGenerator.generatedDAGInstancesInOneHP(): DAG instances is less or equal to 0!");
 					System.exit(-1);
 				}
 
@@ -73,10 +74,14 @@ public class SystemGenerator {
 			}
 
 		} else if (forceInstanceNum > 0) {
+
+			long duration = dagTasks.get(total_tasks - 1).getSchedParameters().getPeriod() * forceInstanceNum;
+
 			for (DirectedAcyclicGraph dag : dagTasks) {
-				dag.totalInstNum = forceInstanceNum;
-				dags.addAll(dag.getInstances(forceInstanceNum));
+				dag.totalInstNum = (long) Math.ceil((double) duration / (double) dag.getSchedParameters().getPeriod());
+				dags.addAll(dag.getInstances(dag.totalInstNum));
 			}
+
 		} else {
 			long hyperPeriod = Utils.getHyperPeriod(
 					dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
@@ -89,11 +94,17 @@ public class SystemGenerator {
 			}
 		}
 
-		if (dags == null || dags.size() == 0) {
-			System.out.println("SystemGenerator.generatedDAGInstancesInOneHP()");
-			System.exit(-1);
-		}
+		System.out.println("Number of instances");
+		for (DirectedAcyclicGraph d : dagTasks)
+			System.out.print(d.totalInstNum + "    ");
+		System.out.println();
 
+		if (print) {
+			if (dags == null || dags.size() == 0) {
+				System.out.println("SystemGenerator.generatedDAGInstancesInOneHP()");
+				System.exit(-1);
+			}
+		}
 		return dags;
 	}
 
@@ -106,13 +117,9 @@ public class SystemGenerator {
 		 * Assign scheduling parameters to each DAG
 		 */
 		for (int i = 0; i < total_tasks; i++) {
-			int minLayer = 5;
-			int maxLayer = 8;
-			int parallelism = 10;
-			double connectProb = 0.5;
-
-			StructuralParameters dag_param = new StructuralParameters(maxLayer, minLayer, parallelism, connectProb,
-					seed);
+			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer,
+					SystemParameters.minLayer, SystemParameters.maxParal, SystemParameters.minParal,
+					SystemParameters.connectProb, ran);
 			DirectedAcyclicGraph dagTask = new DirectedAcyclicGraph(schedParam.get(i), dag_param, i, seed);
 			dags.add(dagTask);
 		}
@@ -272,8 +279,17 @@ public class SystemGenerator {
 		 * generate priority by DMPO
 		 */
 		List<Integer> priorities = new ArrayList<>();
-		for (int i = 0; i < total_tasks; i++)
-			priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
+		for (int i = 0; i < total_tasks; i++) {
+//			priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
+
+			if (i == 0)
+				priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
+			else {
+				 priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
+//				priorities.add(10); // TODO: Now we have equal priority for non real-time DAGs.
+			}
+		}
+
 		priorities.sort((p1, p2) -> -Integer.compare(p1, p2));
 
 		if (print) {

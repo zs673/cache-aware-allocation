@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.util.Pair;
+
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 
@@ -59,7 +61,8 @@ public class Recency {
 
 				if (i == 0 && j == 0) {
 					double factor = seed == -1 ? 0.3
-							: ((double) (rng.nextInt(SystemParameters.costFactorMAX[i] - SystemParameters.costFactorMIN[i])
+							: ((double) (rng
+									.nextInt(SystemParameters.costFactorMAX[i] - SystemParameters.costFactorMIN[i])
 									+ SystemParameters.costFactorMIN[i])) / (double) 100;
 					double formatFactor = Double.parseDouble(df.format(factor));
 					oneLevel.add(formatFactor);
@@ -97,15 +100,15 @@ public class Recency {
 		recencyTable.get(SystemParameters.cacheLevel - 1).set(SystemParameters.recencyDepth[2] - 1, 1.0);
 	}
 
-	public long computeET(List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			Node n, int proc, boolean cacheAware) {
+	public Pair<Long, Integer> computeET(List<List<Node>> history_level1, List<List<Node>> history_level2,
+			List<Node> history_level3, Node n, int proc, boolean cacheAware, boolean fault) {
 		/**
 		 * Compute recency distance at each cache level
 		 */
 
 		long ET = n.getWCET();
 		if (!cacheAware)
-			return ET;
+			return new Pair<Long, Integer>(ET, 4);
 
 		switch (this.type) {
 		case TIME:
@@ -116,9 +119,16 @@ public class Recency {
 			long leve1Time = getTimeofLastIndex(history_level1.get(proc), n, SystemParameters.v2);
 
 			if (SystemParameters.v1 <= leve1Time && leve1Time <= SystemParameters.v2) {
-				double speedUp = (SystemParameters.delta2 - SystemParameters.delta1) / (double) SystemParameters.v2 * (double) leve1Time
-						+ SystemParameters.delta1;
-				return (long) Math.ceil((double) n.getWCET() * speedUp);
+				double speedUp = (SystemParameters.delta2 - SystemParameters.delta1) / (double) SystemParameters.v2
+						* (double) leve1Time + SystemParameters.delta1;
+
+				if (fault && rng.nextInt(100) < SystemParameters.fault_rate) {
+					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
+							- SystemParameters.fault_median)) / (double) 100;
+
+					speedUp = speedUp + speedUp * faultRange;
+				}
+				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 1);
 			}
 
 			/*
@@ -127,10 +137,18 @@ public class Recency {
 			int clusterID = proc / SystemParameters.Level2procNum;
 			long level2Time = getTimeofLastIndex(history_level2.get(clusterID), n, SystemParameters.v3);
 
-			if (SystemParameters.v2 < level2Time && level2Time <= SystemParameters.v3) {
-				double speedUp = (SystemParameters.delta3 - SystemParameters.delta2) / (double) SystemParameters.v3 * (double) level2Time
-						+ SystemParameters.delta2;
-				return (long) Math.ceil((double) n.getWCET() * speedUp);
+			if (SystemParameters.v1 <= level2Time && level2Time <= SystemParameters.v3) {
+				double speedUp = (SystemParameters.delta3 - SystemParameters.delta2) / (double) SystemParameters.v3
+						* (double) level2Time + SystemParameters.delta2;
+
+				if (fault && rng.nextInt(100) < SystemParameters.fault_rate) {
+					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
+							- SystemParameters.fault_median)) / (double) 100;
+
+					speedUp = speedUp + speedUp * faultRange;
+				}
+
+				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 2);
 			}
 
 			/*
@@ -138,13 +156,21 @@ public class Recency {
 			 */
 			long level3Time = getTimeofLastIndex(history_level3, n, SystemParameters.v4);
 
-			if (SystemParameters.v3 < level3Time && level3Time <= SystemParameters.v4) {
-				double speedUp = (SystemParameters.delta4 - SystemParameters.delta3) / (double) SystemParameters.v4 * (double) level3Time
-						+ SystemParameters.delta3;
-				return (long) Math.ceil((double) n.getWCET() * speedUp);
+			if (SystemParameters.v1 <= level3Time && level3Time <= SystemParameters.v4) {
+				double speedUp = (SystemParameters.delta4 - SystemParameters.delta3) / (double) SystemParameters.v4
+						* (double) level3Time + SystemParameters.delta3;
+
+				if (fault && rng.nextInt(100) < SystemParameters.fault_rate) {
+					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
+							- SystemParameters.fault_median)) / (double) 100;
+
+					speedUp = speedUp + speedUp * faultRange;
+				}
+
+				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 3);
 			}
 
-			return ET;
+			return new Pair<Long, Integer>(ET, 4);
 		/*
 		 * level 1 recency distance
 		 */
@@ -208,7 +234,8 @@ public class Recency {
 					: history_level1.get(proc).size() - getNodeLastIndex(history_level1.get(proc), n);
 
 			if (level1Distance <= SystemParameters.recencyDepth[0]) {
-				return (long) Math.ceil((double) n.getWCET() * recencyTable.get(0).get(level1Distance - 1));
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getWCET() * recencyTable.get(0).get(level1Distance - 1)), 1);
 			}
 
 			/*
@@ -238,7 +265,8 @@ public class Recency {
 					: finishedNodes.size() - getNodeLastIndex(finishedNodes, n);
 
 			if (level2Distance <= SystemParameters.recencyDepth[1]) {
-				return (long) Math.ceil((double) n.getWCET() * recencyTable.get(1).get(level2Distance - 1));
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getWCET() * recencyTable.get(1).get(level2Distance - 1)), 2);
 			}
 
 			/*
@@ -251,27 +279,34 @@ public class Recency {
 					: allhistory.size() - getNodeLastIndex(allhistory, n);
 
 			if (level3Distance <= SystemParameters.recencyDepth[2]) {
-				return (long) Math.ceil((double) n.getWCET() * recencyTable.get(2).get(level3Distance - 1));
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getWCET() * recencyTable.get(2).get(level3Distance - 1)), 3);
 			}
 
-			return ET;
+			return new Pair<Long, Integer>(ET, 4);
 
 		default:
 			break;
 		}
 
-		return -1;
+		System.err.println("Recency.computeET(): No ET is computed");
+		System.exit(-1);
+
+		return null;
 
 	}
 
 	public double createRecencyTableByOrder(long time) {
 
 		if (SystemParameters.v1 < time && time <= SystemParameters.v2) {
-			return (SystemParameters.delta2 - SystemParameters.delta1) / SystemParameters.v2 * time + SystemParameters.delta1;
-		} else if (SystemParameters.v2 < time && time <= SystemParameters.v3)
-			return (SystemParameters.delta3 - SystemParameters.delta2) / SystemParameters.v3 * time + SystemParameters.delta2;
-		else if (SystemParameters.v3 < time && time <= SystemParameters.v4)
-			return (SystemParameters.delta4 - SystemParameters.delta3) / SystemParameters.v4 * time + SystemParameters.delta3;
+			return (SystemParameters.delta2 - SystemParameters.delta1) / SystemParameters.v2 * time
+					+ SystemParameters.delta1;
+		} else if (SystemParameters.v1 < time && time <= SystemParameters.v3)
+			return (SystemParameters.delta3 - SystemParameters.delta2) / SystemParameters.v3 * time
+					+ SystemParameters.delta2;
+		else if (SystemParameters.v1 < time && time <= SystemParameters.v4)
+			return (SystemParameters.delta4 - SystemParameters.delta3) / SystemParameters.v4 * time
+					+ SystemParameters.delta3;
 		else // start <= v1 || v2 <= start
 			return SystemParameters.delta4;
 	}
@@ -334,22 +369,46 @@ public class Recency {
 
 		long time = 0;
 
+		Random rng = new Random(1000);
+
 		for (; time <= SystemParameters.v4; time += 500) {
 			double speedUp = -1;
 
 			if (SystemParameters.v1 <= time && time <= SystemParameters.v2) {
-				speedUp = (SystemParameters.delta2 - SystemParameters.delta1) / (double) SystemParameters.v2 * (double) time
-						+ SystemParameters.delta1;
+				speedUp = (SystemParameters.delta2 - SystemParameters.delta1) / (double) SystemParameters.v2
+						* (double) time + SystemParameters.delta1;
+
+				if (rng.nextInt(100) < SystemParameters.fault_rate) {
+					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
+							- SystemParameters.fault_median)) / (double) 100;
+
+					speedUp = speedUp + speedUp * faultRange;
+				}
+
 			}
 
-			if (SystemParameters.v2 < time && time <= SystemParameters.v3) {
-				speedUp = (SystemParameters.delta3 - SystemParameters.delta2) / (double) SystemParameters.v3 * (double) time
-						+ SystemParameters.delta2;
+			if (SystemParameters.v1 < time && time <= SystemParameters.v3) {
+				speedUp = (SystemParameters.delta3 - SystemParameters.delta2) / (double) SystemParameters.v3
+						* (double) time + SystemParameters.delta2;
+
+				if (rng.nextInt(100) < SystemParameters.fault_rate) {
+					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
+							- SystemParameters.fault_median)) / (double) 100;
+
+					speedUp = speedUp + speedUp * faultRange;
+				}
 			}
 
-			if (SystemParameters.v3 < time && time <= SystemParameters.v4) {
-				speedUp = (SystemParameters.delta4 - SystemParameters.delta3) / (double) SystemParameters.v4 * (double) time
-						+ SystemParameters.delta3;
+			if (SystemParameters.v1 < time && time <= SystemParameters.v4) {
+				speedUp = (SystemParameters.delta4 - SystemParameters.delta3) / (double) SystemParameters.v4
+						* (double) time + SystemParameters.delta3;
+
+				if (rng.nextInt(100) < SystemParameters.fault_rate) {
+					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
+							- SystemParameters.fault_median)) / (double) 100;
+
+					speedUp = speedUp + speedUp * faultRange;
+				}
 			}
 
 			System.out.println(speedUp);

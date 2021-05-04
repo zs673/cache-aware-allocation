@@ -67,7 +67,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed) {
 
 		this.id = id;
-		this.name = "DAG task " + id;
+		this.name = "DAG " + id;
 
 		this.rng = new Random(seed);
 
@@ -127,6 +127,8 @@ public class DirectedAcyclicGraph implements Serializable {
 			DirectedAcyclicGraph ins = deepCopy();
 			ins.instanceNo = i;
 			ins.releaseTime = i * sched_param.getPeriod();
+
+			ins.instantiated = true;
 
 			for (Node n : ins.flatNodes)
 				n.setDagInstNo(i);
@@ -413,7 +415,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	@Override
 	public String toString() {
 		String out = "************************************************************************************************\n";
-		out += this.name + ": \n";
+		out += getName() + ": \n";
 		out += "Nodes by layer: \n";
 
 		for (List<Node> nodesPerLayer : this.layeredNodes) {
@@ -449,7 +451,7 @@ public class DirectedAcyclicGraph implements Serializable {
 
 	public String printExeInfo() {
 		String out = "************************************************************************************************\n";
-		out += this.name + " starts at " + source.start + ", finishes at " + finishTime + " \n";
+		out += getName() + " starts at " + source.start + ", finishes at " + finishTime + " \n";
 		out += "Nodes by layer: \n";
 
 		for (List<Node> nodesPerLayer : this.layeredNodes) {

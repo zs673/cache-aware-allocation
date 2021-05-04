@@ -11,12 +11,26 @@ public class SystemParameters {
 	/**********************************************************************
 	 **************************** DAG Structure ***************************
 	 **********************************************************************/
+
+	/* parameters for generic DAGs */
+	public static final double connectProb = 0.5;
+	public static final int minLayer = 5;
+	public static final int maxLayer = 8;
+	public static final int minParal = 1;
+	public static final int maxParal = 10;
+	
 	/* parameters for NFJ DAGs */
 	public static final int depth = 5;
 	public static final double fork_prob = 0.3;
 	public static final double join_prob = 0.8;
 	public static final int fork_max = 2;
 	public static final int fork_min = 4;
+	
+
+	/* Recency fault rate */
+	public static final int fault_rate = 5;
+	public static final int fault_range = 10;
+	public static final int fault_median = 5;
 
 	/**********************************************************************
 	 **************************** Recency table ***************************
@@ -39,9 +53,9 @@ public class SystemParameters {
 	 * Recency Table by time
 	 */
 	public static final long v1 = 0;
-	public static final long v2 = 20000;
-	public static final long v3 = 500000;
-	public static final long v4 = 5000000;
+	public static final long v2 = 20000; 
+	public static final long v3 = 500000; 
+	public static final long v4 = 1000000;
 
 	public static final double delta1 = 0.3;
 	public static final double delta2 = 0.5;
@@ -54,16 +68,19 @@ public class SystemParameters {
 
 	public final static int MAX_PRIORITY = 1000;
 
+	public final static double utilPerTask = 2.0;
+	
 	/*
 	 * Harmonic periods
 	 */
-	public final static int MAX_PERIOD = 1440;
-	public final static int MIN_PERIOD = 1;
+	public final static int MAX_PERIOD = 144;
+	public final static int MIN_PERIOD = 10;
 
 	/*
 	 * Non-harmonic periods
 	 */
 	public final static int minT = 100;
 	public final static int maxT = 1000;
+	
 
 }

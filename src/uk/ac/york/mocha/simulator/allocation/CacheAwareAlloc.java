@@ -17,7 +17,7 @@ public class CacheAwareAlloc extends AllocationMethod {
 	public void getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
 			long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
 			List<Node> history_level3, List<List<Node>> allocHistory, Recency table, long currentTime,
-			boolean affinity) {
+			boolean affinity, boolean fault) {
 
 		/*
 		 * Entry for debugging a single node
@@ -38,13 +38,13 @@ public class CacheAwareAlloc extends AllocationMethod {
 		 */
 		readyNodes.sort((c1, c2) -> compareNode(dags, c1, c2));
 
-		List<Node> preEligible = new ArrayList<>(); //TODO
-		for(int i=0;i<availableProcs.size();i++) {
-			if(readyNodes.size() == i)
+		List<Node> preEligible = new ArrayList<>();
+		for (int i = 0; i < availableProcs.size(); i++) {
+			if (readyNodes.size() == i)
 				break;
 			preEligible.add(readyNodes.get(i));
 		}
-		
+
 		List<Integer> availableP = new ArrayList<>(availableProcs);
 
 		List<List<Long>> speedUpTable = new ArrayList<>();
@@ -60,7 +60,8 @@ public class CacheAwareAlloc extends AllocationMethod {
 					 */
 
 					long WCET = n.getWCET();
-					long realET = table.computeET(history_level1, history_level2, history_level3, n, proc, true);
+					long realET = table.computeET(history_level1, history_level2, history_level3, n, proc, true, fault)
+							.getFirst();
 					long speedup = WCET - realET;
 
 					/*
@@ -109,7 +110,7 @@ public class CacheAwareAlloc extends AllocationMethod {
 
 //			if (p.getSecond() != -1) {
 			n.partition = availableP.get(p.getSecond().intValue());
-			n.expectedET = table.computeET(history_level1, history_level2, history_level3, n, n.partition, true);
+			n.expectedET = n.getWCET() - speedUpTable.get(p.getFirst()).get(p.getSecond());
 
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
@@ -129,7 +130,7 @@ public class CacheAwareAlloc extends AllocationMethod {
 
 		int row = -1;
 		int col = -1;
-		long max = -1;
+		long max = Long.MIN_VALUE;
 
 		for (int i = 0; i < speedUpTable.size(); i++) {
 			if (!allocNodes.contains(i)) {
@@ -145,9 +146,6 @@ public class CacheAwareAlloc extends AllocationMethod {
 				}
 			}
 		}
-
-//		if (row == -1)
-//			return null;
 
 		if (affinity) {
 			Node n = preEligible.get(row);
@@ -170,16 +168,6 @@ public class CacheAwareAlloc extends AllocationMethod {
 						freeCluster.add(c);
 				}
 			}
-
-			/**
-			 * If there exist a core without any workload, then allocate the node directly.
-			 */
-//			for (int procIndex : freeProcIndex) {
-//				List<Node> nodesOneCore = allocHistory.get(procIndex);
-//				if (nodesOneCore.size() == 0) {
-//					col = procIndex;
-//				}
-//			}
 
 			if (freeProcIndex.size() > 1) {
 				/*
@@ -222,9 +210,9 @@ public class CacheAwareAlloc extends AllocationMethod {
 //				for (Long l : NodeHis) {
 //					if (l == minExecutionTime)
 //						timeCount++;
-//				}			
+//				}
 //				if (timeCount == 0) {
-//					
+//					col = freeProcIndex.get(minETIndex);
 //				} else {
 //
 //					List<Integer> availableClusters = new ArrayList<>();

@@ -17,35 +17,25 @@ public class StructuralParameters implements Serializable {
 	private final double connect_prob;
 	private final int layers;
 
-	private final int seed;
-	private Random rng;
-
 	/* DAG structure Parameters */
-	public StructuralParameters(int maxLayer, int minLayer, int parallelism, double connect_prob, int seed) {
+	public StructuralParameters(int maxLayer, int minLayer, int maxParall, int minparall, double connect_prob, Random rng) {
 
-		if (maxLayer - minLayer <= 2) {
-			System.err.println("maxLayer-minLayer <= 2 !!");
+		if (maxLayer - minLayer < 0) {
+			System.err.println("maxLayer-minLayer < 0 !!");
 			System.err.println("maxLayer: " + maxLayer + "    minLayer: " + minLayer);
 			System.exit(-1);
 		}
+		
+		if (maxParall - minparall < 0) {
+			System.err.println("maxParal-minParal < 0 !!");
+			System.err.println("maxParal: " + maxParall + "    minParal: " + minparall);
+			System.exit(-1);
+		}
 
-		this.parallelism = parallelism;
+		this.parallelism = rng.nextInt(maxParall - minparall) + minparall;
 		this.connect_prob = connect_prob;
 
-		this.seed = seed;
-		rng = new Random(seed);
 		this.layers = rng.nextInt(maxLayer - minLayer) + minLayer;
-	}
-
-	/* DAG structure Parameters with fixed Layer */
-	public StructuralParameters(int layer, int parallelism, double connect_prob, int seed) {
-
-		this.parallelism = parallelism;
-		this.connect_prob = connect_prob;
-
-		this.seed = seed;
-		rng = new Random(seed);
-		this.layers = layer;
 	}
 
 	public int getParallelism() {
@@ -56,32 +46,9 @@ public class StructuralParameters implements Serializable {
 		return connect_prob;
 	}
 
-	public int getDepth() {
-		return SystemParameters.depth;
-	}
-
-	public double getFork_prob() {
-		return SystemParameters.fork_prob;
-	}
-
-	public double getJoin_prob() {
-		return SystemParameters.join_prob;
-	}
-
-	public int getFork_max() {
-		return SystemParameters.fork_max;
-	}
-
-	public int getFork_min() {
-		return SystemParameters.fork_min;
-	}
-
 	public int getLayers() {
 		return layers;
 	}
 
-	public int getSeed() {
-		return seed;
-	}
 
 }

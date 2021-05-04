@@ -1,5 +1,5 @@
 close all;
-taskNum = 10;
+taskNum = 8;
 
 for duration = 1 : 8
 
