@@ -17,7 +17,7 @@ public class CacheAwareAlloc extends AllocationMethod {
 	public void getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
 			long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
 			List<Node> history_level3, List<List<Node>> allocHistory, Recency table, long currentTime,
-			boolean affinity, boolean fault) {
+			boolean affinity) {
 
 		/*
 		 * Entry for debugging a single node
@@ -60,7 +60,7 @@ public class CacheAwareAlloc extends AllocationMethod {
 					 */
 
 					long WCET = n.getWCET();
-					long realET = table.computeET(history_level1, history_level2, history_level3, n, proc, true, fault)
+					long realET = table.computeET(history_level1, history_level2, history_level3, n, proc, true, false)
 							.getFirst();
 					long speedup = WCET - realET;
 

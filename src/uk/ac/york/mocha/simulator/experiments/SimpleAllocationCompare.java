@@ -13,6 +13,7 @@ import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
+import uk.ac.york.mocha.simulator.resultAnalyzer.ResultPerSystem;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.Simualtor.Allocation;
 import uk.ac.york.mocha.simulator.simulator.Simualtor.Hardware;
@@ -250,7 +251,7 @@ public class SimpleAllocationCompare {
 		Pair<List<DirectedAcyclicGraph>, long[]> pair1 = cacheLBSim.simulate(printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME, dags, cores, tableSeed, false, false);
+				RecencyType.TIME, dags, cores, tableSeed, true, false);
 		Pair<List<DirectedAcyclicGraph>, long[]> pair2 = cacheCASim.simulate(printSim);
 
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
@@ -285,10 +286,12 @@ public class SimpleAllocationCompare {
 		allMethods.add(method1);
 		allMethods.add(method2);
 
-//		for(int i=0; i<method1.size();i++) {
-//			System.out.println(method1.get(i).getName());
-//		}
+		List<long[]> cachePerformance = new ArrayList<>();
+		cachePerformance.add(pair1.getSecond());
+		cachePerformance.add(pair2.getSecond());
 
+		ResultPerSystem result = new ResultPerSystem(allMethods, cachePerformance);
+		
 		/**
 		 * Get the max duration & finish of each DAG task for normalizaiton.
 		 */
@@ -328,7 +331,6 @@ public class SimpleAllocationCompare {
 				maxFinish[id] = dagFinish;
 		}
 
-//		long[][] maxValues = ResultFactory.getMaxValues(allMethods);
 
 		/*
 		 * Summarize duration and finish for all tested results all together.

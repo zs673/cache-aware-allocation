@@ -12,7 +12,7 @@ public class LoadBalancing extends AllocationMethod {
 	@Override
 	public void getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
 			long[] procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			List<List<Node>> allocHistory, Recency table, long currentTime, boolean affinity, boolean fault) {
+			List<List<Node>> allocHistory, Recency table, long currentTime, boolean affinity) {
 
 		if (readyNodes.size() == 0 || availableProcs.size() == 0)
 			return;

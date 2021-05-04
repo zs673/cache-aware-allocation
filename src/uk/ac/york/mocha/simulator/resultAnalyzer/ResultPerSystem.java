@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 
-public class ResultFactory {
+public class ResultPerSystem {
 
 	public enum ResultType {
 		MAKESPAN, UTIL, DURATION
@@ -16,10 +16,28 @@ public class ResultFactory {
 	
 	long[][] maxValues;
 	
-	public ResultFactory(List<List<DirectedAcyclicGraph>> allMethods) {
+	List<ResultPerSystemByMethod> resultsPerMethod;
+	List<ResultPerSystemByMethod> resultsPerMetric;
+	
+	public ResultPerSystem(List<List<DirectedAcyclicGraph>> allMethods, List<long[]> cachePerformance) {
 		this.allMethods = new ArrayList<>(allMethods);
 		
 		maxValues = getMaxValues(allMethods);
+		
+		this.resultsPerMethod = new ArrayList<>();
+		
+		for(int i=0; i<allMethods.size();i++) {
+			resultsPerMethod.add(new ResultPerSystemByMethod(allMethods.get(i), cachePerformance.get(i), maxValues));
+		}
+	}
+	
+	public List<String> convertDataToString(){
+		List<String> res = new ArrayList<>();
+		
+		
+		
+		
+		return res;
 	}
 
 	public long[][] getMaxValues(List<List<DirectedAcyclicGraph>> allMethods) {

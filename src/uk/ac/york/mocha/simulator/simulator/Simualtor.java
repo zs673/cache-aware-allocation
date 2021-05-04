@@ -232,7 +232,7 @@ public class Simualtor {
 		 * get ready nodes to execute by the specified allocation method
 		 */
 		allocM.getEligibileNode(dags, readyNodes, availableProc, allProcs, history_level1, history_level2,
-				history_level3, allocNodes, table, systemTime, affinity, fault);
+				history_level3, allocNodes, table, systemTime, affinity);
 
 		String[] oneSched = new String[allProcs.length];
 		for (int i = 0; i < oneSched.length; i++) {
@@ -256,7 +256,7 @@ public class Simualtor {
 
 			n.start = systemTime;
 			Pair<Long, Integer> ETWithCache = table.computeET(history_level1, history_level2, history_level3, n,
-					n.partition, cacheAware, false);
+					n.partition, cacheAware, fault);
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();
 

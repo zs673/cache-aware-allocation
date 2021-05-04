@@ -12,7 +12,7 @@ public abstract class AllocationMethod {
 
 	public abstract void getEligibileNode(List<DirectedAcyclicGraph> dags, List<Node> readyNodes,
 			List<Integer> availableProcs, long[] procs, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocNodes,
-			Recency table, long currentTime, boolean affinity, boolean fault);
+			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocNodes, Recency table,
+			long currentTime, boolean affinity);
 
 }

@@ -16,7 +16,7 @@ public class SystemParameters {
 	public static final double connectProb = 0.5;
 	public static final int minLayer = 5;
 	public static final int maxLayer = 8;
-	public static final int minParal = 1;
+	public static final int minParal = 5;
 	public static final int maxParal = 10;
 	
 	/* parameters for NFJ DAGs */
