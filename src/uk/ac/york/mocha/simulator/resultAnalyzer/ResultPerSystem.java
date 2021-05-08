@@ -1,8 +1,11 @@
 package uk.ac.york.mocha.simulator.resultAnalyzer;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 
@@ -11,33 +14,73 @@ public class ResultPerSystem {
 	public enum ResultType {
 		MAKESPAN, UTIL, DURATION
 	}
-	
+
+	DecimalFormat df = new DecimalFormat("#.##");
+
 	List<List<DirectedAcyclicGraph>> allMethods;
-	
+
 	long[][] maxValues;
-	
-	List<ResultPerSystemByMethod> resultsPerMethod;
-	List<ResultPerSystemByMethod> resultsPerMetric;
-	
+
+	List<ResultByMethod> resultsPerMethod;
+	List<ResultByMetric> resultsPerMetric;
+
+	List<String> resultsPerMetric_String;
+
 	public ResultPerSystem(List<List<DirectedAcyclicGraph>> allMethods, List<long[]> cachePerformance) {
 		this.allMethods = new ArrayList<>(allMethods);
-		
+
 		maxValues = getMaxValues(allMethods);
-		
+
 		this.resultsPerMethod = new ArrayList<>();
+
+		for (int i = 0; i < allMethods.size(); i++) {
+			resultsPerMethod.add(new ResultByMethod(allMethods.get(i), cachePerformance.get(i), maxValues));
+		}
+
+		resultsPerMetric = new ArrayList<>();
+
+		for (int i = 0; i < ResultType.values().length; i++) {
+			resultsPerMetric.add(new ResultByMetric(resultsPerMethod, i));
+		}
 		
-		for(int i=0; i<allMethods.size();i++) {
-			resultsPerMethod.add(new ResultPerSystemByMethod(allMethods.get(i), cachePerformance.get(i), maxValues));
+		for (int i = 0; i < ResultType.values().length; i++) {
+			Pair<StringBuilder, StringBuilder> p = stringBuilding(resultsPerMetric.get(i));
+			
 		}
 	}
-	
-	public List<String> convertDataToString(){
-		List<String> res = new ArrayList<>();
-		
-		
-		
-		
-		return res;
+
+	public Pair<StringBuilder, StringBuilder> stringBuilding(ResultByMetric result) {
+
+		StringBuilder builder = new StringBuilder();
+		StringBuilder builder_Speedup = new StringBuilder();
+
+		/*
+		 * Add noralmised durations to duration buffer.
+		 */
+		for (List<Double> oneMethod : result.resultsPerMetric) {
+			oneMethod.stream().forEach(c -> {
+				builder.append(c + ",");
+			});
+			builder.append("\n");
+		}
+
+		/*
+		 * Compute Speed up.
+		 */
+		for (int k = 0; k < result.resultsPerMetric.size() - 1; k++) {
+			List<Double> m1 = result.resultsPerMetric.get(k);
+			List<Double> m2 = result.resultsPerMetric.get(k + 1);
+
+			for (int i = 0; i < m1.size(); i++) {
+				double reducePercent = ((double) (m1.get(i) - m2.get(i)))
+						/ (double) m1.get(i);
+
+				builder_Speedup.append(df.format(reducePercent) + ",");
+			}
+		}
+		builder_Speedup.append("\n");
+
+		return new Pair<StringBuilder, StringBuilder>(builder, builder_Speedup);
 	}
 
 	public long[][] getMaxValues(List<List<DirectedAcyclicGraph>> allMethods) {
@@ -55,8 +98,6 @@ public class ResultPerSystem {
 			}
 		}
 
-//		for (int k = 0; k < ResultType.values().length; k++) {
-
 		for (int i = 0; i < allMethods.get(0).size(); i++) {
 			final int index = i;
 			final int dagID = allMethods.get(0).get(i).id;
@@ -73,8 +114,8 @@ public class ResultPerSystem {
 
 					break;
 				case 1:
-					List<Long> sumC = allMethods.stream()
-							.map(c -> c.get(index).getFlatNodes().stream().mapToLong(c1 -> c1.finishAt - c1.start).sum())
+					List<Long> sumC = allMethods.stream().map(
+							c -> c.get(index).getFlatNodes().stream().mapToLong(c1 -> c1.finishAt - c1.start).sum())
 							.collect(Collectors.toList());
 					long sumCMax = sumC.stream().mapToLong(c -> c).max().getAsLong();
 
@@ -82,8 +123,8 @@ public class ResultPerSystem {
 						maxValues[1][dagID] = sumCMax;
 					break;
 				case 2:
-					List<Long> duration = allMethods.stream().map(c -> c.get(index).finishTime - c.get(index).releaseTime)
-							.collect(Collectors.toList());
+					List<Long> duration = allMethods.stream()
+							.map(c -> c.get(index).finishTime - c.get(index).releaseTime).collect(Collectors.toList());
 					long durationMax = duration.stream().mapToLong(c -> c).max().getAsLong();
 
 					if (maxValues[2][dagID] < durationMax)
@@ -97,8 +138,6 @@ public class ResultPerSystem {
 			}
 
 		}
-
-//		}
 
 		return maxValues;
 	}

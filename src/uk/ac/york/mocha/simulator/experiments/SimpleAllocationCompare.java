@@ -26,7 +26,7 @@ public class SimpleAllocationCompare {
 		taskNum, periods, tasks
 	}
 
-	static int NoS = 100;
+	static int NoS = 1000;
 	static boolean printSim = false;
 	static boolean printGen = true;
 
@@ -269,7 +269,6 @@ public class SimpleAllocationCompare {
 		int currentID = -1;
 		for (int i = 0; i < dags.size(); i++) {
 			if (currentID != dags.get(i).id) {
-//				System.out.println("DAG " + currentID + "instances: " + count);
 
 				currentID = dags.get(i).id;
 				count = 0;
@@ -281,7 +280,6 @@ public class SimpleAllocationCompare {
 				count++;
 			}
 		}
-//		System.out.println("DAG " + currentID + "instances: " + count);
 
 		allMethods.add(method1);
 		allMethods.add(method2);
@@ -480,7 +478,7 @@ public class SimpleAllocationCompare {
 		 * minmum values
 		 */
 //		System.out.println("\n\nData analysis for each instance:");
-		out.append("\n\nData analysis for each instance£º \n");
+		out.append("\n\nData analysis for each instanceï¿½ï¿½ \n");
 
 //		System.out.printf("%10s    %10s    %10s    %10s    \n", "AVG", "MED", "MAX", "MIN");
 		out.append("AVG,MED,MAX,MIN\n");
@@ -544,7 +542,7 @@ public class SimpleAllocationCompare {
 		}
 
 //		System.out.println("\n\nFurther Data analysis of all test cases:");
-		out.append("\n\nFurther Data analysis of all test cases£º \n");
+		out.append("\n\nFurther Data analysis of all test casesï¿½ï¿½ \n");
 //		System.out.printf("     %10s    %10s    %10s    %10s \n", "avg", "med", "max", "min");
 		out.append("avg med max min \n");
 

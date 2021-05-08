@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 
-public class ResultPerSystemByMethod {
+public class ResultByMethod {
 
 	List<DirectedAcyclicGraph> dags;
 	long[][] maxValues;
@@ -17,7 +17,7 @@ public class ResultPerSystemByMethod {
 	List<List<Double>> resultsPerMethod = new ArrayList<>();
 	long[] cachePerformance;
 
-	public ResultPerSystemByMethod(List<DirectedAcyclicGraph> dags, long[] cachePerformance, long[][] maxValues) {
+	public ResultByMethod(List<DirectedAcyclicGraph> dags, long[] cachePerformance, long[][] maxValues) {
 		this.dags = new ArrayList<>(dags);
 		this.cachePerformance = cachePerformance;
 		this.maxValues = maxValues;

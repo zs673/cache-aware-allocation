@@ -43,7 +43,7 @@ public class Simualtor {
 	/**********************************************************************
 	 ***** The gloabl recency table and cache hierarchy of the system *****
 	 **********************************************************************/
-	private static Recency table;
+	private static Recency profile;
 
 	/**********************************************************************
 	 ************************ DAGs to be executed *************************
@@ -111,7 +111,7 @@ public class Simualtor {
 		this.allProcs = new long[procNum];
 		this.affinity = affinity;
 
-		table = new Recency(recency, procNum, recencySeed);
+		profile = new Recency(recency, procNum, recencySeed);
 
 		this.history_level1 = new ArrayList<>();
 		this.history_level2 = new ArrayList<>();
@@ -232,7 +232,7 @@ public class Simualtor {
 		 * get ready nodes to execute by the specified allocation method
 		 */
 		allocM.getEligibileNode(dags, readyNodes, availableProc, allProcs, history_level1, history_level2,
-				history_level3, allocNodes, table, systemTime, affinity);
+				history_level3, allocNodes, profile, systemTime, affinity);
 
 		String[] oneSched = new String[allProcs.length];
 		for (int i = 0; i < oneSched.length; i++) {
@@ -255,7 +255,7 @@ public class Simualtor {
 			allocNodes.get(n.partition).add(n);
 
 			n.start = systemTime;
-			Pair<Long, Integer> ETWithCache = table.computeET(history_level1, history_level2, history_level3, n,
+			Pair<Long, Integer> ETWithCache = profile.computeET(history_level1, history_level2, history_level3, n,
 					n.partition, cacheAware, fault);
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();
