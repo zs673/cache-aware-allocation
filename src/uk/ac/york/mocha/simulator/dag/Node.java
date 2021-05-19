@@ -21,9 +21,12 @@ public class Node implements Serializable {
 	private final NodeType type;
 
 	private long WCET;
+//	private long WCETinRange;
 
 	private List<Node> successors;
 	private List<Node> predecessors;
+	
+	public int priority;
 
 	/*
 	 * Simualtion parameters

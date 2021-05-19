@@ -24,15 +24,25 @@ public class SystemGenerator {
 
 	private boolean print;
 	private int cores;
+	private boolean takeAllUtil;
+	private List<Double> assignedUtils;
 
-	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, int seed, boolean print) {
+	private boolean randomC;
+
+	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
+			List<Double> assignedUtils, int seed, boolean randomC, boolean print) {
 
 		this.totalUtil = SystemParameters.utilPerTask * (double) totalTasks;
+		this.takeAllUtil = takeAllUtil;
 		this.total_tasks = totalTasks;
 		this.isHarmonic = isHarmonic;
 		this.print = print;
 		this.ran = new Random(seed);
 		this.cores = total_partitions;
+
+		this.assignedUtils = assignedUtils;
+
+		this.randomC = randomC;
 	}
 
 	public List<DirectedAcyclicGraph> generatedDAGInstancesInOneHP(int forceInstanceNum, int hyperPeriodNum,
@@ -151,15 +161,15 @@ public class SystemGenerator {
 
 			long[] c = new long[d.getNodeNum()];
 			long sumC = 0;
+			long sum = 0;
 
 			for (int i = 0; i < c.length; i++) {
-				c[i] = ran.nextInt(100);
+				c[i] = randomC ? ran.nextInt(100) : 100;
 				sumC += c[i];
 			}
 
 			double ratio = (double) sumC / (double) totalWCET;
 
-			long sum = 0;
 			for (int i = 0; i < c.length; i++) {
 				long cNode = (long) Math.ceil((double) c[i] / ratio);
 				sum += cNode;
@@ -168,7 +178,7 @@ public class SystemGenerator {
 				node.get(i).setWCET(cNode);
 			}
 
-			d.setWCET(sum);
+			d.getSchedParameters().setWCET(sum);
 			if (print)
 				System.out.printf("|    DAG_%2d   |   Assigned WCET: %10d   |   Actual WCET: %10d   |\n", d.id,
 						totalWCET, sum);
@@ -250,18 +260,28 @@ public class SystemGenerator {
 		 * generate utils by UUifastDiscard
 		 */
 		List<Double> utils = null;
-		UUnifastDiscard unifastDiscard = new UUnifastDiscard(totalUtil, total_tasks, 1000, cores, ran);
-		while (true) {
-			utils = unifastDiscard.getUtils();
+		if (this.assignedUtils == null) {
+			UUnifastDiscard unifastDiscard = new UUnifastDiscard(totalUtil, total_tasks, 1000, cores, takeAllUtil, ran);
+			while (true) {
+				utils = unifastDiscard.getUtils();
 
-			double tt = 0;
-			for (int i = 0; i < utils.size(); i++) {
-				tt += utils.get(i);
+				double tt = 0;
+				for (int i = 0; i < utils.size(); i++) {
+					tt += utils.get(i);
+				}
+
+				if (utils != null)
+					if (utils.size() == total_tasks && tt <= totalUtil)
+						break;
+			}
+		} else {
+			if (this.assignedUtils.size() != total_tasks) {
+				System.err.println(
+						"SystemGenerator.generateSchedParam(): pre-assigned utilisations does not match task number");
+				System.exit(-1);
 			}
 
-			if (utils != null)
-				if (utils.size() == total_tasks && tt <= totalUtil)
-					break;
+			utils = new ArrayList<>(this.assignedUtils);
 		}
 
 		if (print) {
@@ -285,7 +305,7 @@ public class SystemGenerator {
 			if (i == 0)
 				priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
 			else {
-				 priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
+				priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
 //				priorities.add(10); // TODO: Now we have equal priority for non real-time DAGs.
 			}
 		}

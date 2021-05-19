@@ -7,22 +7,48 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.Node;
 
 public class Utils {
+	
+	/*
+	 * Order nodes by 1) its DAG priority and 2) its WCET.
+	 */
+	public static int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
 
+		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+
+		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
+			return -1;
+		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
+			return 1;
+		} else {
+
+			int c = -Long.compare(c1.getWCET(), c2.getWCET());
+
+			if (c != 0)
+				return c;
+			else {
+				return Integer.compare(c1.getDagInstNo(), c1.getDagInstNo());
+			}
+
+		}
+
+	}
+	
 	/*
 	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a complete
 	 * hyperperiod.
 	 */
 	public static long getHyperPeriod(List<Long> periods) {
-		
-		if(periods == null)
+
+		if (periods == null)
 			return 0;
-		
+
 		List<Long> period_copy = new ArrayList<>(periods);
 		long lcm = 1;
 		int divisor = 2;
@@ -54,7 +80,7 @@ public class Utils {
 			}
 		}
 	}
-	
+
 	public static DirectedAcyclicGraph getDagByIndex(List<DirectedAcyclicGraph> dags, int id, int instanceID) {
 		for (DirectedAcyclicGraph dag : dags)
 			if (dag.id == id && dag.instanceNo == instanceID)
@@ -88,5 +114,6 @@ public class Utils {
 		writer.println(result);
 		writer.close();
 	}
+
 
 }

@@ -36,7 +36,6 @@ public class DirectedAcyclicGraph implements Serializable {
 	private final StructuralParameters dag_param;
 
 	/* DAG parameters */
-	private long WCET = -1;
 	private Node source;
 	private Node sink;
 	private int nodeNum;
@@ -467,13 +466,6 @@ public class DirectedAcyclicGraph implements Serializable {
 		return out;
 	}
 
-	public long getWCET() {
-		return WCET;
-	}
-
-	public void setWCET(long sum) {
-		WCET = sum;
-	}
 
 //	public static void main(String args[]) {
 //		int seed = 1000;

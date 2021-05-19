@@ -17,7 +17,9 @@ public class UUnifastDiscard {
 	private Random r;
 	private int cores;
 
-	public UUnifastDiscard(double util, int num, int discard, int cores, Random ran) {
+	private boolean takeAllUtil;
+
+	public UUnifastDiscard(double util, int num, int discard, int cores, boolean takeAllUtil, Random ran) {
 		this.uUtil = util;
 		this.uNum = num;
 		this.uUs = new ArrayList<Double>();
@@ -25,6 +27,7 @@ public class UUnifastDiscard {
 		this.discardNum = discard;
 		this.cores = cores;
 		this.r = ran;
+		this.takeAllUtil = takeAllUtil;
 	}
 
 	public void setUtil(double x) {
@@ -44,9 +47,17 @@ public class UUnifastDiscard {
 	}
 
 	public ArrayList<Double> getUtils() {
-		if (uUifastDiscard())
+		if (uUifastDiscard()) {
+			if (!takeAllUtil) {
+				if (uUs.size() != uNum + 1) {
+					System.err.println("UUnifastDiscard.getUtils(): the number of utilisations generated is wrong!");
+					System.exit(-1);
+				}
+
+				uUs.remove(uUs.size() - 1);
+			}
 			return uUs;
-		else
+		} else
 			return null;
 	}
 
@@ -56,7 +67,7 @@ public class UUnifastDiscard {
 		double nextSum = 0;
 		double temp = 0;
 		this.shallDiscard = false;
-		for (int i = 1; i < this.uNum; i++) {
+		for (int i = takeAllUtil ? 1 : 0; i < this.uNum; i++) {
 
 			nextSum = sumU * Math.pow(r.nextDouble(), (1.0 / (this.uNum - i)));
 			temp = sumU - nextSum;
@@ -88,6 +99,13 @@ public class UUnifastDiscard {
 			}
 		}
 		return isComplete;
+	}
+	
+	public static void main(String args[]) {
+		for(int i=0; i<1000; i++) {
+			UUnifastDiscard uu = new UUnifastDiscard(8.0, 1, 1000, 8, false, new Random(i));
+			System.out.println(uu.getUtils().get(0));
+		}
 	}
 
 }

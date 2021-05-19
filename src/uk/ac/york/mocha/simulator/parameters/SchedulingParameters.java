@@ -11,7 +11,7 @@ public class SchedulingParameters implements Serializable {
 
 	private final long period;
 	private final long deadline;
-	private final long WCET;
+	private long WCET;
 	private double util;
 
 	/* DAG scheduling and ALLOCATION parameters */
@@ -54,5 +54,9 @@ public class SchedulingParameters implements Serializable {
 
 	public long getWCET() {
 		return WCET;
+	}
+	
+	public void setWCET(long WCET) {
+		this.WCET = WCET;
 	}
 }

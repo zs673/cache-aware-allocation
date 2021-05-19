@@ -1,19 +1,21 @@
 package uk.ac.york.mocha.simulator.experiments;
 
-import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Random;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
+import uk.ac.york.mocha.simulator.generator.UUnifastDiscard;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
-import uk.ac.york.mocha.simulator.resultAnalyzer.ResultPerSystem;
+import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
+import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.Simualtor.Allocation;
 import uk.ac.york.mocha.simulator.simulator.Simualtor.Hardware;
@@ -22,58 +24,266 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class SimpleAllocationCompare {
 
-	public enum expName {
-		taskNum, periods, tasks
-	}
-
-	static int NoS = 1000;
-	static boolean printSim = false;
-	static boolean printGen = true;
-
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static void main(String args[]) {
 
-//		changePeriodsRunner(5);
-		changeTaskNumRunner(4);
+		Thread t1 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				changeTaskNumRunner(4);
+
+			}
+		});
+
+		Thread t2 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				runOneDAG();
+
+			}
+		});
+		
+		Thread t3 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				faultsInRecency3D();
+			}
+		});
+
+//		t1.run();
+//		t2.run();
+		t3.run();
+
+		try {
+			t1.join();
+			t2.join();
+			t3.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		
+	}
+
+	public static void runOneDAG() {
+		int intanceNum = 10;
+		int hyperPeriodNum = -1;
+		int seed = 1000;
+		int NoS = SystemParameters.NoS * 5;
+
+		List<List<Long>> periods = new ArrayList<>();
+		for (int j = 0; j < NoS; j++) {
+			ArrayList<Long> period = new ArrayList<>();
+			long p = 144000;
+			period.add(p);
+			periods.add(period);
+		}
+
+		UUnifastDiscard uu = new UUnifastDiscard(4, 1, 1000, SystemParameters.coreNum, false, new Random(seed));
+
+		List<List<Double>> utils = new ArrayList<>();
+		for (int i = 0; i < NoS; i++) {
+			double u = uu.getUtils().get(0);
+			List<Double> us = new ArrayList<>();
+			us.add(u);
+			utils.add(us);
+			System.out.println(u);
+		}
+
+		RunOneGroup(1, intanceNum, hyperPeriodNum, false, utils, seed, seed, periods, NoS, true, false, ExpName.oneDAG);
+	}
+
+	public static void oneTaskWithFaults() {
+
+		int intanceNum = 10;
+		int hyperPeriodNum = -1;
+		int seed = 1000;
+
+		List<Thread> threads = new ArrayList<>();
+
+		for (double i = 0.1; i <= 0.5; i=i+0.1) {
+
+			SystemParameters.utilPerTask = i;
+
+			threads.add(new Thread(new Runnable() {
+				@Override
+				public void run() {
+					RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS,
+							true, false, ExpName.recency_fault_util);
+				}
+			}));
+		}
+
+		for (Thread t : threads)
+			t.start();
+
+		try {
+			for (Thread t : threads)
+				t.join();
+		} catch (InterruptedException e) {
+		}
+
+	}
+	
+	public static void faultsInRecency3D() {
+		int intanceNum = 10;
+		int hyperPeriodNum = -1;
+		int seed = 1000;
+		int NoS = 1;
+
+		int faultRate = 100 + 1;
+		int faultEffect = 50 + 1;
+
+		List<List<Double>> results = new ArrayList<>();
+		List<List<Double>> reference = new ArrayList<>();
+		
+		SystemParameters.utilPerTask = 2.0;
+
+		for (int i = 0; i < faultRate; i++) {
+			SystemParameters.fault_rate = i;
+
+			List<Double> res = new ArrayList<>();
+			List<Double> ref = new ArrayList<>();
+
+			for (int j = 0; j < faultEffect; j++) {
+
+				SystemParameters.fault_median = j;
+				SystemParameters.fault_range = j * 2;
+
+				List<Double> r = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
+						true, ExpName.recency_fault);
+
+				List<Double> r1 = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
+						false, ExpName.recency_fault);
+				System.out.println(r1);
+				
+				Median med = new Median();
+				
+				double[] r_array = new double[r.size()];
+				for (int k = 0; k < r.size(); k++) {
+					double d = r.get(k);
+					r_array[k] = d;
+				}
+				
+				double[] r1_array = new double[r1.size()];
+				for (int k = 0; k < r1.size(); k++) {
+					double d = r1.get(k);
+					r1_array[k] = d;
+				}
+
+				res.add(med.evaluate(r_array));
+				ref.add(med.evaluate(r1_array));
+
+				System.out.println("fault rate: " + i + "  fault effect: " + j);
+			}
+
+			results.add(res);
+			reference.add(ref);
+		}
+
+		StringBuilder xs = new StringBuilder();
+		StringBuilder ys = new StringBuilder();
+		StringBuilder zs = new StringBuilder();
+		StringBuilder rs = new StringBuilder();
+
+		for (int j = 0; j < faultRate; j++) {
+			List<Integer> x = new ArrayList<>();
+			for (int i = 0; i < faultEffect; i++) {
+				x.add(i);
+
+				if (i < faultEffect - 1)
+					xs.append(i + ",");
+				else
+					xs.append(i + "\n");
+
+				System.out.print(i + "    ");
+			}
+
+			System.out.println();
+		}
+
+		System.out.println();
+
+		for (int j = 0; j < faultRate; j++) {
+			List<Integer> y = new ArrayList<>();
+			for (int i = 0; i < faultEffect; i++) {
+				y.add(j);
+
+				if (i < faultEffect - 1)
+					ys.append(j + ",");
+				else
+					ys.append(j + "\n");
+			}
+
+			for (Integer d : y) {
+				System.out.print(d + "    ");
+			}
+			System.out.println();
+		}
+
+		System.out.println();
+
+		for (List<Double> dl : results) {
+			for (int i = 0; i < dl.size(); i++) {
+
+				if (i < dl.size() - 1)
+					zs.append(dl.get(i) + ",");
+				else
+					zs.append(dl.get(i) + "\n");
+
+				System.out.print(dl.get(i) + "    ");
+			}
+			System.out.println();
+		}
+		
+		for (List<Double> dl : reference) {
+			for (int i = 0; i < dl.size(); i++) {
+
+				if (i < dl.size() - 1)
+					rs.append(-dl.get(i) + ",");
+				else
+					rs.append(-dl.get(i) + "\n");
+
+				System.out.print(-dl.get(i) + "    ");
+			}
+			System.out.println();
+		}
+
+		System.out.println("-------------------------------------------");
+		System.out.println(xs);
+		System.out.println(ys);
+		System.out.println(zs);
+
+		Utils.writeResult("result/" + ExpName.recency_fault.name() + "/x.txt", xs.toString());
+		Utils.writeResult("result/" + ExpName.recency_fault.name() + "/y.txt", ys.toString());
+		Utils.writeResult("result/" + ExpName.recency_fault.name() + "/z.txt", zs.toString());
+		Utils.writeResult("result/" + ExpName.recency_fault.name() + "/r.txt", rs.toString());
+
 	}
 
 	public static void changeTaskNumRunner(int numMax) {
 
-		int intanceNum = 20;
+		int intanceNum = 10;
 		int hyperPeriodNum = -1;
 		int seed = 1000;
-		int NoP = 8;
-
-		List<Long> harmonicPeriods = new ArrayList<>();
-
-		for (long i = SystemParameters.MIN_PERIOD; i <= SystemParameters.MAX_PERIOD; ++i) {
-			if (SystemParameters.MAX_PERIOD % i == 0) {
-				harmonicPeriods.add(i * 1000);
-			}
-		}
 
 		List<Thread> threads = new ArrayList<>();
 
 		for (int i = 1; i <= numMax; i++) {
 
-//			if (i == 1 || i == 4 || i == 8) {
 			final int num = i;
-
-			List<Long> periods = new ArrayList<>();
-			for (int j = 0; j < num; j++) {
-				periods.add(harmonicPeriods.get(j));
-			}
-			periods.sort((c1, c2) -> Long.compare(c1, c2));
 
 			threads.add(new Thread(new Runnable() {
 				@Override
 				public void run() {
-					RunOneGroup(num, intanceNum, hyperPeriodNum, NoP, seed, seed, null, expName.taskNum);
+					RunOneGroup(num, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS,
+							true, false, ExpName.taskNum);
 				}
 			}));
-//			}
-
 		}
 
 		for (Thread t : threads)
@@ -90,7 +300,6 @@ public class SimpleAllocationCompare {
 	public static void changePeriodRunner(int testNum) {
 
 		int seed = 1000;
-		int NoP = 8;
 		int NoT = 2;
 		int instanceNo = 50;
 
@@ -106,7 +315,10 @@ public class SimpleAllocationCompare {
 					periods.add(startT);
 					periods.add(startT * num);
 
-					RunOneGroup(NoT, instanceNo, 1, NoP, seed, seed, periods, expName.periods);
+					List<List<Long>> p = new ArrayList<>();
+					p.add(periods);
+
+					RunOneGroup(NoT, instanceNo, 1, true, null, seed, seed, p, 1000, true, false, ExpName.periods);
 				}
 			}));
 		}
@@ -122,24 +334,19 @@ public class SimpleAllocationCompare {
 
 	}
 
-	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, int procNum, int taskSeed,
-			int tableSeed, List<Long> periods, expName name) {
+	public static List<Double> RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
+			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
+			boolean fault, ExpName name) {
 
-		List<List<String>> makespan = new ArrayList<>();
-		List<List<String>> util = new ArrayList<>();
-		List<List<String>> finishTime = new ArrayList<>();
-
-		List<List<String>> makespanCompare = new ArrayList<>();
-		List<List<String>> utilCompare = new ArrayList<>();
-		List<List<String>> finishTimeCompare = new ArrayList<>();
+		List<OneSystemResults> allSys = new ArrayList<>();
 
 		int[] instanceNo = new int[taskNum];
 
 		if (periods != null && hyperperiodNum > 0) {
-			long totalHP = Utils.getHyperPeriod(periods) * hyperperiodNum;
+			long totalHP = Utils.getHyperPeriod(periods.get(0)) * hyperperiodNum;
 
 			for (int i = 0; i < periods.size(); i++) {
-				int insNo = (int) (totalHP / periods.get(i));
+				int insNo = (int) (totalHP / periods.get(0).get(i));
 				instanceNo[i] = insNo > intanceNum ? insNo : intanceNum;
 			}
 		} else if (intanceNum > 0) {
@@ -149,117 +356,102 @@ public class SimpleAllocationCompare {
 			System.out.println("Cannot get same instances number for randomly generated periods.");
 		}
 
-//		List<List<DirectedAcyclicGraph>> allSystems = new ArrayList<>();
+//		List<List<DirectedAcyclicGraph>> systems = new ArrayList<>();
 //		for (int i = 0; i < NoS; i++) {
-//			System.out.println(
-//					"\n\n****************************************************************************************************");
-//			System.out.println("Generated system: " + i );
-//			SystemGenerator gen = new SystemGenerator(procNum, taskNum, true, taskSeed);
-//			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum, periods);
 //
-//			allSystems.add(dags);
 //			taskSeed++;
 //		}
+//
+//		systems.sort((c1, c2) -> -Long.compare(c1.get(0).getSchedParameters().getWCET(),
+//				c2.get(0).getSchedParameters().getWCET()));
 
+		taskSeed = 1000;
 		for (int i = 0; i < NoS; i++) {
-
-			if (i == 66) {
-				System.out.println("here");
-			}
-
 			System.out.println(
 					"\n\n****************************************************************************************************");
 			System.out.println("Change Task Number: " + taskNum + " --- Current system number: " + (i + 1));
 
-			SystemGenerator gen = new SystemGenerator(procNum, taskNum, true, taskSeed, printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum, periods);
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
+					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
+			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+					periods == null ? null : periods.get(i));
 
-			List<String> out = testOneCase(dags, taskNum, instanceNo, procNum, taskSeed, tableSeed, periods);
+			OneSystemResults res = null;
 
-			String[] makespanOneCase = out.get(0).split("\n");
-			List<String> d = new ArrayList<>();
-			for (int j = 0; j < makespanOneCase.length; j++)
-				d.add(makespanOneCase[j]);
-			makespan.add(d);
+			if (fault) {
+				res = RecencyFaultTestCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed,
+						fault);
+			} else {
+				res = testOneCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed, fault);
+			}
 
-			String[] makespanCompareOneCase = out.get(1).split("\n");
-			List<String> ds = new ArrayList<>();
-			for (int j = 0; j < makespanCompareOneCase.length; j++)
-				ds.add(makespanCompareOneCase[j]);
-			makespanCompare.add(ds);
-
-			String[] utilOneCase = out.get(2).split("\n");
-			List<String> u = new ArrayList<>();
-			for (int j = 0; j < utilOneCase.length; j++)
-				u.add(utilOneCase[j]);
-			util.add(u);
-
-			String[] utilCompareOneCase = out.get(3).split("\n");
-			List<String> us = new ArrayList<>();
-			for (int j = 0; j < utilCompareOneCase.length; j++)
-				us.add(utilCompareOneCase[j]);
-			utilCompare.add(us);
-
-			String[] finishOneCase = out.get(4).split("\n");
-			List<String> f = new ArrayList<>();
-			for (int j = 0; j < finishOneCase.length; j++)
-				f.add(finishOneCase[j]);
-			finishTime.add(f);
-
-			String[] finishCompareOneCase = out.get(5).split("\n");
-			List<String> fs = new ArrayList<>();
-			for (int j = 0; j < finishCompareOneCase.length; j++)
-				fs.add(finishCompareOneCase[j]);
-			finishTimeCompare.add(fs);
+			allSys.add(res);
 
 			taskSeed++;
+
 		}
 
-		String folder = "result/" + name + "/";
-		File theDir = new File(folder);
-		if (!theDir.exists()) {
-			theDir.mkdirs();
+//		for (int i = 0; i < allSys.size(); i++) {
+//			System.out.println(
+//					allSys.get(i).resultsPerMethod.get(0).dags.get(0).getSchedParameters().getWCET());
+//		}
+
+		allSys.sort((c1, c2) -> -Long.compare(c1.resultsPerMethod.get(0).dags.get(0).getSchedParameters().getWCET(),
+				c2.resultsPerMethod.get(0).dags.get(0).getSchedParameters().getWCET()));
+
+		new AllSystemsResults(allSys, instanceNo, SystemParameters.NoS, taskNum, name);
+
+		List<Double> makespan_compare_medain = new ArrayList<>();
+
+		for (OneSystemResults one : allSys) {
+			List<Double> makespan_compare = one.resultsPerMetric.get(0).compare.get(0);
+
+			double[] makesapn_compare_array = new double[makespan_compare.size()];
+			for (int i = 0; i < makespan_compare.size(); i++) {
+				double d = makespan_compare.get(i);
+				makesapn_compare_array[i] = d;
+			}
+
+			Median med = new Median();
+			double medain = med.evaluate(makesapn_compare_array);
+//
+//			double max = Collections.max(makespan_compare);
+//			double min = Collections.min(makespan_compare);
+//			double avg = makespan_compare.stream().mapToDouble(c -> c).average().getAsDouble();
+
+			makespan_compare_medain.add(medain);
+
 		}
 
-		resultAnalyzer(makespan, folder, "makespan_" + taskNum + ".txt");
-		resultAnalyzer(makespanCompare, folder, "makespan_compare_" + taskNum + ".txt");
-
-		resultAnalyzer(util, folder, "util_" + taskNum + ".txt");
-		resultAnalyzer(utilCompare, folder, "util_compare_" + taskNum + ".txt");
-
-		resultAnalyzer(finishTime, folder, "finish_" + taskNum + ".txt");
-		resultAnalyzer(finishTimeCompare, folder, "finish_compare_" + taskNum + ".txt");
-
-		String instanceNumString = "";
-		for (int i = 0; i < instanceNo.length; i++) {
-			if (i != instanceNo.length - 1)
-				instanceNumString += instanceNo[i] + ",";
-			else
-				instanceNumString += instanceNo[i] + "\n";
-		}
-		Utils.writeResult(folder + "instanceNum_" + taskNum + ".txt", instanceNumString);
+		return makespan_compare_medain;
 	}
 
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static List<String> testOneCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
-			int taskSeed, int tableSeed, List<Long> periods) {
+	public static OneSystemResults testOneCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
+			int taskSeed, int tableSeed, boolean fault) {
 
-		Simualtor cacheLBSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.LOAD_BALANCE,
-				RecencyType.TIME, dags, cores, tableSeed, false, false);
-		Pair<List<DirectedAcyclicGraph>, long[]> pair1 = cacheLBSim.simulate(printSim);
+		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
+
+//		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
+//				RecencyType.TIME, dags, cores, tableSeed, false, false);
+//		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME, dags, cores, tableSeed, true, false);
-		Pair<List<DirectedAcyclicGraph>, long[]> pair2 = cacheCASim.simulate(printSim);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
-		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
+		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
+//		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
 		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 
 		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
 
-		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
+		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
+//		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 
 		/*
@@ -275,451 +467,87 @@ public class SimpleAllocationCompare {
 			}
 
 			if (count < NoInstances[dags.get(i).id]) {
-				method1.add(m1.get(i));
+				method0.add(m0.get(i));
+//				method1.add(m1.get(i));
 				method2.add(m2.get(i));
 				count++;
 			}
 		}
 
-		allMethods.add(method1);
+		allMethods.add(method0);
+//		allMethods.add(method1);
 		allMethods.add(method2);
 
-		List<long[]> cachePerformance = new ArrayList<>();
-		cachePerformance.add(pair1.getSecond());
+		List<double[]> cachePerformance = new ArrayList<>();
+		cachePerformance.add(pair0.getSecond());
+//		cachePerformance.add(pair1.getSecond());
 		cachePerformance.add(pair2.getSecond());
 
-		ResultPerSystem result = new ResultPerSystem(allMethods, cachePerformance);
-		
-		/**
-		 * Get the max duration & finish of each DAG task for normalizaiton.
-		 */
-		int maxID = dags.stream().mapToInt(c -> c.id).max().getAsInt();
-		long[] maxMakespan = new long[maxID + 1];
-		long[] maxUtil = new long[maxID + 1];
-		long[] maxFinish = new long[maxID + 1];
+		OneSystemResults result = new OneSystemResults(allMethods, cachePerformance);
 
-		for (int i = 0; i < maxMakespan.length; i++) {
-			maxMakespan[i] = Long.MIN_VALUE;
-			maxFinish[i] = Long.MIN_VALUE;
-			maxUtil[i] = Long.MIN_VALUE;
-		}
-
-		for (int i = 0; i < method1.size(); i++) {
-			int id = method1.get(i).id;
-
-			long dagMakespan = method1.get(i).finishTime - method1.get(i).startTime > method2.get(i).finishTime
-					- method2.get(i).startTime ? method1.get(i).finishTime - method1.get(i).startTime
-							: method2.get(i).finishTime - method2.get(i).startTime;
-
-			long util_m1 = method1.get(i).getFlatNodes().stream().mapToLong(c -> c.finishAt - c.start).sum();
-			long util_m2 = method1.get(i).getFlatNodes().stream().mapToLong(c -> c.finishAt - c.start).sum();
-			long dagUtil = util_m1 > util_m2 ? util_m1 : util_m2;
-
-			long dagFinish = method1.get(i).finishTime - method1.get(i).releaseTime > method2.get(i).finishTime
-					- method2.get(i).releaseTime ? method1.get(i).finishTime - method1.get(i).releaseTime
-							: method2.get(i).finishTime - method2.get(i).releaseTime;
-
-			if (maxMakespan[id] < dagMakespan)
-				maxMakespan[id] = dagMakespan;
-
-			if (maxUtil[id] < dagUtil)
-				maxUtil[id] = dagUtil;
-
-			if (maxFinish[id] < dagFinish)
-				maxFinish[id] = dagFinish;
-		}
-
-
-		/*
-		 * Summarize duration and finish for all tested results all together.
-		 */
-		List<List<List<Double>>> results = new ArrayList<>();
-		for (List<DirectedAcyclicGraph> oneMethod : allMethods) {
-
-			/*
-			 * we normalize duration of instances for each DAG so that the variations caused
-			 * by different WCETs can be removed.
-			 */
-			List<Double> makespan = oneMethod.stream()
-					.map(c -> Double.parseDouble(
-							df.format(((double) (c.finishTime - c.startTime)) / (double) maxMakespan[c.id])))
-					.collect(Collectors.toList());
-
-			/*
-			 * Here we compute the real utilisation of the task
-			 */
-			List<Double> util = oneMethod.stream()
-					.map(c -> Double.parseDouble(
-							df.format((((double) c.getFlatNodes().stream().mapToLong(c1 -> c1.finishAt - c1.start).sum()
-									/ (double) c.getSchedParameters().getPeriod())
-									/ ((double) maxUtil[c.id] / (double) c.getSchedParameters().getPeriod()))))
-
-					).collect(Collectors.toList());
-
-			/*
-			 * we don't normalize finish time as each instance as a very different finish
-			 * time.
-			 */
-			List<Double> finish = oneMethod.stream()
-					.map(c -> Double
-							.parseDouble(df.format(((double) c.finishTime - c.startTime) / (double) maxFinish[c.id])))
-					.collect(Collectors.toList());
-
-			List<List<Double>> res = new ArrayList<>();
-			res.add(makespan);
-			res.add(util);
-			res.add(finish);
-
-			results.add(res);
-
-		}
-
-		Pair<StringBuilder, StringBuilder> makespan_builder = createBuffer(results, 0);
-		Pair<StringBuilder, StringBuilder> util_builder = createBuffer(results, 1);
-		Pair<StringBuilder, StringBuilder> finish_builder = createBuffer(results, 2);
-
-		/*
-		 * Print organized results to console
-		 */
-//		System.out.println("----------------------------------- Execution Summary -----------------------------------");
-//		dags.stream().forEach(c -> {
-//			System.out.print(c.id + "_" + c.instanceNo + " ");
-//		});
-//		System.out.println();
-//
-//		System.out.println("Makespan");
-//		System.out.print(makespan_builder.getFirst().toString());
-//		System.out.println("Makespan Comparsion");
-//		System.out.print(makespan_builder.getSecond().toString());
-//
-//		System.out.println("Util");
-//		System.out.print(util_builder.getFirst().toString());
-//		System.out.println("Util Comparsion");
-//		System.out.print(util_builder.getSecond().toString());
-//
-//		System.out.println("Finish");
-//		System.out.print(finish_builder.getFirst().toString());
-//		System.out.println("Finish Comparsion");
-//		System.out.print(finish_builder.getSecond().toString());
-//		System.out.println(
-//				"****************************************************************************************************");
-
-		List<String> res = new ArrayList<>();
-		res.add(makespan_builder.getFirst().toString());
-		res.add(makespan_builder.getSecond().toString());
-
-		res.add(util_builder.getFirst().toString());
-		res.add(util_builder.getSecond().toString());
-
-		res.add(finish_builder.getFirst().toString());
-		res.add(finish_builder.getSecond().toString());
-
-		return res;
+		return result;
 	}
 
-	private static Pair<StringBuilder, StringBuilder> createBuffer(List<List<List<Double>>> results, int index) {
+	/**
+	 * This test case will generate two fixed DAG strcuture.
+	 */
+	public static OneSystemResults RecencyFaultTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
+			int cores, int taskSeed, int tableSeed, boolean fault) {
 
-		StringBuilder builder = new StringBuilder();
-		StringBuilder builder_Speedup = new StringBuilder();
+		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
-		/*
-		 * Add noralmised durations to duration buffer.
-		 */
-		for (List<List<Double>> oneMethod : results) {
-			oneMethod.get(index).stream().forEach(c -> {
-				builder.append(c + ",");
-			});
-			builder.append("\n");
-		}
+//		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
+//				RecencyType.TIME, dags, cores, tableSeed, false, false);
+//		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
-		/*
-		 * Compute Speed up of duration for the tested method.
-		 */
-		for (int k = 0; k < results.size() - 1; k++) {
-			List<List<Double>> m1 = results.get(k);
-			List<List<Double>> m2 = results.get(k + 1);
+		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
-			for (int i = 0; i < m1.get(index).size(); i++) {
-				double reducePercent = ((double) (m1.get(index).get(i) - m2.get(index).get(i)))
-						/ (double) m1.get(index).get(i);
+		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
+//		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
+		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 
-				builder_Speedup.append(df.format(reducePercent) + ",");
-			}
-		}
-		builder_Speedup.append("\n");
+		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
 
-		return new Pair<StringBuilder, StringBuilder>(builder, builder_Speedup);
-	}
-
-	private static void resultAnalyzer(List<List<String>> res, String dir, String folder) {
-		StringBuilder raw_data = new StringBuilder();
-		StringBuilder out = new StringBuilder();
-
-//		System.out.println("\n\n********************************************************************");
-//		System.out.println("Data:");
+		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
+//		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
+		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 
 		/*
-		 * Organise results by method for all test cases.
+		 * get a number of instances from each DAG based on long[] NoInstances.
 		 */
-		for (int i = 0; i < res.get(0).size(); i++) {
-			final int index = i;
+		int count = 0;
+		int currentID = -1;
+		for (int i = 0; i < dags.size(); i++) {
+			if (currentID != dags.get(i).id) {
 
-			res.stream().forEach(c1 -> {
-//				System.out.println(c1.get(index));
-				raw_data.append(c1.get(index) + "\n");
-			});
-
-//			System.out.println("\n");
-			raw_data.append("\n");
-		}
-
-		/*
-		 * Analysis the data of each method in terms of average, median, maximum and
-		 * minmum values
-		 */
-//		System.out.println("\n\nData analysis for each instance:");
-		out.append("\n\nData analysis for each instance�� \n");
-
-//		System.out.printf("%10s    %10s    %10s    %10s    \n", "AVG", "MED", "MAX", "MIN");
-		out.append("AVG,MED,MAX,MIN\n");
-
-		List<List<List<Double>>> analysedDataEachMethod = new ArrayList<>();
-
-		for (int k = 0; k < res.get(0).size(); k++) {
-			List<List<Double>> summaryAll = new ArrayList<>();
-			final int index = k;
-
-			res.stream().forEach(s -> {
-
-				String c = s.get(index);
-				String[] cs = c.split(",");
-
-				List<Double> v = new ArrayList<>();
-				for (int i = 0; i < cs.length; i++) {
-					try {
-						double d = Double.parseDouble(cs[i]);
-						v.add(d);
-					} catch (NullPointerException e) {
-					} catch (NumberFormatException e) {
-					}
-				}
-
-				double avg = v.stream().mapToDouble(c1 -> c1).sum() / (double) v.size();
-				double max = v.stream().mapToDouble(c1 -> c1).max().getAsDouble();
-				double min = v.stream().mapToDouble(c1 -> c1).min().getAsDouble();
-
-				Median median = new Median();
-				double[] v_d = new double[v.size()];
-				for (int i = 0; i < v.size(); i++) {
-					v_d[i] = v.get(i);
-				}
-				double med = median.evaluate(v_d);
-
-				List<Double> summary = new ArrayList<>();
-				summary.add(avg);
-				summary.add(med);
-				summary.add(max);
-				summary.add(min);
-				summaryAll.add(summary);
-
-//				System.out.printf("%10s    ", df.format(avg));
-				out.append(df.format(avg) + ",");
-
-//				System.out.printf("%10s    ", df.format(med));
-				out.append(df.format(med) + ",");
-
-//				System.out.printf("%10s    ", df.format(max));
-				out.append(df.format(max) + ",");
-
-//				System.out.printf("%10s \n", df.format(min));
-				out.append(df.format(min) + ",\n");
-
-			});
-
-//			System.out.println("\n");
-			out.append("\n\n");
-			analysedDataEachMethod.add(summaryAll);
-		}
-
-//		System.out.println("\n\nFurther Data analysis of all test cases:");
-		out.append("\n\nFurther Data analysis of all test cases�� \n");
-//		System.out.printf("     %10s    %10s    %10s    %10s \n", "avg", "med", "max", "min");
-		out.append("avg med max min \n");
-
-		for (int k = 0; k < analysedDataEachMethod.size(); k++) {
-			List<List<Double>> summaryAll = analysedDataEachMethod.get(k);
-			List<List<Double>> summartAllHtoV = new ArrayList<>();
-
-			for (int j = 0; j < summaryAll.get(0).size(); j++) {
-				List<Double> summary = new ArrayList<>();
-				for (int i = 0; i < summaryAll.size(); i++) {
-					summary.add(summaryAll.get(i).get(j));
-				}
-				summartAllHtoV.add(summary);
+				currentID = dags.get(i).id;
+				count = 0;
 			}
 
-			summartAllHtoV.forEach(v -> {
-
-				Median median = new Median();
-				double[] v_d = new double[v.size()];
-				for (int i = 0; i < v.size(); i++) {
-					v_d[i] = v.get(i);
-				}
-
-				double avg = v.stream().mapToDouble(c1 -> c1).sum() / (double) v.size();
-				double med = median.evaluate(v_d);
-				double max = v.stream().mapToDouble(c1 -> c1).max().getAsDouble();
-				double min = v.stream().mapToDouble(c1 -> c1).min().getAsDouble();
-
-				int count = summartAllHtoV.indexOf(v);
-
-				switch (count) {
-				case 0:
-//					System.out.print("AVGs ");
-					out.append("AVGs,");
-					break;
-				case 1:
-//					System.out.print("MEDs ");
-					out.append("MEDs,");
-					break;
-				case 2:
-//					System.out.print("MAXs ");
-					out.append("MAXs,");
-					break;
-				case 3:
-//					System.out.print("MINs ");
-					out.append("MINs,");
-					break;
-				default:
-					break;
-				}
-
-//				System.out.printf("%10s    ", df.format(avg));
-				out.append(df.format(avg) + ",");
-
-//				System.out.printf("%10s    ", df.format(med));
-				out.append(df.format(med) + ",");
-
-//				System.out.printf("%10s    ", df.format(max));
-				out.append(df.format(max) + ",");
-
-//				System.out.printf("%10s \n", df.format(min));
-				out.append(df.format(min) + ",\n");
-
-			});
+			if (count < NoInstances[dags.get(i).id]) {
+				method0.add(m0.get(i));
+//				method1.add(m1.get(i));
+				method2.add(m2.get(i));
+				count++;
+			}
 		}
 
-		Utils.writeResult(dir + folder, raw_data.toString());
-		Utils.writeResult(dir + "A_" + folder, out.toString());
+		allMethods.add(method0);
+//		allMethods.add(method1);
+		allMethods.add(method2);
+
+		List<double[]> cachePerformance = new ArrayList<>();
+		cachePerformance.add(pair0.getSecond());
+//		cachePerformance.add(pair1.getSecond());
+		cachePerformance.add(pair2.getSecond());
+
+		OneSystemResults result = new OneSystemResults(allMethods, cachePerformance);
+
+		return result;
 	}
 
 }
-
-/********************************************
- * Discarded
- ****************************************************/
-/*
- * System.out.println("\n\n Speed up of each system:");
- * out.append("\n\n Speed up of each system:\n");
- * 
- * List<Double> avgSpeedUp = new ArrayList<>(); res.forEach(c -> { String[]
- * method1_temp = c.get(0).split(" "); String[] method2_temp =
- * c.get(1).split(" ");
- * 
- * List<Double> m1 = new ArrayList<>(); List<Double> m2 = new ArrayList<>();
- * 
- * for (int i = 0; i < method1_temp.length; i++) { if (method1_temp[i].length()
- * > 0) { m1.add(Double.parseDouble(method1_temp[i])); } }
- * 
- * for (int i = 0; i < method2_temp.length; i++) { if (method2_temp[i].length()
- * > 0) { m2.add(Double.parseDouble(method2_temp[i])); } }
- * 
- * if (m1.size() != m2.size()) { System.out.println("!!!"); System.exit(-1); }
- * 
- * double totalPrec = 0; if (type == 0) { double total1 =
- * m1.stream().mapToDouble(v -> v).sum(); double total2 =
- * m2.stream().mapToDouble(v -> v).sum(); totalPrec = ((double) (total1 -
- * total2)); // / (double) total1 }
- * 
- * if (type == 1) { double makespan1 = m1.stream().mapToDouble(v ->
- * v).max().getAsDouble(); double makespan2 = m2.stream().mapToDouble(v ->
- * v).max().getAsDouble(); totalPrec = ((double) (makespan1 - makespan2)) /
- * (double) makespan1; }
- * 
- * avgSpeedUp.add(totalPrec);
- * 
- * System.out.printf("%10s\n", df.format(totalPrec));
- * out.append(String.format("%10s\n", df.format(totalPrec)));
- * 
- * });
- * 
- * int betterCase = 0; int equalCase = 0; for (Double d : avgSpeedUp) { if (d >=
- * 0) betterCase++; if (d == 0) equalCase++; }
- * 
- * System.out.println("Number of better cases for method 2: " + betterCase);
- * out.append("Number of better cases for method 2: " + betterCase);
- * 
- * System.out.println("Number of equal cases: " + equalCase);
- * out.append("Number of equal cases: " + equalCase);
- */
-
-/*
- * StringBuilder builder_allc = new StringBuilder(); builder_allc.append(
- * "--------------------------------------------------------------------------------------------------------------\n"
- * ); System.out.println(
- * "--------------------------------------------------------------------------------------------------------------"
- * ); for (int i = 0; i < cores; i++) { if (i == 0) {
- * System.out.printf("cores%5s    ", "" + i);
- * builder_allc.append(String.format("cores%5s    ", "" + i)); } else {
- * System.out.printf("%10d    ", i);
- * builder_allc.append(String.format("%10d    ", i)); } } System.out.println(
- * "\n--------------------------------------------------------------------------------------------------------------"
- * ); builder_allc.append(
- * "\n--------------------------------------------------------------------------------------------------------------\n"
- * );
- * 
- * int dagID = method1.get(0).id; for (int i = 0; i < method1.size(); i++) { if
- * (method1.get(i).id == dagID) {
- * 
- * // System.out.println("**************** Instance" + method1.get(i).instanceNo
- * + " ****************"); // builder_allc.append("**************** Instance" +
- * method1.get(i).instanceNo + " ****************");
- * 
- * // String m1 = getDAGFullInfo(method1.get(i), cores,
- * method1.get(i).instanceNo, // Allocation.LOAD_BALANCE.toString()); //
- * builder_allc.append(m1); // //
- * 
- * String m2 = getDAGFullInfo(method2.get(i), cores, method1.get(i).instanceNo,
- * Allocation.CACHE_AWARE.toString()); builder_allc.append(m2);
- * 
- * System.out.println();
- * 
- * } }
- */
-
-/*
- * public static String getDAGFullInfo(DirectedAcyclicGraph dag, int totalcores,
- * int instanceNo, String method) {
- * 
- * StringBuilder out = new StringBuilder();
- * 
- * List<Node> nodes = new ArrayList<>(dag.allocNodes); List<List<Node>>
- * nodesByPar = new ArrayList<>(); for (int i = 0; i < totalcores; i++) {
- * List<Node> nodesOnePar = new ArrayList<>(); nodesByPar.add(nodesOnePar); }
- * 
- * for (Node n : nodes) { int partition = n.partition;
- * nodesByPar.get(partition).add(n); }
- * 
- * for (int j = 0; j < nodesByPar.stream().mapToInt(c ->
- * c.size()).max().getAsInt(); j++) { for (int i = 0; i < nodesByPar.size();
- * i++) { try { System.out.printf("%10s    ", nodesByPar.get(i).get(j).getId());
- * out.append(String.format("%10s    ", nodesByPar.get(i).get(j).getId())); }
- * catch (Exception e) { System.out.printf("%10s    ", "-");
- * out.append(String.format("%10s    ", "-")); }
- * 
- * } System.out.println(); }
- * 
- * return out.toString();
- * 
- * }
- */

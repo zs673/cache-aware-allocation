@@ -3,11 +3,27 @@ package uk.ac.york.mocha.simulator.parameters;
 public class SystemParameters {
 
 	/**********************************************************************
+	 *********************** Experimental Settings ************************
+	 **********************************************************************/
+	public enum ExpName {
+		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, periods,tasks
+	}
+
+	public static final int NoS = 1000;
+	public static final boolean printSim = false;
+	public static final boolean printGen = false;
+
+	/**********************************************************************
+	 ************************** Number of cores ***************************
+	 **********************************************************************/
+	public static final int coreNum = 8;
+
+	/**********************************************************************
 	 ************************** Cache Hierarchy ***************************
 	 **********************************************************************/
 	public static final int cacheLevel = 3;
-	public static final int Level2procNum = 4;
-	
+	public static final int Level2CoreNum = 4;
+
 	/**********************************************************************
 	 **************************** DAG Structure ***************************
 	 **********************************************************************/
@@ -18,19 +34,18 @@ public class SystemParameters {
 	public static final int maxLayer = 8;
 	public static final int minParal = 5;
 	public static final int maxParal = 10;
-	
+
 	/* parameters for NFJ DAGs */
 	public static final int depth = 5;
 	public static final double fork_prob = 0.3;
 	public static final double join_prob = 0.8;
 	public static final int fork_max = 2;
 	public static final int fork_min = 4;
-	
 
 	/* Recency fault rate */
-	public static final int fault_rate = 5;
-	public static final int fault_range = 10;
-	public static final int fault_median = 5;
+	public static int fault_rate = 5;
+	public static int fault_range = 10;
+	public static int fault_median = 5;
 
 	/**********************************************************************
 	 **************************** Recency table ***************************
@@ -39,7 +54,7 @@ public class SystemParameters {
 	 * Recency Table Type
 	 */
 	public static enum RecencyType {
-		ORDER, TIME
+		ORDER, TIME_DEFAULT, TIME_CURVE, TIME_STEP
 	};
 
 	/*
@@ -53,9 +68,9 @@ public class SystemParameters {
 	 * Recency Table by time
 	 */
 	public static final long v1 = 0;
-	public static final long v2 = 20000; 
-	public static final long v3 = 500000; 
-	public static final long v4 = 1000000;
+	public static final long v2 = 10000;
+	public static final long v3 = 100000;
+	public static final long v4 = 500000;
 
 	public static final double delta1 = 0.3;
 	public static final double delta2 = 0.5;
@@ -68,8 +83,8 @@ public class SystemParameters {
 
 	public final static int MAX_PRIORITY = 1000;
 
-	public final static double utilPerTask = 2.0;
-	
+	public static double utilPerTask = 2.0;
+
 	/*
 	 * Harmonic periods
 	 */
@@ -81,6 +96,5 @@ public class SystemParameters {
 	 */
 	public final static int minT = 100;
 	public final static int maxT = 1000;
-	
 
 }

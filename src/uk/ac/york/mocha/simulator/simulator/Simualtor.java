@@ -1,19 +1,23 @@
 package uk.ac.york.mocha.simulator.simulator;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.allocation.AllocationMethod;
-import uk.ac.york.mocha.simulator.allocation.CacheAwareAlloc;
-import uk.ac.york.mocha.simulator.allocation.LoadBalancing;
+import uk.ac.york.mocha.simulator.allocation.OnelineAllocation;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
+import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
+import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
+import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
+import uk.ac.york.mocha.simulator.allocation.onlineBFD;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
-import uk.ac.york.mocha.simulator.dag.Recency;
+import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 
 /*
  * This is a Multiprocessor Non-preemptive Multi-DAG Simulator
@@ -33,7 +37,7 @@ public class Simualtor {
 	};
 
 	public enum Allocation {
-		LOAD_BALANCE, CACHE_AWARE
+		BEST_FIT, WORST_FIT, CACHE_AWARE, RANDOM, FIRST_FIT
 	};
 
 	private SimuType type;
@@ -43,7 +47,7 @@ public class Simualtor {
 	/**********************************************************************
 	 ***** The gloabl recency table and cache hierarchy of the system *****
 	 **********************************************************************/
-	private static Recency profile;
+	private static RecencyProfile profile;
 
 	/**********************************************************************
 	 ************************ DAGs to be executed *************************
@@ -89,13 +93,17 @@ public class Simualtor {
 
 	/* cache performance */
 	long[] cachePerformance;
+	int totalAccess = 0;
 
-	boolean fault = false;
+	boolean recency_fault = false;
+	boolean execution_fault = false;
+	
+	DecimalFormat df = new DecimalFormat("#.###");
 
 	/********************* Runtime queues *********************************/
 
 	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
-			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean affinity, boolean fault) {
+			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean affinity, boolean recency_fault) {
 
 		this.type = type;
 		this.hardware = hardware;
@@ -111,7 +119,7 @@ public class Simualtor {
 		this.allProcs = new long[procNum];
 		this.affinity = affinity;
 
-		profile = new Recency(recency, procNum, recencySeed);
+		profile = new RecencyProfile(recency, procNum, recencySeed);
 
 		this.history_level1 = new ArrayList<>();
 		this.history_level2 = new ArrayList<>();
@@ -128,16 +136,16 @@ public class Simualtor {
 			this.allocNodes.add(oneProcAlloc);
 		}
 
-		for (int i = 0; i < (procNum / SystemParameters.Level2procNum); i++) {
+		for (int i = 0; i < (procNum / SystemParameters.Level2CoreNum); i++) {
 			List<Node> oneCluster = new ArrayList<>();
 			this.history_level2.add(oneCluster);
 		}
 
 		this.cachePerformance = new long[4];
-		this.fault = fault;
+		this.recency_fault = recency_fault;
 	}
 
-	public Pair<List<DirectedAcyclicGraph>, long[]> simulate(boolean printSim) {
+	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
 
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
@@ -146,15 +154,25 @@ public class Simualtor {
 			dag.reset();
 
 		boolean cacheAware = false;
-		AllocationMethod allocM = null;
+		OnelineAllocation allocM = null;
 
 		switch (alloc) {
-		case LOAD_BALANCE:
-			allocM = new LoadBalancing();
+		case RANDOM:
+			allocM = new OnlineRandom();
+			break;
+		case BEST_FIT:
+			allocM = new onlineBFD();
+			break;
+		case WORST_FIT:
+			allocM = new OnlineWFD();
+			break;
+		case FIRST_FIT:
+			allocM = new OnlineFFD();
 			break;
 		case CACHE_AWARE:
-			allocM = new CacheAwareAlloc();
+			allocM = new OnlineCacheAware();
 			break;
+			
 		default:
 			System.err.println("The simualtion method is NOT supported ! ");
 			System.exit(-1);
@@ -219,20 +237,28 @@ public class Simualtor {
 			result.add(d.deepCopy());
 		}
 
-		return new Pair<>(result, cachePerformance);
+		
+		double[] cachePerf = new double[cachePerformance.length];
+		for(int i=0; i<cachePerformance.length;i++) {
+			double d = (double) cachePerformance[i] / (double) totalAccess;
+			cachePerf[i] = Double.parseDouble(df.format(d));
+		}
+			
+			
+		return new Pair<>(result, cachePerf);
 
 	}
 
 	/******************************************************************
 	 ********** Choose the next node in the queue to execute **********
 	 ******************************************************************/
-	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethod allocM, boolean cacheAware) {
+	private void ExecuteReadyNodes(List<Integer> availableProc, OnelineAllocation allocM, boolean cacheAware) {
 
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		allocM.getEligibileNode(dags, readyNodes, availableProc, allProcs, history_level1, history_level2,
-				history_level3, allocNodes, profile, systemTime, affinity);
+		allocM.allocate(dags, readyNodes, availableProc, allProcs, history_level1, history_level2,
+				history_level3, allocNodes, profile, systemTime, affinity,recency_fault);
 
 		String[] oneSched = new String[allProcs.length];
 		for (int i = 0; i < oneSched.length; i++) {
@@ -255,10 +281,12 @@ public class Simualtor {
 			allocNodes.get(n.partition).add(n);
 
 			n.start = systemTime;
-			Pair<Long, Integer> ETWithCache = profile.computeET(history_level1, history_level2, history_level3, n,
-					n.partition, cacheAware, fault);
+			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n,
+					n.partition, cacheAware, execution_fault,0);
+
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();
+			totalAccess++;
 
 //			if(alloc.equals(Allocation.CACHE_AWARE) && realET != n.expectedET)
 //			{
@@ -308,7 +336,7 @@ public class Simualtor {
 
 				/* add the node to history for each cache level */
 				history_level1.get(i).add(n);
-				int clusterID = i / SystemParameters.Level2procNum;
+				int clusterID = i / SystemParameters.Level2CoreNum;
 				history_level2.get(clusterID).add(n);
 				history_level3.add(n);
 
