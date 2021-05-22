@@ -26,7 +26,7 @@ public class Node implements Serializable {
 	private List<Node> successors;
 	private List<Node> predecessors;
 	
-	public int priority;
+	public int priority = -1;
 
 	/*
 	 * Simualtion parameters
@@ -40,6 +40,13 @@ public class Node implements Serializable {
 	
 	public int delayed = -1;
 	public long expectedET = -1;
+	
+	/*
+	 * Offline parameters
+	 */
+	public int offline_partition = -1;
+	public boolean now = false;
+	
 
 	public Node(int layer, NodeType type, int id, int dagID) {
 		this(-1, layer, type, id, dagID);

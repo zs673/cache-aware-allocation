@@ -12,7 +12,7 @@ public class DAGtoPython {
 
 	public static void main(String args[]) {
 		SystemGenerator gen = new SystemGenerator(8, 1, true, true, null, 1000, true, true);
-		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null);
+		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true);
 
 		DirectedAcyclicGraph dag = dags.get(0);
 
@@ -20,11 +20,7 @@ public class DAGtoPython {
 			dag.getFlatNodes().get(i).priority = dag.getFlatNodes().size() - i;
 		}
 
-		
-		
-		
-		for(int i=0; i<10000;i++)
-		{
+		for (int i = 0; i < 10000; i++) {
 			pharseDAGForPython(dag, 2);
 		}
 	}
@@ -85,7 +81,7 @@ public class DAGtoPython {
 				System.out.println(s);
 				makespanS = s + "";
 			}
-			
+
 			makespan = Long.parseLong(makespanS);
 
 			// Read any errors from the attempted command
@@ -98,8 +94,8 @@ public class DAGtoPython {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		if(makespan <= 0) {
+
+		if (makespan <= 0) {
 			System.err.println("DAGtoPython.pharseDAGForPython(): makespan <= 0.");
 			System.exit(-1);
 		}

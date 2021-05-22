@@ -6,12 +6,12 @@ public class SystemParameters {
 	 *********************** Experimental Settings ************************
 	 **********************************************************************/
 	public enum ExpName {
-		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, periods,tasks
+		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, periods, tasks
 	}
 
 	public static final int NoS = 1000;
-	public static final boolean printSim = false;
-	public static final boolean printGen = false;
+	public static final boolean printSim = true;
+	public static final boolean printGen = true;
 
 	/**********************************************************************
 	 ************************** Number of cores ***************************

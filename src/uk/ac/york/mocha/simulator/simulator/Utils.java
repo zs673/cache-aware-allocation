@@ -13,7 +13,7 @@ import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 
 public class Utils {
-	
+
 	/*
 	 * Order nodes by 1) its DAG priority and 2) its WCET.
 	 */
@@ -39,7 +39,48 @@ public class Utils {
 		}
 
 	}
-	
+
+	public static int compareNodeWithHard(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+
+		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+
+		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
+			return -1;
+		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
+			return 1;
+		} else {
+			int c = -1;
+
+			if (dag1.hard && dag2.hard) {
+				if(dag1.id != dag2.id) {
+					System.out.println("Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but there should be only one DAG in the system!");
+					System.exit(-1);
+				}
+				
+				c = Integer.compare(c1.getDagInstNo(), c1.getDagInstNo());
+
+				if (c != 0)
+					return c;
+				else {
+					return -Long.compare(c1.priority, c2.priority);
+				}
+				
+
+			} else {
+				c = -Long.compare(c1.getWCET(), c2.getWCET());
+
+				if (c != 0)
+					return c;
+				else {
+					return Integer.compare(c1.getDagInstNo(), c1.getDagInstNo());
+				}
+			}
+
+		}
+
+	}
+
 	/*
 	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a complete
 	 * hyperperiod.
@@ -114,6 +155,5 @@ public class Utils {
 		writer.println(result);
 		writer.close();
 	}
-
 
 }

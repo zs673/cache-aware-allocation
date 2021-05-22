@@ -46,7 +46,7 @@ public class SystemGenerator {
 	}
 
 	public List<DirectedAcyclicGraph> generatedDAGInstancesInOneHP(int forceInstanceNum, int hyperPeriodNum,
-			List<Long> periods) {
+			List<Long> periods, boolean hard) {
 
 		if (periods != null && periods.size() != total_tasks) {
 			System.err
@@ -59,6 +59,18 @@ public class SystemGenerator {
 					"----------------------------------- Scheduling parameters -----------------------------------");
 
 		List<DirectedAcyclicGraph> dagTasks = generateSporadicDAGs(periods);
+
+		/**
+		 * Set offline scheduling and allocation for the hard task
+		 */
+		if (hard) {
+			dagTasks.get(0).hard = hard;
+
+			for (Node n : dagTasks.get(0).getFlatNodes()) {
+				n.offline_partition = 0;
+				n.priority = 1;
+			}
+		}
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
 

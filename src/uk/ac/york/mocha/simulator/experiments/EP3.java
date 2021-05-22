@@ -88,7 +88,7 @@ public class EP3 {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i));
+					periods == null ? null : periods.get(i), false);
 
 			OneSystemResults res = null;
 
@@ -101,7 +101,7 @@ public class EP3 {
 
 		}
 
-		new AllSystemsResults(allSys, instanceNo, SystemParameters.NoS, taskNum, name, "_"+type.toString());
+		new AllSystemsResults(allSys, instanceNo, SystemParameters.NoS, taskNum, name, "_" + type.toString());
 
 	}
 
@@ -346,7 +346,7 @@ public class EP3 {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i));
+					periods == null ? null : periods.get(i), false);
 
 			OneSystemResults res = null;
 
@@ -529,7 +529,7 @@ public class EP3 {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i));
+					periods == null ? null : periods.get(i), false);
 
 			OneSystemResults res = null;
 

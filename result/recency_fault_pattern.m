@@ -2,156 +2,152 @@
 maxUtil = 8;
 
 
-    f=figure('Position', [100, 100, wid, len]);
-    set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
-    
-    line([10.5 10.5], [0 1.1],'LineStyle',':','color','k','LineWidth',1);
+f=figure('Position', [100, 100, wid, len]);
+set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
+
+line([10.5 10.5], [0 1.1],'LineStyle',':','color','k','LineWidth',1);
 hold on
 line([20.5 20.5], [0 1.1],'LineStyle',':','color','k','LineWidth',1);
-    
-     for util = 1:5
-       if(util == 5)
-           data = readmatrix(strcat('recency_pattern/',metric ,'1', '_4.0' , '_TIME_DEFAULT' , '.txt'));
-       else
-           data = readmatrix(strcat('recency_pattern/',metric ,'1', '_',num2str(util*0.8) ,'_TIME_DEFAULT', '.txt'));
-       end
-       
-       
-       colsNum = 10;
-       rowsNum = size(data,1);
-       
-       methodNum = rowsNum/systemNo;
-       dataByMethod = cell(1,methodNum);
-       
-        % get data by each method
-        for m = 1: methodNum
-            startIndex = 1 + (m-1) * systemNo;
-            endIndex = m * systemNo;
-            dataByMethod{m} = data(startIndex :endIndex,:);
+
+ for util = 1:5
+   if(util == 5)
+       data = readmatrix(strcat('recency_pattern/',metric ,'1', '_4.0' , '_TIME_DEFAULT' , '.txt'));
+   else
+       data = readmatrix(strcat('recency_pattern/',metric ,'1', '_',num2str(util*0.8) ,'_TIME_DEFAULT', '.txt'));
+   end
+
+
+   colsNum = 10;
+   rowsNum = size(data,1);
+
+   methodNum = rowsNum/systemNo;
+   dataByMethod = cell(1,methodNum);
+
+    % get data by each method
+    for m = 1: methodNum
+        startIndex = 1 + (m-1) * systemNo;
+        endIndex = m * systemNo;
+        dataByMethod{m} = data(startIndex :endIndex,:);
+    end
+
+    data_per_util = zeros(systemNo,methodNum);
+    for m=1:methodNum
+        datam = dataByMethod{m};
+
+        datam_media = zeros(systemNo:methodNum);
+        for row = 1:size(datam,1)
+            datam_media(row) = median(datam(row,1:colsNum));
         end
 
-        data_per_util = zeros(systemNo,methodNum);
-        for m=1:methodNum
-            datam = dataByMethod{m};
+        datam_media_col = datam_media';
+        data_per_util(:,m) = datam_media_col;
+    end
 
-            datam_media = zeros(systemNo:methodNum);
-            for row = 1:size(datam,1)
-                datam_media(row) = median(datam(row,1:colsNum));
-            end
-
-            datam_media_col = datam_media';
-            data_per_util(:,m) = datam_media_col;
-
-        end
-        
-         pos = zeros(1);
-         for col = 1:methodNum
-             pos(col) = (util - 1) * 2 + col;
-         end
-
-         boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
-         hold on
-         boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
-         hold on
-
+     pos = zeros(1);
+     for col = 1:methodNum
+         pos(col) = (util - 1) * 2 + col;
      end
-     
 
-    
-    for util = 1:5
-       if(util == 5)
-           data = readmatrix(strcat('recency_pattern/',metric ,'1', '_4.0' , '_TIME_STEP' , '.txt'));
-       else
-           data = readmatrix(strcat('recency_pattern/',metric ,'1', '_',num2str(util*0.8) ,'_TIME_STEP', '.txt'));
-       end
-       
-       
-       colsNum = 10;
-       rowsNum = size(data,1);
-       
-       methodNum = rowsNum/systemNo;
-       dataByMethod = cell(1,methodNum);
-       
-        % get data by each method
-        for m = 1: methodNum
-            startIndex = 1 + (m-1) * systemNo;
-            endIndex = m * systemNo;
-            dataByMethod{m} = data(startIndex :endIndex,:);
+     boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
+     hold on
+     boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
+     hold on
+ end
+
+for util = 1:5
+   if(util == 5)
+       data = readmatrix(strcat('recency_pattern/',metric ,'1', '_4.0' , '_TIME_STEP' , '.txt'));
+   else
+       data = readmatrix(strcat('recency_pattern/',metric ,'1', '_',num2str(util*0.8) ,'_TIME_STEP', '.txt'));
+   end
+
+
+   colsNum = 10;
+   rowsNum = size(data,1);
+
+   methodNum = rowsNum/systemNo;
+   dataByMethod = cell(1,methodNum);
+
+    % get data by each method
+    for m = 1: methodNum
+        startIndex = 1 + (m-1) * systemNo;
+        endIndex = m * systemNo;
+        dataByMethod{m} = data(startIndex :endIndex,:);
+    end
+
+    data_per_util = zeros(systemNo,methodNum);
+    for m=1:methodNum
+        datam = dataByMethod{m};
+
+        datam_media = zeros(systemNo:methodNum);
+        for row = 1:size(datam,1)
+            datam_media(row) = median(datam(row,1:colsNum));
         end
 
-        data_per_util = zeros(systemNo,methodNum);
-        for m=1:methodNum
-            datam = dataByMethod{m};
-
-            datam_media = zeros(systemNo:methodNum);
-            for row = 1:size(datam,1)
-                datam_media(row) = median(datam(row,1:colsNum));
-            end
-
-            datam_media_col = datam_media';
-            data_per_util(:,m) = datam_media_col;
-
-        end
-        
-         pos = zeros(1);
-         for col = 1:methodNum
-             pos(col) = (util - 1) * 2 + col + 10;
-         end
-
-         boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
-         hold on
-         boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
-         hold on
+        datam_media_col = datam_media';
+        data_per_util(:,m) = datam_media_col;
 
     end
-    
-    for util = 1:5
-       if(util == 5)
-           data = readmatrix(strcat('recency_pattern/',metric ,'1', '_4.0' , '_TIME_CURVE' , '.txt'));
-       else
-           data = readmatrix(strcat('recency_pattern/',metric ,'1', '_',num2str(util*0.8) ,'_TIME_CURVE', '.txt'));
-       end
-       
-       
-       colsNum = 10;
-       rowsNum = size(data,1);
-       
-       methodNum = rowsNum/systemNo;
-       dataByMethod = cell(1,methodNum);
-       
-        % get data by each method
-        for m = 1: methodNum
-            startIndex = 1 + (m-1) * systemNo;
-            endIndex = m * systemNo;
-            dataByMethod{m} = data(startIndex :endIndex,:);
+
+     pos = zeros(1);
+     for col = 1:methodNum
+         pos(col) = (util - 1) * 2 + col + 10;
+     end
+
+     boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
+     hold on
+     boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
+     hold on
+
+end
+
+for util = 1:5
+   if(util == 5)
+       data = readmatrix(strcat('recency_pattern/',metric ,'1', '_4.0' , '_TIME_CURVE' , '.txt'));
+   else
+       data = readmatrix(strcat('recency_pattern/',metric ,'1', '_',num2str(util*0.8) ,'_TIME_CURVE', '.txt'));
+   end
+
+
+   colsNum = 10;
+   rowsNum = size(data,1);
+
+   methodNum = rowsNum/systemNo;
+   dataByMethod = cell(1,methodNum);
+
+    % get data by each method
+    for m = 1: methodNum
+        startIndex = 1 + (m-1) * systemNo;
+        endIndex = m * systemNo;
+        dataByMethod{m} = data(startIndex :endIndex,:);
+    end
+
+    data_per_util = zeros(systemNo,methodNum);
+    for m=1:methodNum
+        datam = dataByMethod{m};
+
+        datam_media = zeros(systemNo:methodNum);
+        for row = 1:size(datam,1)
+            datam_media(row) = median(datam(row,1:colsNum));
         end
 
-        data_per_util = zeros(systemNo,methodNum);
-        for m=1:methodNum
-            datam = dataByMethod{m};
-
-            datam_media = zeros(systemNo:methodNum);
-            for row = 1:size(datam,1)
-                datam_media(row) = median(datam(row,1:colsNum));
-            end
-
-            datam_media_col = datam_media';
-            data_per_util(:,m) = datam_media_col;
-
-        end
-        
-         pos = zeros(1);
-         for col = 1:methodNum
-             pos(col) = (util - 1) * 2 + col + 20;
-         end
-
-         boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
-         hold on
-         boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
-         hold on
+        datam_media_col = datam_media';
+        data_per_util(:,m) = datam_media_col;
 
     end
-     
+
+     pos = zeros(1);
+     for col = 1:methodNum
+         pos(col) = (util - 1) * 2 + col + 20;
+     end
+
+     boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
+     hold on
+     boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
+     hold on
+
+end
+
 xlim([0 31]);
 ylim([0 1]);
 xticks = 1.5:2:30;

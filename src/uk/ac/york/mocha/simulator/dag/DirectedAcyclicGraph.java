@@ -63,6 +63,11 @@ public class DirectedAcyclicGraph implements Serializable {
 	public long finishTime = Long.MAX_VALUE;
 	public List<Node> allocNodes = new ArrayList<>();
 
+	/*
+	 * Offline parameters
+	 */
+	public boolean hard = false;
+
 	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed) {
 
 		this.id = id;
@@ -465,7 +470,6 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		return out;
 	}
-
 
 //	public static void main(String args[]) {
 //		int seed = 1000;

@@ -166,7 +166,7 @@ ax.FontSize = 12;
 xlabel({'Recency distance'},'FontSize', 14);
 ylabel({'Percentage of WCET'},'FontSize', 14)
 
-h=legend("Recency for each core", "Recency for each cluster", "Recency for system",'location','southeast');
+h=legend("Recency for core", "Recency for cluster", "Recency for system",'location','southeast');
 set(h,'FontSize',14);
 
 saveas(gcf,strcat('figs/ep_recency_curve.eps'), 'epsc');

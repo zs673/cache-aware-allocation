@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.allocation.OnelineAllocation;
+import uk.ac.york.mocha.simulator.allocation.OnlineAndOffline;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
@@ -37,7 +38,7 @@ public class Simualtor {
 	};
 
 	public enum Allocation {
-		BEST_FIT, WORST_FIT, CACHE_AWARE, RANDOM, FIRST_FIT
+		BEST_FIT, WORST_FIT, CACHE_AWARE, OFFLINE_CACHE_AWARE, RANDOM, FIRST_FIT
 	};
 
 	private SimuType type;
@@ -97,7 +98,7 @@ public class Simualtor {
 
 	boolean recency_fault = false;
 	boolean execution_fault = false;
-	
+
 	DecimalFormat df = new DecimalFormat("#.###");
 
 	/********************* Runtime queues *********************************/
@@ -146,13 +147,14 @@ public class Simualtor {
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
-
+		
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
 		 */
-		for (DirectedAcyclicGraph dag : dags)
-			dag.reset();
-
+		for (DirectedAcyclicGraph dag : dags) {
+				dag.reset();
+		}
+		
 		boolean cacheAware = false;
 		OnelineAllocation allocM = null;
 
@@ -172,7 +174,10 @@ public class Simualtor {
 		case CACHE_AWARE:
 			allocM = new OnlineCacheAware();
 			break;
-			
+		case OFFLINE_CACHE_AWARE:
+			allocM = new OnlineAndOffline();
+			break;
+
 		default:
 			System.err.println("The simualtion method is NOT supported ! ");
 			System.exit(-1);
@@ -188,6 +193,8 @@ public class Simualtor {
 		default:
 			break;
 		}
+
+
 
 		while (sleepingDAGs.size() > 0 || readyDAGs.size() > 0) {
 
@@ -237,14 +244,12 @@ public class Simualtor {
 			result.add(d.deepCopy());
 		}
 
-		
 		double[] cachePerf = new double[cachePerformance.length];
-		for(int i=0; i<cachePerformance.length;i++) {
+		for (int i = 0; i < cachePerformance.length; i++) {
 			double d = (double) cachePerformance[i] / (double) totalAccess;
 			cachePerf[i] = Double.parseDouble(df.format(d));
 		}
-			
-			
+
 		return new Pair<>(result, cachePerf);
 
 	}
@@ -254,11 +259,17 @@ public class Simualtor {
 	 ******************************************************************/
 	private void ExecuteReadyNodes(List<Integer> availableProc, OnelineAllocation allocM, boolean cacheAware) {
 
+		for (Node n : readyNodes) {
+			if (n.getDagID() == 0 && n.getDagInstNo() == 0 && n.getId() == 5) {
+				break;
+			}
+		}
+		
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		allocM.allocate(dags, readyNodes, availableProc, allProcs, history_level1, history_level2,
-				history_level3, allocNodes, profile, systemTime, affinity,recency_fault);
+		allocM.allocate(dags, readyNodes, availableProc, allProcs, history_level1, history_level2, history_level3,
+				allocNodes, profile, systemTime, affinity, recency_fault);
 
 		String[] oneSched = new String[allProcs.length];
 		for (int i = 0; i < oneSched.length; i++) {
@@ -282,7 +293,7 @@ public class Simualtor {
 
 			n.start = systemTime;
 			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n,
-					n.partition, cacheAware, execution_fault,0);
+					n.partition, cacheAware, execution_fault, 0);
 
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();
@@ -412,11 +423,11 @@ public class Simualtor {
 			systemTime = firstFinish;
 		else {
 
-			if (readyNodes.size() > 0) {
-				System.out.println(
-						"Simualtor.advance(): timing error. It this not possible to still have ready nodes wating here");
-				System.exit(-1);
-			}
+//			if (readyNodes.size() > 0) {
+//				System.out.println(
+//						"Simualtor.advance(): timing error. It this not possible to still have ready nodes wating here");
+//				System.exit(-1);
+//			}
 
 			long earliestFinish = Long.MAX_VALUE;
 

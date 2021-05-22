@@ -93,11 +93,11 @@ for task = 1 :2
     
     if task == 1
         set(gca,'xticklabel',xticklables);
-         xlabel({'Instances of DAG task'}) 
+         xlabel({'Instances of DAG task'},'FontSize', 14) 
 %          'DAG-1';
     else
         set(gca,'xticklabel',fullXtickLabels);
-         xlabel({'Instances of DAG tasks'})
+         xlabel({'Instances of DAG tasks'},'FontSize', 14)
     end
     ylabel('Normalised makespan','FontSize', 14)
     
@@ -118,6 +118,6 @@ for task = 1 :2
 %         set(h,'FontSize',12);        
     end
     
-    set(gcf, 'PaperSize', [25 25])
+    
     saveas(gcf,strcat('figs/','ep_',metric,num2str(task),'.eps'), 'epsc');
 end
