@@ -163,11 +163,11 @@ ax.FontSize = 12;
 % text(4.2,0.9,'Profile 1')
 
 
-xlabel({'\fontsize{12}Recency profile 1                 Recency profile 2                 Recency profile 3';'\fontsize{14}System utilisation (%)'})
+xlabel({'\fontsize{12}Profile - linear                          Profile - S curve                 Profile - exponential';'\fontsize{14}System utilisation (%)'})
 ylabel('Normalised makespan','FontSize', 14)
 
 c = findobj(gca,'Tag','Box');
-h = legend([c(2),c(1)],"WFD","our",'FontAngle','italic','location','southeast','Orientation','horizontal');
+h = legend([c(2),c(1)],"WFD","AJLR",'FontAngle','italic','location','southeast','Orientation','horizontal');
 set(h,'FontSize',14);
 
 % title({'Recency Profile 1               Recency Profile 2               Recency Profile 3'})

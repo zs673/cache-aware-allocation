@@ -43,10 +43,11 @@ for task = 1 : taskNum
  
    
     xticks = sum(1:methodNum)/methodNum : methodNum : instanceNo * methodNum;
-    
+    xticklables = 1:10
 %     xticks = [1.5, 3.5, 5.5, 7.5, 9.5, 11.5, 13.5, 15.5,17.5, 19.5]
 %     xticks = [2, 5, 8, 11, 14, 17, 20, 23,26, 29];
     set(gca,'xtick',xticks );
+    set(gca,'xticklabel',xticklables);
     
     ax = gca;
     ax.FontSize = 12; 

@@ -58,7 +58,7 @@ maxUtil = 8;
     xlim([0 16]);
     ylim([0 1]);
     xticks = [2 5 8 11 14];
-    xticklables = ["10%","20%","30%","40%","50%" ];
+    xticklables = ["10","20","30","40","50" ];
     
     set(gca,'xtick',xticks );
     set(gca,'xticklabel',xticklables);
@@ -68,7 +68,7 @@ maxUtil = 8;
     ax.TickLabelInterpreter = 'tex';
     ax.FontSize = 12;
     
-     xlabel('System utilisation','FontSize', 14)
+     xlabel('System utilisation (%)','FontSize', 14)
      ylabel('Normalised makespan','FontSize', 14)
       
    c = findobj(gca,'Tag','Box');
@@ -77,7 +77,7 @@ maxUtil = 8;
     
 
 
-    h = legend([c(3),c(2),c(1)],"WFD","our without faults","our with faults",'FontAngle','italic','location','southeast','Orientation','horizontal');
+    h = legend([c(3),c(2),c(1)],"WFD","AJLR without deviations","AJLR with deviations",'FontAngle','italic','location','southeast','Orientation','horizontal');
     set(h,'FontSize',14);
 
     

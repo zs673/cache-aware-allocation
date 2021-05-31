@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.util.Pair;
+
+import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -58,19 +61,83 @@ public class SystemGenerator {
 			System.out.println(
 					"----------------------------------- Scheduling parameters -----------------------------------");
 
-		List<DirectedAcyclicGraph> dagTasks = generateSporadicDAGs(periods);
+		List<DirectedAcyclicGraph> dagTasks = null;
+		boolean schedulable = false;
 
-		/**
-		 * Set offline scheduling and allocation for the hard task
-		 */
+		Pair<Long, List<int[]>> res = null;
+
 		if (hard) {
-			dagTasks.get(0).hard = hard;
+			while (!schedulable) {
+				dagTasks = generateSporadicDAGs(periods, hard);
 
-			for (Node n : dagTasks.get(0).getFlatNodes()) {
-				n.offline_partition = 0;
-				n.priority = 1;
+				/**
+				 * Set offline scheduling and allocation for the hard task
+				 */
+
+				DirectedAcyclicGraph dag = dagTasks.get(0);
+				dag.hard = hard;
+
+				res = DAGtoPython.pharseDAGForPython(dag, cores);
+
+				long blocking = 0;
+
+				if (dagTasks.size() > 1) {
+					List<Node> blockingNodes = new ArrayList<>();
+
+					for (int i = 1; i < dagTasks.size(); i++) {
+						blockingNodes.addAll(dagTasks.get(i).getFlatNodes());
+					}
+
+					blockingNodes.sort((c1, c2) -> -Long.compare(c1.getWCET(), c2.getWCET()));
+
+					for (int i = 0; i < SystemParameters.fan_in; i++) {
+						blocking += blockingNodes.get(i).getWCET();
+					}
+				}
+
+				long response_time = res.getFirst() + blocking;
+				if (response_time > dag.getSchedParameters().getDeadline())
+					schedulable = false;
+				else
+					schedulable = true;
 			}
+
+			List<int[]> prio = res.getSecond();
+
+			/*
+			 * Set priority for hard real-time nodes
+			 */
+			for (Node n : dagTasks.get(0).getFlatNodes()) {
+				int id = n.getId();
+
+				for (int i = 0; i < prio.size(); i++) {
+					if (prio.get(i)[0] - 1 == id) {
+						n.priority = prio.get(i)[1];
+						break;
+					}
+				}
+			}
+
+//			/*
+//			 * Set allocation for hard real-time nodes
+//			 */
+//			List<Node> hardNodes = new ArrayList<>(dagTasks.get(0).getFlatNodes());
+//			hardNodes.sort((c1, c2) -> -Integer.compare(c1.priority, c2.priority));
+//
+//			int currentCore = 0;
+//			for (int i = 0; i < hardNodes.size(); i++) {
+//				Node n = hardNodes.get(i);
+//				n.offline_partition = currentCore;
+//
+//				if (currentCore == 7)
+//					currentCore = 0;
+//				else
+//					currentCore++;
+//			}
+		} else {
+			dagTasks = generateSporadicDAGs(periods, hard);
 		}
+		/************************************************************************************/
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
 
@@ -130,7 +197,7 @@ public class SystemGenerator {
 		return dags;
 	}
 
-	private List<DirectedAcyclicGraph> generateSporadicDAGs(List<Long> periods) {
+	private List<DirectedAcyclicGraph> generateSporadicDAGs(List<Long> periods, boolean hard) {
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
 		List<SchedulingParameters> schedParam = generateSchedParam(periods);
@@ -142,16 +209,23 @@ public class SystemGenerator {
 			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer,
 					SystemParameters.minLayer, SystemParameters.maxParal, SystemParameters.minParal,
 					SystemParameters.connectProb, ran);
-			DirectedAcyclicGraph dagTask = new DirectedAcyclicGraph(schedParam.get(i), dag_param, i, seed);
+			DirectedAcyclicGraph dagTask = null;
+
+			if (i == 0 && hard) {
+				dagTask = new DirectedAcyclicGraph(schedParam.get(i), dag_param, i, seed, true);
+			} else {
+				dagTask = new DirectedAcyclicGraph(schedParam.get(i), dag_param, i, seed, false);
+			}
+
 			dags.add(dagTask);
 		}
 
 		generateWCETs(dags);
 
-		for (DirectedAcyclicGraph d : dags) {
-			d.findPath(true);
-			d.findPath(false);
-		}
+//		for (DirectedAcyclicGraph d : dags) {
+//			d.findPath(true);
+//			d.findPath(false);
+//		}
 
 //		for (DirectedAcyclicGraph d : dags)
 //			System.out.println(d.toString());

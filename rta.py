@@ -63,7 +63,10 @@ def find_longest_path_dfs(G_, start_vertex, end_vertex, weights):
             cost = cost + weights[v - 1]
         costs.append(cost)
 
-    (m, i) = max((v, i) for i, v in enumerate(costs))
+    try:
+        (m, i) = max((v, i) for i, v in enumerate(costs))
+    except:
+        print("Error")
 
     return (m, paths[i])
 
@@ -193,7 +196,7 @@ def source(G):
 ########################################################################################################################
 
 TASKSET_TO_EVALUATE = 1000
-A_VERY_LARGE_NUMBER = 1000000
+A_VERY_LARGE_NUMBER = 1000
 
 def print_debug(*args, **kw):
     #print(args)
@@ -391,7 +394,7 @@ def find_G_theta_i_star(G, providers, consumers, i):
     return G_theta_i_star
 
 
-def rta_alphabeta_new(G_, C_, prio_, m, EOPA=False, TPDS=False):
+def rta_alphabeta_new(G_, C_, prio_, m, overide_prio=0, EOPA=False, TPDS=False):
     """ Response time analysis using alpha_beta
     """
     # --------------------------------------------------------------------------
@@ -440,17 +443,36 @@ def rta_alphabeta_new(G_, C_, prio_, m, EOPA=False, TPDS=False):
     alpha_arr = []
     beta_arr = []
 
-    if EOPA:
-        Prio = Eligiblity_Ordering_PA(G_dict, C_dict)
-        print_debug("Prioirties", Prio)
-    elif TPDS:
-        Prio = TPDS_Ordering_PA(G_dict, C_dict)
-        # reverse the order
-        for i in Prio:
-            Prio[i] = A_VERY_LARGE_NUMBER - Prio[i]
-        print_debug("Prioirties", Prio)
-    else:
+    # if EOPA:
+    #     Prio = Eligiblity_Ordering_PA(G_dict, C_dict)
+    #     print_debug("Prioirties", Prio)
+    # elif TPDS:
+    #     Prio = TPDS_Ordering_PA(G_dict, C_dict)
+    #     # reverse the order
+    #     for i in Prio:
+    #         Prio[i] = A_VERY_LARGE_NUMBER - Prio[i]
+    #     print_debug("Prioirties", Prio)
+    # else:
+    #     Prio = prio_
+
+    if overide_prio == 1:
         Prio = prio_
+    else:
+        # remove the sink node first; to comptatible with EOPA
+        G_dict_cp = copy.deepcopy(G_dict)
+        C_dict_cp = copy.deepcopy(C_dict)
+        sink_node_idx = V_array[-1]
+        G_dict_cp.pop(sink_node_idx)
+        C_dict_cp.pop(sink_node_idx)
+
+        # assign prioirties
+        Prio = Eligiblity_Ordering_PA(G_dict_cp, C_dict_cp)
+
+        Prio[sink_node_idx] = A_VERY_LARGE_NUMBER
+
+        for key in sorted(Prio.keys()):
+            print("{0}:{1}".format(key, Prio[key]), end=',')
+        print("")
 
     # ==========================================================================
     # iteratives all providers (first time, to get all finish times)
@@ -1045,6 +1067,38 @@ def EO_Compute_Length(G, C):
     # topological ordering
     # (skipped as this is guaranteed by the generator)
     G_new = copy.deepcopy(G)
+
+    # [debug]
+    #print(G_new)
+
+    source_node_id = 1
+    sink_node_id = 99
+    G_new[source_node_id] = []
+    G_new[sink_node_id] = []
+    C[source_node_id] = 1
+    C[sink_node_id] = 1
+
+    #print(C)
+
+    # find node who has no parents
+    child_nodes = []
+    for key, value in copy.deepcopy(G_new).items():
+        for i_value in value:
+            child_nodes.append(i_value)
+
+    for key, value in copy.deepcopy(G_new).items():
+        if key not in child_nodes:
+            if key is not source_node_id and key is not sink_node_id:
+                G_new[source_node_id].append(key)
+
+    # find nodes who has no child
+    for key, value in G_new.items():
+        if not value:
+            if key is not sink_node_id:
+                G_new[key].append(sink_node_id)
+    #print(G_new)
+    # [debug]
+
     theta_i = G_new.keys()
 
     for theta_ij in theta_i:
@@ -1052,15 +1106,21 @@ def EO_Compute_Length(G, C):
         C_i = C[theta_ij]
 
         # forward searching in G_new
-        c_array = []
+        # [debug]
+        c_array = [0] * sink_node_id
         for key in sorted(C):
-            c_array.append(C[key])
+            c_array[key-1] = C[key]
+        #print(c_array)
+
         lf_i, _ = find_longest_path_dfs(G_new, min(theta_i), theta_ij, c_array)
 
         # backward searching in G_new
-        c_array = []
+        # [debug]
+        c_array = [0] * sink_node_id
         for key in sorted(C):
-            c_array.append(C[key])
+            c_array[key-1] = C[key]
+        #print(c_array)
+
         lb_i, _ = find_longest_path_dfs(G_new, theta_ij, max(theta_i), c_array)
 
         # calculate l
@@ -1122,6 +1182,18 @@ def EO_iter(G_dict, C_dict, providers, consumers, Prio):
                         if (j not in theta_i):
                             value_new.remove(j)
                     G_new[key] = value_new
+
+            # --------------------------------------------------------------------------
+            # [debug] to solve cyclic graph problem
+            # child_nodes = []
+            # for key, value in copy.deepcopy(G_new).items():
+            #     for i_value in value:
+            #         child_nodes.append(i_value)
+            #
+            # for key, value in copy.deepcopy(G_new).items():
+            #     if not value:   # if key.value has no child
+            #         if key in child_nodes:
+            #             del G_new[key]
 
             # --------------------------------------------------------------------------
             # find the longest local path in theta_i
@@ -1230,7 +1302,7 @@ def Eligiblity_Ordering_PA(G_dict, C_dict):
     global time_EO_CPC
     begin_time = time.time()
     # << for time measurement
-    
+
     providers, consumers = find_providers_consumers(G_dict, lamda, VN_array)
 
     # >> for time measurement
@@ -1884,7 +1956,7 @@ def experiment(exp=1):
 
     global dag_base_folder
     global L_ratio
-    
+
     # exp 1 (scale m)
     if exp == 1:
         for m in [2, 3, 4, 5, 6, 7, 8]:
@@ -1950,7 +2022,7 @@ def experiment(exp=1):
         # multi-DAG schedulability
         dag_base_folder = "data/data-generic/"
         L_ratio = -1
-        
+
         m = 6
         u_list = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
         u_list_new = [round(i * m, 2) for i in u_list]
@@ -1972,7 +2044,7 @@ def experiment(exp=1):
             TPDS_Ordering_PA(G_dict, C_dict)
             time_TPDS = time.time() - begin_time
             print(time_TPDS)
-            
+
             # time EO
             Eligiblity_Ordering_PA(G_dict, C_dict)
             print(time_EO_CPC)
@@ -1986,30 +2058,34 @@ def experiment(exp=1):
             res_TPDS.append(time_TPDS)
             res_EO.append(time_EO)
             res_EO_CPC.append(time_EO_CPC)
-            
+
         print("TPDS_Mean:", round(sum(res_TPDS) / len(res_TPDS), 6))
         print("EO Mean:", round(sum(res_EO) / len(res_EO), 6))
         print("EO_CPC Mean:", round(sum(res_EO_CPC) / len(res_EO_CPC), 6))
-    
+
 
 # test code:
 if __name__ == "__main__":
     #print('Number of arguments:', len(sys.argv), 'arguments.')
     #print('Argument List:', str(sys.argv))
 
-    G = {1:[2,3,4,7], 2:[6], 3:[5], 4:[5], 7:[8], 6:[8], 5:[8], 8:[]}
-    C = {1:0, 2:79, 3:74, 4:73, 5:76, 6:71, 7:99, 8:0}
-
     # use the intrepreter to decode code (!the input strings have to be error-free!)
-    #a = ast.literal_eval("{1:[2,3,4,7], 2:[6], 3:[5], 4:[5], 7:[8], 6:[8], 5:[8], 8:[]}")
     G = ast.literal_eval(sys.argv[1])
     C = ast.literal_eval(sys.argv[2])
     prio = ast.literal_eval(sys.argv[3])
-    m = ast.literal_eval(sys.argv[4])
+    n_cores = ast.literal_eval(sys.argv[4])
+    overide_prio = ast.literal_eval(sys.argv[5])
+
+    # test vector
+    # G = {1:[2,3,4,5,9],2:[9],3:[6,7,8],4:[7],5:[7,8],6:[9],7:[9],8:[9],9:[]}
+    # C = {1:4581,2:17559,3:9352,4:7826,5:8589,6:12215,7:9543,8:15078,9:11261}
+    # prio = {1:9,2:8,3:7,4:6,5:5,6:4,7:3,8:2,9:1}
+    # n_cores = 2
+    # overide_prio = 0
 
     #print(G)
     #print(C)
     #print(prio)
 
-    R, alpha_arr, beta_arr = rta_alphabeta_new(G, C, prio, m)
+    R, alpha_arr, beta_arr = rta_alphabeta_new(G, C, prio, n_cores, overide_prio)
     print(R)

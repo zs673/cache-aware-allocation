@@ -4,8 +4,8 @@ taskNum = 1;
 
 % methodNames = strcat(methods, " level 1 miss");
 
-methodName1 = strcat(methods, " - type 1");
-methodName2 = strcat(methods, " - type 2");
+methodName1 = strcat(methods, " - core");
+methodName2 = strcat(methods, " - cluster");
 methodNames = strings(length(methods));
 for i = 0 : length(methods)-1
     methodNames(i*2+1) = methodName1(i+1);
@@ -40,22 +40,34 @@ for task = 1 : taskNum
     
 
     % plot all data by boxplot
-    for m=1:methodNum
-        datam = dataByMethod{m}(:,1:colsNum);
+%     for m=1:methodNum
+        datam1 = dataByMethod{1}(:,1:colsNum);
        
-        data = [taskWCET/1000, datam(1: length(taskWCET),1)];
+        data = [taskWCET/1000, datam1(1: length(taskWCET),1)];
         
-        h((m-1)*2+1) = plot(taskWCET/1000, 1-datam(:,1),'x','MarkerSize',5,'color',colors((m-1)*2+1,:) );
+        plot(taskWCET/1000, 1-datam1(:,1),'x','MarkerSize',5,'color',colors((1-1)*2+1,:) );
         hold on;
-        h((m-1)*2+2) = plot(taskWCET/1000, 1-datam(:,1)-datam(:,2),'.','MarkerSize',8,'color',colors((m-1)*2+2,:) );
+        plot(taskWCET/1000, 1-datam1(:,1)-datam1(:,2),'.','MarkerSize',8,'color',colors((1-1)*2+2,:) );
         hold on;
-    end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        datam2 = dataByMethod{2}(:,1:colsNum);
+       
+        data = [taskWCET/1000, datam2(1: length(taskWCET),1)];
+        
+        plot(taskWCET/1000, 1-datam2(:,1),'x','MarkerSize',5,'color',colors((2-1)*2+1,:) );
+        hold on;
+
+        plot(taskWCET/1000, 1-datam2(:,1)-datam2(:,2),'.','MarkerSize',8,'color',colors((2-1)*2+2,:) );
+        hold on;
+%     end
     
     
     if(xlim_value>0)
         xlim([0, xlim_value]);
     end
-    ylim([-0.1, 1.1]);
+    ylim([-0.15, 1.1]);
     
     ax = gca;
     ax.FontSize = 12; 

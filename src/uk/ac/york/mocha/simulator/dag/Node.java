@@ -77,7 +77,7 @@ public class Node implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Node " + dagID + "-" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
+		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
 	}
 	
 	public String getFullName() {

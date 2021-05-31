@@ -6,17 +6,18 @@ public class SystemParameters {
 	 *********************** Experimental Settings ************************
 	 **********************************************************************/
 	public enum ExpName {
-		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, periods, tasks
+		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, offline_multi, methods, periods,
+		tasks
 	}
 
-	public static final int NoS = 1000;
-	public static final boolean printSim = true;
-	public static final boolean printGen = true;
+	public static int NoS = 1000;
+	public static final boolean printSim = false;
+	public static final boolean printGen = false;
 
 	/**********************************************************************
 	 ************************** Number of cores ***************************
 	 **********************************************************************/
-	public static final int coreNum = 8;
+	public static int coreNum = 8;
 
 	/**********************************************************************
 	 ************************** Cache Hierarchy ***************************
@@ -32,8 +33,8 @@ public class SystemParameters {
 	public static final double connectProb = 0.5;
 	public static final int minLayer = 5;
 	public static final int maxLayer = 8;
-	public static final int minParal = 5;
-	public static final int maxParal = 10;
+	public static int minParal = 2;
+	public static int maxParal = 10;
 
 	/* parameters for NFJ DAGs */
 	public static final int depth = 5;
@@ -41,6 +42,7 @@ public class SystemParameters {
 	public static final double join_prob = 0.8;
 	public static final int fork_max = 2;
 	public static final int fork_min = 4;
+	public static final int fan_in = 3;
 
 	/* Recency fault rate */
 	public static int fault_rate = 5;

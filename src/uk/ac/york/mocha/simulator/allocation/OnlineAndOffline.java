@@ -3,7 +3,6 @@ package uk.ac.york.mocha.simulator.allocation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -43,47 +42,73 @@ public class OnlineAndOffline extends OnelineAllocation {
 		/**
 		 * Allocation for hard real-time tasks
 		 */
-		List<Integer> allocProcsHard = new ArrayList<>();
-		List<Node> allocNodesHard = new ArrayList<>();
-
-		for (int i = 0; i < readyNodes.size(); i++) {
-			Node n = readyNodes.get(i);
-
-			if (n.priority > -1) {
-
-				int offlineAlloc = n.offline_partition;
-				if (availableProcs.contains(offlineAlloc) && !allocProcsHard.contains(offlineAlloc)) {
-					n.partition = offlineAlloc;
-
-					allocProcsHard.add(offlineAlloc);
-					allocNodesHard.add(n);
-				}
-
-			}
-
-		}
+//		List<Integer> allocProcsHard = new ArrayList<>();
+//		List<Node> allocNodesHard = new ArrayList<>();
+//		List<Node> hardAsSoft = new ArrayList<>();
+//
+//		for (int i = 0; i < readyNodes.size(); i++) {
+//			Node n = readyNodes.get(i);
+//
+//			if (n.priority > -1) {
+//
+//				int offlineAlloc = n.offline_partition;
+//				hardAsSoft.add(n);
+//				if (availableProcs.contains(offlineAlloc) && !allocProcsHard.contains(offlineAlloc)) {
+//					n.partition = offlineAlloc;
+//
+//					allocProcsHard.add(offlineAlloc);
+//					allocNodesHard.add(n);
+//				} else { //if (!availableProcs.contains(offlineAlloc) && availableProcs.size() > 0) 
+//					Pair<Long, Integer> res = table.computeET(-1, history_level1, history_level2, history_level3, n,
+//							offlineAlloc, true, recency_fault, 0);
+////					long et_diff_wait = n.getWCET() - res.getFirst();
+//					int cache = res.getSecond();
+//
+//					if (cache != 1) {
+//						hardAsSoft.add(n);
+//					}
+//
+////					List<Integer> free_proc_update = new ArrayList<>();
+////					for(int j=0; j<availableProcs.size();j++) {
+////						if(!allocNodesHard.contains(availableProcs.get(j))) {
+////							free_proc_update.add(availableProcs.get(j));
+////						}
+////					}
+////					
+////					List<Long> et_conserving = new ArrayList<>();
+////					for(int j=0; j< free_proc_update.size(); j++) {
+////						
+////					}
+//				}
+//
+//			}
+//
+//		}
 
 		/**
 		 * Allocation for soft real-time tasks
 		 */
-
-		List<Node> softNodes = readyNodes.stream().filter(c -> c.priority == -1).collect(Collectors.toList());
-		List<Integer> softProcs = new ArrayList<>();
-		for (int i = 0; i < availableProcs.size(); i++) {
-			int proc = availableProcs.get(i);
-			if (!allocProcsHard.contains(proc)) {
-				softProcs.add(proc);
-			}
-		}
+//		List<Node> softNodes = readyNodes.stream().filter(c -> c.priority == -1).collect(Collectors.toList());
+//		List<Node> restNodes = new ArrayList<>();
+//		restNodes.addAll(hardAsSoft);
+//		restNodes.addAll(softNodes);
+//
+//		List<Integer> softProcs = new ArrayList<>();
+//		for (int i = 0; i < availableProcs.size(); i++) {
+//			int proc = availableProcs.get(i);
+//			if (!allocProcsHard.contains(proc)) {
+//				softProcs.add(proc);
+//			}
+//		}
 
 		List<Node> preEligible = new ArrayList<>();
-		for (int i = 0; i < softProcs.size(); i++) {
-			if (softNodes.size() == i)
+		for (int i = 0; i < availableProcs.size(); i++) {
+			if (readyNodes.size() == i)
 				break;
-			preEligible.add(softNodes.get(i));
+			preEligible.add(readyNodes.get(i));
 		}
 
-		List<Integer> availableP = new ArrayList<>(softProcs);
+		List<Integer> availableP = new ArrayList<>(availableProcs);
 
 		List<List<Long>> speedUpTable = new ArrayList<>();
 

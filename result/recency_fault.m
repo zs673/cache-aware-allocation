@@ -14,9 +14,11 @@ mesh(y,x,z)
 
 colormap(lines(5))
 
-xlabel({'Fault rate P_r'},'FontSize', 14);
-ylabel({'Fault effect P_e'},'FontSize', 14)
-zlabel({'Differential in Normalised makespan'},'FontSize', 14)
+colorbar
+
+xlabel({'Deviation rate P_r (%)'},'FontSize', 14);
+ylabel({'Deviation effect P_e (%)'},'FontSize', 14)
+zlabel({'Differential in normalised makespan'},'FontSize', 14)
 
 % h = legend("WFD",'FontAngle','italic','location','west','Orientation','horizontal');
 % set(h,'FontSize',14);
@@ -28,11 +30,11 @@ grid on
 xh = get(gca,'XLabel'); % Handle of the x label
 set(xh, 'Units', 'Normalized')
 pos = get(xh, 'Position');
-set(xh, 'Position',pos.*[0.9,1,1],'Rotation',-4)
+set(xh, 'Position',pos.*[0.9,0.4,1],'Rotation',-4)
 yh = get(gca,'YLabel'); % Handle of the y label
 set(yh, 'Units', 'Normalized')
 pos = get(yh, 'Position');
-set(yh, 'Position',pos.*[1.05,-0.5,1],'Rotation',20.5)
+set(yh, 'Position',pos.*[1.05,-0.3,1],'Rotation',20.5)
 
 ax = gca(); 
 ax.TickLabelInterpreter = 'tex';
@@ -60,8 +62,8 @@ ax = gca();
 ax.TickLabelInterpreter = 'tex';
 ax.FontSize = 12; 
 
-xlabel({'Varied execution time in percentage'},'FontSize', 14);
-ylabel({'Fault rate in percentage'},'FontSize', 14)
+xlabel({'Deviation in percentage'},'FontSize', 14);
+ylabel({'Probability in percentage'},'FontSize', 14)
 zlabel({'Normalised makespan'},'FontSize', 14)
 
 

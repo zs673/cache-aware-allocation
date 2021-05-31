@@ -37,7 +37,7 @@ public class OnlineRandom extends OnelineAllocation {
 			if (i >= readyNodes.size())
 				break;
 
-			int core = getCoreIndexWithMinialWorkload(freeProc);
+			int core = getRandomCoreIndex(freeProc);
 			readyNodes.get(i).partition = core;
 
 			freeProc.remove(freeProc.indexOf(core));
@@ -45,7 +45,7 @@ public class OnlineRandom extends OnelineAllocation {
 
 	}
 
-	public int getCoreIndexWithMinialWorkload(List<Integer> freeProc) {
+	public int getRandomCoreIndex(List<Integer> freeProc) {
 
 		ArrayList<Integer> free = new ArrayList<>(freeProc);
 		Collections.shuffle(free);

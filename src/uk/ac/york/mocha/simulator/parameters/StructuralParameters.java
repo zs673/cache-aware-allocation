@@ -17,15 +17,19 @@ public class StructuralParameters implements Serializable {
 	private final double connect_prob;
 	private final int layers;
 
+	public final int parallelism_min;
+	public final int parallelism_max;
+
 	/* DAG structure Parameters */
-	public StructuralParameters(int maxLayer, int minLayer, int maxParall, int minparall, double connect_prob, Random rng) {
+	public StructuralParameters(int maxLayer, int minLayer, int maxParall, int minparall, double connect_prob,
+			Random rng) {
 
 		if (maxLayer - minLayer < 0) {
 			System.err.println("maxLayer-minLayer < 0 !!");
 			System.err.println("maxLayer: " + maxLayer + "    minLayer: " + minLayer);
 			System.exit(-1);
 		}
-		
+
 		if (maxParall - minparall < 0) {
 			System.err.println("maxParal-minParal < 0 !!");
 			System.err.println("maxParal: " + maxParall + "    minParal: " + minparall);
@@ -33,6 +37,9 @@ public class StructuralParameters implements Serializable {
 		}
 
 		this.parallelism = rng.nextInt(maxParall - minparall) + minparall;
+		this.parallelism_max = maxParall;
+		this.parallelism_min = minparall;
+
 		this.connect_prob = connect_prob;
 
 		this.layers = rng.nextInt(maxLayer - minLayer) + minLayer;
@@ -49,6 +56,5 @@ public class StructuralParameters implements Serializable {
 	public int getLayers() {
 		return layers;
 	}
-
 
 }

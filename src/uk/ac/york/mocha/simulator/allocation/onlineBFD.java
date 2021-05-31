@@ -41,7 +41,7 @@ public class onlineBFD extends OnelineAllocation{
 			if (i >= readyNodes.size())
 				break;
 
-			int core = getCoreIndexWithMinialWorkload(freeProc, history_level1);
+			int core = getCoreIndexWithMaxWorkload(freeProc, history_level1);
 			readyNodes.get(i).partition = core;
 			
 			
@@ -50,7 +50,7 @@ public class onlineBFD extends OnelineAllocation{
 
 	}
 
-	public int getCoreIndexWithMinialWorkload(List<Integer> freeProc, List<List<Node>> history_level1) {
+	public int getCoreIndexWithMaxWorkload(List<Integer> freeProc, List<List<Node>> history_level1) {
 
 		List<Long> accumaltedWorkload = new ArrayList<>();
 
@@ -62,8 +62,8 @@ public class onlineBFD extends OnelineAllocation{
 			accumaltedWorkload.add(accumated);
 		}
 		
-		long minWorkload = Collections.max(accumaltedWorkload);
-		int coreIndex = accumaltedWorkload.indexOf(minWorkload);
+		long maxWorkload = Collections.max(accumaltedWorkload);
+		int coreIndex = accumaltedWorkload.indexOf(maxWorkload);
 
 		return freeProc.get(coreIndex);
 	}

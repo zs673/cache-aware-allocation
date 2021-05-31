@@ -68,7 +68,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	 */
 	public boolean hard = false;
 
-	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed) {
+	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed,
+			boolean hard) {
 
 		this.id = id;
 		this.name = "DAG " + id;
@@ -144,10 +145,10 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/******************************************************************
-	 ******************** Generate DAG structure ********************** This method does notdepend on
+	 ******************** Generate DAG structure ********************** This method does not depend on
 	 * external library! *********
 	 ******************************************************************/
-	private void constructDAG() {
+	public void constructDAG() {
 		if (layeredNodes.size() > 0) {
 			System.err.println("The DAG task has already being generated!");
 			return;
@@ -177,13 +178,20 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		/*
 		 * constrcut the DAG layer by layer
+		 * 
 		 */
+
+//		System.out.println(layers);
+
 		for (int l = 1; l < layers - 1; l++) {
 
 			/*
 			 * generate nodes for this layer
 			 */
-			int nodeNum = rng.nextInt(dag_param.getParallelism()) + 1;
+			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+					+ dag_param.parallelism_min;
+//			int nodeNum = rng.nextInt(dag_param.getParallelism()) + 1;
+			System.out.println(nodeNum);
 			List<Node> nodePerLayer = new ArrayList<>();
 
 			for (int k = 0; k < nodeNum; k++) {
@@ -259,6 +267,108 @@ public class DirectedAcyclicGraph implements Serializable {
 			sink.addParent(n);
 		}
 		childless.clear();
+
+		this.flatNodes = layeredNodes.stream().flatMap(s -> s.stream()).collect(Collectors.toList());
+		flatNodes.sort((n1, n2) -> Integer.compare(n1.getId(), n2.getId()));
+		this.nodeNum = flatNodes.size();
+
+		for (Node n : flatNodes)
+			this.graph.addVertex(n);
+
+		for (ImmutablePair<Node, Node> e : edges)
+			this.graph.addEdge(e.left, e.right);
+	}
+
+	public void constructNFJDAG(int fanInNum) {
+
+		int nodeCounter = 1;
+
+		/*
+		 * Helper lists for constructing edges
+		 */
+		List<Node> parents = new ArrayList<>(); // potential parent nodes for a layer
+		List<Node> nodeCurrentLayer = new ArrayList<>();
+		/*
+		 * initialize source and sink node
+		 */
+		this.source = new Node(0, NodeType.SOURCE, 0, id);
+
+		List<Node> firstLayer = new ArrayList<>();
+		firstLayer.add(source);
+		this.layeredNodes.add(firstLayer);
+
+		parents = firstLayer;
+
+		/*
+		 * constrcut the DAG layer by layer
+		 */
+		for (int l = 1; l < fanInNum * 2; l++) {
+
+			if (l % 2 == 1) {
+				/*
+				 * generate nodes for fan-in
+				 */
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+						+ dag_param.parallelism_min;
+				List<Node> nodePerLayer = new ArrayList<>();
+
+				for (int k = 0; k < nodeNum; k++) {
+					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id);
+
+					nodePerLayer.add(n);
+					nodeCounter++;
+				}
+
+				this.layeredNodes.add(nodePerLayer);
+				nodeCurrentLayer = nodePerLayer;
+			} else {
+				/*
+				 * generate nodes for fan-out
+				 */
+				int nodeNum = 1;
+				List<Node> nodePerLayer = new ArrayList<>();
+
+				for (int k = 0; k < nodeNum; k++) {
+					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id);
+
+					nodePerLayer.add(n);
+					nodeCounter++;
+				}
+
+				this.layeredNodes.add(nodePerLayer);
+				nodeCurrentLayer = nodePerLayer;
+			}
+
+			for (Node n : nodeCurrentLayer) {
+				for (Node parent : parents) {
+					ImmutablePair<Node, Node> e = new ImmutablePair<Node, Node>(parent, n);
+
+					edges.add(e);
+
+					parent.addChildren(n);
+					n.addParent(parent);
+				}
+			}
+
+			/* update parents for the next layer */
+			parents = nodeCurrentLayer;
+		}
+
+		/* generate the sink node */
+		this.sink = new Node(fanInNum * 2 + 1, NodeType.SINK, nodeCounter, id); // TODO add links, make it random.
+		List<Node> lastLayer = new ArrayList<>();
+		lastLayer.add(sink);
+		this.layeredNodes.add(lastLayer);
+
+		/*
+		 * Link all childless nodes to the sink node
+		 */
+		for (Node n : parents) {
+			ImmutablePair<Node, Node> e = new ImmutablePair<Node, Node>(n, sink);
+			edges.add(e);
+			n.addChildren(sink);
+			sink.addParent(n);
+		}
 
 		this.flatNodes = layeredNodes.stream().flatMap(s -> s.stream()).collect(Collectors.toList());
 		flatNodes.sort((n1, n2) -> Integer.compare(n1.getId(), n2.getId()));

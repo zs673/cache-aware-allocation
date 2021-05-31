@@ -52,29 +52,29 @@ public class Utils {
 		} else {
 			int c = -1;
 
-			if (dag1.hard && dag2.hard) {
-				if(dag1.id != dag2.id) {
-					System.out.println("Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but there should be only one DAG in the system!");
+			if (dag1.hard) {
+				if (dag1.id != dag2.id) {
+					System.out.println(
+							"Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but there should be only one DAG in the system!");
 					System.exit(-1);
 				}
-				
-				c = Integer.compare(c1.getDagInstNo(), c1.getDagInstNo());
 
-				if (c != 0)
-					return c;
-				else {
-					return -Long.compare(c1.priority, c2.priority);
-				}
-				
+//				c = Integer.compare(c1.getDagInstNo(), c1.getDagInstNo());
+//
+//				if (c != 0)
+//					return c;
+//				else {
+				return -Long.compare(c1.priority, c2.priority);
+//				}
 
 			} else {
 				c = -Long.compare(c1.getWCET(), c2.getWCET());
 
-				if (c != 0)
-					return c;
-				else {
-					return Integer.compare(c1.getDagInstNo(), c1.getDagInstNo());
-				}
+//				if (c != 0)
+				return c;
+//				else {
+//					return Integer.compare(c1.getDagInstNo(), c1.getDagInstNo());
+//				}
 			}
 
 		}
