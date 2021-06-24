@@ -33,7 +33,6 @@ public class EP1_2 {
 			@Override
 			public void run() {
 				changeTaskNumRunner(4);
-
 			}
 		});
 

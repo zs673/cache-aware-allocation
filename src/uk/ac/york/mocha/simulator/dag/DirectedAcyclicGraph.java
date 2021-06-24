@@ -279,7 +279,7 @@ public class DirectedAcyclicGraph implements Serializable {
 			this.graph.addEdge(e.left, e.right);
 	}
 
-	public void constructNFJDAG(int fanInNum) {
+	public void constructHuaweiDAG(int layers) {
 
 		int nodeCounter = 1;
 
@@ -302,7 +302,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		/*
 		 * constrcut the DAG layer by layer
 		 */
-		for (int l = 1; l < fanInNum * 2; l++) {
+		for (int l = 1; l < layers * 2; l++) {
 
 			if (l % 2 == 1) {
 				/*
@@ -355,7 +355,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		}
 
 		/* generate the sink node */
-		this.sink = new Node(fanInNum * 2 + 1, NodeType.SINK, nodeCounter, id); // TODO add links, make it random.
+		this.sink = new Node(layers * 2 + 1, NodeType.SINK, nodeCounter, id); // TODO add links, make it random.
 		List<Node> lastLayer = new ArrayList<>();
 		lastLayer.add(sink);
 		this.layeredNodes.add(lastLayer);
