@@ -3,7 +3,7 @@
 for task = 3 : 4
     count = 1;
     
-     f=figure('Position', [100, 100, wid, len*4]);
+     f=figure('Position', [100, 100, wid+(task-2)*200, len*4]);
     set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
     
     for path = path_results
@@ -137,11 +137,11 @@ for task = 3 : 4
         
         if task == 3
             set(gca,'xticklabel',xticklables);
-             xlabel({'\fontsize{12}DAG-1                                 DAG-2                                 DAG-3'; '\fontsize{14}Instances of DAG task'})
+             xlabel({'\fontsize{12}DAG-1                                                           DAG-2                                                           DAG-3'; '\fontsize{14}Instances of DAG task'})
     %          'DAG-1';
         else
             set(gca,'xticklabel',xticklables);
-            xlabel({'\fontsize{12}DAG-1                         DAG-2                    DAG-3                         DAG-4'; '\fontsize{14}Instances of DAG task'})
+            xlabel({'\fontsize{12}DAG-1                                                             DAG-2                                                        DAG-3                                                             DAG-4'; '\fontsize{14}Instances of DAG task'})
         end
         ylabel('Normalised makespan','FontSize', 14)
 

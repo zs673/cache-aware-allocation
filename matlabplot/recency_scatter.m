@@ -53,7 +53,7 @@ for path = path_results
     ax.FontSize = 12; 
 
     tt = title({xlabels(count)});
-    tt.FontSize = 16
+    tt.FontSize = 16;
     xlabel('Workload of the DAG task','FontSize', 14)
     ylim([0, 1.0]);
     ylabel('Normalised makespan','FontSize', 14)
