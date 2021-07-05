@@ -9,6 +9,7 @@ import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph.DagType;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.generator.UUnifastDiscard;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -27,9 +28,11 @@ public class EP1_2 {
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static void main(String args[]) {
+		run();
+	}
 
+	public static void run() {
 		Thread t1 = new Thread(new Runnable() {
-
 			@Override
 			public void run() {
 				changeTaskNumRunner(4);
@@ -37,15 +40,13 @@ public class EP1_2 {
 		});
 
 		Thread t2 = new Thread(new Runnable() {
-
 			@Override
 			public void run() {
 				runOneDAG();
-
 			}
 		});
 
-//		t1.start();
+		t1.start();
 		t2.start();
 
 		try {
@@ -54,7 +55,6 @@ public class EP1_2 {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void runOneDAG() {
@@ -79,7 +79,7 @@ public class EP1_2 {
 			List<Double> us = new ArrayList<>();
 			us.add(u);
 			utils.add(us);
-			System.out.println(u);
+//			System.out.println(u);
 		}
 
 		RunOneGroup(1, intanceNum, hyperPeriodNum, false, utils, seed, seed, periods, NoS, true, ExpName.oneDAG);
@@ -157,7 +157,7 @@ public class EP1_2 {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i),false);
+					periods == null ? null : periods.get(i), false, DagType.Random);
 
 			OneSystemResults res = null;
 

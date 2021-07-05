@@ -12,7 +12,7 @@ import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
-import uk.ac.york.mocha.simulator.allocation.onlineBFD;
+import uk.ac.york.mocha.simulator.allocation.OnlineBFD;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
@@ -163,7 +163,7 @@ public class Simualtor {
 			allocM = new OnlineRandom();
 			break;
 		case BEST_FIT:
-			allocM = new onlineBFD();
+			allocM = new OnlineBFD();
 			break;
 		case WORST_FIT:
 			allocM = new OnlineWFD();
@@ -293,7 +293,7 @@ public class Simualtor {
 
 			n.start = systemTime;
 			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n,
-					n.partition, cacheAware, execution_fault, 0);
+					n.partition, cacheAware, execution_fault, 0, true);
 
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();

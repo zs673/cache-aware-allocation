@@ -59,10 +59,9 @@ public class OnlineCacheAware extends OnelineAllocation {
 					/*
 					 * Option 1: Speed up by ABSOLUTE vaue
 					 */
-					long WCET = n.getWCET();
-					long realET = table
-							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, recency_fault, 0)
-							.getFirst();
+					long WCET = n.getET(SystemParameters.useWCET, false);
+					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true,
+							recency_fault, 0, false).getFirst();
 					long speedup = WCET - realET;
 
 					/*
@@ -105,12 +104,12 @@ public class OnlineCacheAware extends OnelineAllocation {
 
 			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory,
 					preEligible, availableP, availableTimeAllProcs, table, currentTime, affinity, history_level1,
-					history_level2, history_level3,recency_fault);
+					history_level2, history_level3, recency_fault);
 
 			Node n = preEligible.get(p.getFirst().intValue());
 
 			n.partition = availableP.get(p.getSecond().intValue());
-			n.expectedET = n.getWCET() - speedUpTable.get(p.getFirst()).get(p.getSecond());
+			n.expectedET = n.getET(SystemParameters.useWCET, false) - speedUpTable.get(p.getFirst()).get(p.getSecond());
 
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
@@ -123,7 +122,7 @@ public class OnlineCacheAware extends OnelineAllocation {
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
 			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, RecencyProfile table, long time,
 			boolean affinity, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3,boolean recency_fault) {
+			List<Node> history_level3, boolean recency_fault) {
 
 		int row = -1;
 		int col = -1;
@@ -181,7 +180,7 @@ public class OnlineCacheAware extends OnelineAllocation {
 
 				for (int i = 0; i < freeProcIndex.size(); i++) {
 					int procIndex = freeProcIndex.get(i);
-					long et_n = n.getWCET() - speedUpTable.get(row).get(procIndex);
+					long et_n = n.getET(SystemParameters.useWCET, false) - speedUpTable.get(row).get(procIndex);
 
 					List<Node> nodesInProc = allocHistory.get(procIndex);
 
@@ -204,13 +203,13 @@ public class OnlineCacheAware extends OnelineAllocation {
 
 					for (Node affected : affectedNodes) {
 						long affectedTimeOneNode = table
-								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition,
-										true, recency_fault, et_n)
+								.computeET(-1, history_level1, history_level2, history_level3, affected,
+										affected.partition, true, recency_fault, et_n, false)
 								.getFirst()
 								- table.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, recency_fault, 0).getFirst();
+										affected.partition, true, recency_fault, 0, false).getFirst();
 
-						affectedTime += affectedTimeOneNode < 0? 0 : affectedTimeOneNode;
+						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 
 						if (affectedTime < 0) {
 							System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");

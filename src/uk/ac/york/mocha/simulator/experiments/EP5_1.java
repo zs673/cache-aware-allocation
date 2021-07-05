@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph.DagType;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
@@ -25,15 +26,19 @@ public class EP5_1 {
 
 	public static void main(String args[]) {
 
+		run();
+		
+	}
+
+	public static void run() {
 		SystemParameters.coreNum = 8;
 		SystemParameters.NoS = 1000;
 		SystemParameters.maxParal = 15;
 		SystemParameters.minParal = 6;
 
 		changeTaskNumRunner(1, 4);
-		
 	}
-
+	
 	public static void changeTaskNumRunner(int numMin, int numMax) {
 
 		int intanceNum = 10;
@@ -119,7 +124,7 @@ public class EP5_1 {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), true);
+					periods == null ? null : periods.get(i), true, DagType.Random);
 
 			OneSystemResults res = null;
 

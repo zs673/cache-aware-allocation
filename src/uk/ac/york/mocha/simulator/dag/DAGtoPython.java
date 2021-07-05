@@ -10,7 +10,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Pair;
 
+import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph.DagType;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class DAGtoPython {
 
@@ -18,7 +20,7 @@ public class DAGtoPython {
 
 		for (int i = 0; i < 10000; i++) {
 			SystemGenerator gen = new SystemGenerator(8, 1, true, true, null, i, true, true);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true);
+			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true, DagType.Random);
 
 			DirectedAcyclicGraph dag = dags.get(0);
 
@@ -155,7 +157,7 @@ public class DAGtoPython {
 		}
 		childrenS += "]";
 
-		String wcetS = id + ":" + n.getWCET();
+		String wcetS = id + ":" + n.getET(SystemParameters.useWCET, false);
 
 		String priorityS = id + ":" + n.priority;
 

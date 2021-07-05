@@ -121,9 +121,9 @@ public class OnlineAndOffline extends OnelineAllocation {
 					/*
 					 * Option 1: Speed up by ABSOLUTE vaue
 					 */
-					long WCET = n.getWCET();
+					long WCET = n.getET(SystemParameters.useWCET, false);
 					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true,
-							recency_fault, 0).getFirst();
+							recency_fault, 0, false).getFirst();
 					long speedup = WCET - realET;
 
 					/*
@@ -171,7 +171,7 @@ public class OnlineAndOffline extends OnelineAllocation {
 			Node n = preEligible.get(p.getFirst().intValue());
 
 			n.partition = availableP.get(p.getSecond().intValue());
-			n.expectedET = n.getWCET() - speedUpTable.get(p.getFirst()).get(p.getSecond());
+			n.expectedET = n.getET(SystemParameters.useWCET, false) - speedUpTable.get(p.getFirst()).get(p.getSecond());
 
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
@@ -242,7 +242,7 @@ public class OnlineAndOffline extends OnelineAllocation {
 
 				for (int i = 0; i < freeProcIndex.size(); i++) {
 					int procIndex = freeProcIndex.get(i);
-					long et_n = n.getWCET() - speedUpTable.get(row).get(procIndex);
+					long et_n = n.getET(SystemParameters.useWCET, false) - speedUpTable.get(row).get(procIndex);
 
 					List<Node> nodesInProc = allocHistory.get(procIndex);
 
@@ -266,10 +266,10 @@ public class OnlineAndOffline extends OnelineAllocation {
 					for (Node affected : affectedNodes) {
 						long affectedTimeOneNode = table
 								.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, recency_fault, et_n)
+										affected.partition, true, recency_fault, et_n, false)
 								.getFirst()
 								- table.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, recency_fault, 0).getFirst();
+										affected.partition, true, recency_fault, 0, false).getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 

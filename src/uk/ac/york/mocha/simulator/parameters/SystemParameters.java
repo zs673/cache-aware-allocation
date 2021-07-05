@@ -2,6 +2,14 @@ package uk.ac.york.mocha.simulator.parameters;
 
 public class SystemParameters {
 
+	public static boolean useWCET = false;
+
+	public enum ETDistruction {
+		uniform, normal
+	}
+
+	public static ETDistruction etType = ETDistruction.normal;
+
 	/**********************************************************************
 	 *********************** Experimental Settings ************************
 	 **********************************************************************/

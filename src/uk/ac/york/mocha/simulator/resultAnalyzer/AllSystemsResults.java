@@ -10,6 +10,7 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.ETDistruction;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class AllSystemsResults {
@@ -52,7 +53,16 @@ public class AllSystemsResults {
 		this.instanceNo = instanceNo;
 		this.recencyName = recencyName;
 
-		folder = "result/" + name + "/";
+		if(SystemParameters.useWCET) {
+			folder = "result_wcet/" + name + "/";
+		}
+		else if(SystemParameters.etType == ETDistruction.uniform) {
+			folder = "result_uniform/" + name + "/";
+		}
+		else {
+			folder = "result_normal/" + name + "/";
+		}
+		
 		File theDir = new File(folder);
 		if (!theDir.exists()) {
 			theDir.mkdirs();

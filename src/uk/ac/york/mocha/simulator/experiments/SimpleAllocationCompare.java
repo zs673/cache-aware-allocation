@@ -9,6 +9,7 @@ import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph.DagType;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.generator.UUnifastDiscard;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -28,6 +29,10 @@ public class SimpleAllocationCompare {
 
 	public static void main(String args[]) {
 
+		run();
+	}
+
+	public static void run() {
 		Thread t1 = new Thread(new Runnable() {
 
 			@Override
@@ -45,7 +50,7 @@ public class SimpleAllocationCompare {
 
 			}
 		});
-		
+
 		Thread t3 = new Thread(new Runnable() {
 
 			@Override
@@ -66,7 +71,6 @@ public class SimpleAllocationCompare {
 			e.printStackTrace();
 		}
 
-		
 	}
 
 	public static void runOneDAG() {
@@ -105,15 +109,15 @@ public class SimpleAllocationCompare {
 
 		List<Thread> threads = new ArrayList<>();
 
-		for (double i = 0.1; i <= 0.5; i=i+0.1) {
+		for (double i = 0.1; i <= 0.5; i = i + 0.1) {
 
 			SystemParameters.utilPerTask = i;
 
 			threads.add(new Thread(new Runnable() {
 				@Override
 				public void run() {
-					RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS,
-							true, false, ExpName.recency_fault_util);
+					RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS, true,
+							false, ExpName.recency_fault_util);
 				}
 			}));
 		}
@@ -128,7 +132,7 @@ public class SimpleAllocationCompare {
 		}
 
 	}
-	
+
 	public static void faultsInRecency3D() {
 		int intanceNum = 10;
 		int hyperPeriodNum = -1;
@@ -140,7 +144,7 @@ public class SimpleAllocationCompare {
 
 		List<List<Double>> results = new ArrayList<>();
 		List<List<Double>> reference = new ArrayList<>();
-		
+
 		SystemParameters.utilPerTask = 2.0;
 
 		for (int i = 0; i < faultRate; i++) {
@@ -160,15 +164,15 @@ public class SimpleAllocationCompare {
 				List<Double> r1 = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
 						false, ExpName.recency_fault);
 				System.out.println(r1);
-				
+
 				Median med = new Median();
-				
+
 				double[] r_array = new double[r.size()];
 				for (int k = 0; k < r.size(); k++) {
 					double d = r.get(k);
 					r_array[k] = d;
 				}
-				
+
 				double[] r1_array = new double[r1.size()];
 				for (int k = 0; k < r1.size(); k++) {
 					double d = r1.get(k);
@@ -239,7 +243,7 @@ public class SimpleAllocationCompare {
 			}
 			System.out.println();
 		}
-		
+
 		for (List<Double> dl : reference) {
 			for (int i = 0; i < dl.size(); i++) {
 
@@ -374,7 +378,7 @@ public class SimpleAllocationCompare {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i),false);
+					periods == null ? null : periods.get(i), false, DagType.Random);
 
 			OneSystemResults res = null;
 

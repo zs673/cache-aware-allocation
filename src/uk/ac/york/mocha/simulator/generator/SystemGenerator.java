@@ -9,6 +9,7 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph.DagType;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
@@ -49,7 +50,7 @@ public class SystemGenerator {
 	}
 
 	public List<DirectedAcyclicGraph> generatedDAGInstancesInOneHP(int forceInstanceNum, int hyperPeriodNum,
-			List<Long> periods, boolean hard) {
+			List<Long> periods, boolean hard, DagType type) {
 
 		if (periods != null && periods.size() != total_tasks) {
 			System.err
@@ -68,7 +69,7 @@ public class SystemGenerator {
 
 		if (hard) {
 			while (!schedulable) {
-				dagTasks = generateSporadicDAGs(periods, hard);
+				dagTasks = generateSporadicDAGs(periods, hard, type);
 
 				/**
 				 * Set offline scheduling and allocation for the hard task
@@ -88,10 +89,10 @@ public class SystemGenerator {
 						blockingNodes.addAll(dagTasks.get(i).getFlatNodes());
 					}
 
-					blockingNodes.sort((c1, c2) -> -Long.compare(c1.getWCET(), c2.getWCET()));
+					blockingNodes.sort((c1, c2) -> -Long.compare(c1.getET(SystemParameters.useWCET, false), c2.getET(SystemParameters.useWCET, false)));
 
 					for (int i = 0; i < SystemParameters.fan_in; i++) {
-						blocking += blockingNodes.get(i).getWCET();
+						blocking += blockingNodes.get(i).getET(SystemParameters.useWCET, false);
 					}
 				}
 
@@ -135,7 +136,7 @@ public class SystemGenerator {
 //					currentCore++;
 //			}
 		} else {
-			dagTasks = generateSporadicDAGs(periods, hard);
+			dagTasks = generateSporadicDAGs(periods, hard, type);
 		}
 		/************************************************************************************/
 
@@ -197,7 +198,7 @@ public class SystemGenerator {
 		return dags;
 	}
 
-	private List<DirectedAcyclicGraph> generateSporadicDAGs(List<Long> periods, boolean hard) {
+	private List<DirectedAcyclicGraph> generateSporadicDAGs(List<Long> periods, boolean hard, DagType type) {
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
 		List<SchedulingParameters> schedParam = generateSchedParam(periods);
@@ -212,9 +213,9 @@ public class SystemGenerator {
 			DirectedAcyclicGraph dagTask = null;
 
 			if (i == 0 && hard) {
-				dagTask = new DirectedAcyclicGraph(schedParam.get(i), dag_param, i, seed, true);
+				dagTask = new DirectedAcyclicGraph(schedParam.get(i), dag_param, i, seed, true, type);
 			} else {
-				dagTask = new DirectedAcyclicGraph(schedParam.get(i), dag_param, i, seed, false);
+				dagTask = new DirectedAcyclicGraph(schedParam.get(i), dag_param, i, seed, false, type);
 			}
 
 			dags.add(dagTask);

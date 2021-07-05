@@ -19,10 +19,15 @@ import org.jgrapht.graph.DefaultEdge;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class DirectedAcyclicGraph implements Serializable {
 
 	private static final long serialVersionUID = -4076503208112904549L;
+
+	public enum DagType {
+		Random, NFG, Huawei
+	}
 
 	public final int id;
 	public int instanceNo = -1;
@@ -69,7 +74,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	public boolean hard = false;
 
 	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed,
-			boolean hard) {
+			boolean hard, DagType type) {
 
 		this.id = id;
 		this.name = "DAG " + id;
@@ -89,7 +94,20 @@ public class DirectedAcyclicGraph implements Serializable {
 		this.longestPath = new ArrayList<>();
 		this.shortestPath = new ArrayList<>();
 
-		constructDAG();
+		switch (type) {
+		case Random:
+			constructDAG();
+			break;
+		case NFG:
+			constructNFGDAG(layers);
+			break;
+		case Huawei:
+			constructHuaweiDAG(layers);
+			break;
+
+		default:
+			break;
+		}
 	}
 
 	public void reset() {
@@ -166,7 +184,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		/*
 		 * initialize source and sink node
 		 */
-		this.source = new Node(0, NodeType.SOURCE, 0, id);
+		this.source = new Node(0, NodeType.SOURCE, 0, id, rng);
 //		this.graph.addVertex(source);
 
 		List<Node> firstLayer = new ArrayList<>();
@@ -195,7 +213,7 @@ public class DirectedAcyclicGraph implements Serializable {
 			List<Node> nodePerLayer = new ArrayList<>();
 
 			for (int k = 0; k < nodeNum; k++) {
-				Node n = new Node(l, NodeType.NORMAL, nodeCounter, id);
+				Node n = new Node(l, NodeType.NORMAL, nodeCounter, id, rng);
 
 				nodePerLayer.add(n);
 				nodeCounter++;
@@ -252,7 +270,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		}
 
 		/* generate the sink node */
-		this.sink = new Node(layers + 1, NodeType.SINK, nodeCounter, id); // TODO add links, make it random.
+		this.sink = new Node(layers + 1, NodeType.SINK, nodeCounter, id, rng); // TODO add links, make it random.
 		List<Node> lastLayer = new ArrayList<>();
 		lastLayer.add(sink);
 		this.layeredNodes.add(lastLayer);
@@ -291,7 +309,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		/*
 		 * initialize source and sink node
 		 */
-		this.source = new Node(0, NodeType.SOURCE, 0, id);
+		this.source = new Node(0, NodeType.SOURCE, 0, id, rng);
 
 		List<Node> firstLayer = new ArrayList<>();
 		firstLayer.add(source);
@@ -313,7 +331,7 @@ public class DirectedAcyclicGraph implements Serializable {
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
-					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id);
+					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id, rng);
 
 					nodePerLayer.add(n);
 					nodeCounter++;
@@ -329,7 +347,7 @@ public class DirectedAcyclicGraph implements Serializable {
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
-					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id);
+					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id, rng);
 
 					nodePerLayer.add(n);
 					nodeCounter++;
@@ -355,7 +373,109 @@ public class DirectedAcyclicGraph implements Serializable {
 		}
 
 		/* generate the sink node */
-		this.sink = new Node(layers * 2 + 1, NodeType.SINK, nodeCounter, id); // TODO add links, make it random.
+		this.sink = new Node(layers * 2 + 1, NodeType.SINK, nodeCounter, id, rng); // TODO add links, make it random.
+		List<Node> lastLayer = new ArrayList<>();
+		lastLayer.add(sink);
+		this.layeredNodes.add(lastLayer);
+
+		/*
+		 * Link all childless nodes to the sink node
+		 */
+		for (Node n : parents) {
+			ImmutablePair<Node, Node> e = new ImmutablePair<Node, Node>(n, sink);
+			edges.add(e);
+			n.addChildren(sink);
+			sink.addParent(n);
+		}
+
+		this.flatNodes = layeredNodes.stream().flatMap(s -> s.stream()).collect(Collectors.toList());
+		flatNodes.sort((n1, n2) -> Integer.compare(n1.getId(), n2.getId()));
+		this.nodeNum = flatNodes.size();
+
+		for (Node n : flatNodes)
+			this.graph.addVertex(n);
+
+		for (ImmutablePair<Node, Node> e : edges)
+			this.graph.addEdge(e.left, e.right);
+	}
+
+	public void constructNFGDAG(int layers) {
+
+		int nodeCounter = 1;
+
+		/*
+		 * Helper lists for constructing edges
+		 */
+		List<Node> parents = new ArrayList<>(); // potential parent nodes for a layer
+		List<Node> nodeCurrentLayer = new ArrayList<>();
+		/*
+		 * initialize source and sink node
+		 */
+		this.source = new Node(0, NodeType.SOURCE, 0, id, rng);
+
+		List<Node> firstLayer = new ArrayList<>();
+		firstLayer.add(source);
+		this.layeredNodes.add(firstLayer);
+
+		parents = firstLayer;
+
+		/*
+		 * constrcut the DAG layer by layer
+		 */
+		for (int l = 1; l < layers * 2; l++) {
+
+			if (l % 2 == 1) {
+				/*
+				 * generate nodes for fan-in
+				 */
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+						+ dag_param.parallelism_min;
+				List<Node> nodePerLayer = new ArrayList<>();
+
+				for (int k = 0; k < nodeNum; k++) {
+					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id, rng);
+
+					nodePerLayer.add(n);
+					nodeCounter++;
+				}
+
+				this.layeredNodes.add(nodePerLayer);
+				nodeCurrentLayer = nodePerLayer;
+			} else {
+				/*
+				 * generate nodes for fan-out
+				 */
+				int nodeNum = 1;
+				List<Node> nodePerLayer = new ArrayList<>();
+
+				for (int k = 0; k < nodeNum; k++) {
+					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id, rng);
+
+					nodePerLayer.add(n);
+					nodeCounter++;
+				}
+
+				this.layeredNodes.add(nodePerLayer);
+				nodeCurrentLayer = nodePerLayer;
+			}
+
+			for (Node n : nodeCurrentLayer) {
+				for (Node parent : parents) {
+					ImmutablePair<Node, Node> e = new ImmutablePair<Node, Node>(parent, n);
+
+					edges.add(e);
+
+					parent.addChildren(n);
+					n.addParent(parent);
+				}
+			}
+
+			/* update parents for the next layer */
+			parents = nodeCurrentLayer;
+		}
+
+		/* generate the sink node */
+		this.sink = new Node(layers * 2 + 1, NodeType.SINK, nodeCounter, id, rng); // TODO add links, make it random.
 		List<Node> lastLayer = new ArrayList<>();
 		lastLayer.add(sink);
 		this.layeredNodes.add(lastLayer);
@@ -454,9 +574,9 @@ public class DirectedAcyclicGraph implements Serializable {
 				Node suc = succ.get(i);
 
 				if (visited[suc.getId()] == 0) {
-					distance += current.getWCET();
+					distance += current.getET(SystemParameters.useWCET, false);
 					dsf(suc, longest);
-					distance -= current.getWCET();
+					distance -= current.getET(SystemParameters.useWCET, false);
 				}
 			}
 		}

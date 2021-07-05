@@ -9,6 +9,7 @@ import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph.DagType;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.generator.UUnifastDiscard;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -27,7 +28,10 @@ public class EP_Methods {
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static void main(String args[]) {
+		run();
+	}
 
+	public static void run() {
 		Thread t1 = new Thread(new Runnable() {
 
 			@Override
@@ -55,7 +59,6 @@ public class EP_Methods {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void runOneDAG() {
@@ -158,7 +161,7 @@ public class EP_Methods {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i),false);
+					periods == null ? null : periods.get(i), false, DagType.Random);
 
 			OneSystemResults res = null;
 
@@ -218,11 +221,11 @@ public class EP_Methods {
 		Simualtor cacheFFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheFFSim.simulate(SystemParameters.printSim);
-		
+
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.BEST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheBFSim.simulate(SystemParameters.printSim);
-		
+
 //		Simualtor cacheRASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.RANDOM,
 //				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
 //		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheRASim.simulate(SystemParameters.printSim);

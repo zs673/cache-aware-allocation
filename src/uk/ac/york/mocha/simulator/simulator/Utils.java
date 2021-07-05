@@ -11,6 +11,7 @@ import java.util.List;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class Utils {
 
@@ -28,7 +29,7 @@ public class Utils {
 			return 1;
 		} else {
 
-			int c = -Long.compare(c1.getWCET(), c2.getWCET());
+			int c = -Long.compare(c1.getET(SystemParameters.useWCET, false), c2.getET(SystemParameters.useWCET, false));
 
 			if (c != 0)
 				return c;
@@ -68,7 +69,7 @@ public class Utils {
 //				}
 
 			} else {
-				c = -Long.compare(c1.getWCET(), c2.getWCET());
+				c = -Long.compare(c1.getET(SystemParameters.useWCET, false), c2.getET(SystemParameters.useWCET, false));
 
 //				if (c != 0)
 				return c;

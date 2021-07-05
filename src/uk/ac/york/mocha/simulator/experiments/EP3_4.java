@@ -8,6 +8,7 @@ import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph.DagType;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
@@ -25,7 +26,10 @@ public class EP3_4 {
 	static DecimalFormat df = new DecimalFormat("#.#");
 
 	public static void main(String args[]) {
+		run();
+	}
 
+	public static void run() {
 		faultsInRecency3D();
 		oneTaskWithFaults();
 
@@ -88,7 +92,7 @@ public class EP3_4 {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false);
+					periods == null ? null : periods.get(i), false, DagType.Random);
 
 			OneSystemResults res = null;
 
@@ -346,7 +350,7 @@ public class EP3_4 {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false);
+					periods == null ? null : periods.get(i), false, DagType.Random);
 
 			OneSystemResults res = null;
 
@@ -529,7 +533,7 @@ public class EP3_4 {
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false);
+					periods == null ? null : periods.get(i), false, DagType.Random);
 
 			OneSystemResults res = null;
 
