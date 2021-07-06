@@ -162,9 +162,9 @@ public class Node implements Serializable {
 	}
 
 	public void setWCET(long WCET) {
-		this.WCET = Math.round((double) WCET * 1.2);
+		this.WCET = Math.round((double) WCET * 1.5);
 
-		this.BCET = Math.round((double) WCET * (double) 0.8);
+		this.BCET = Math.round((double) WCET * (double) 0.5);
 		this.MCET = WCET;// Math.round((double) (WCET + BCET) / (double) 2);
 
 		if (this.WCET == 0)
