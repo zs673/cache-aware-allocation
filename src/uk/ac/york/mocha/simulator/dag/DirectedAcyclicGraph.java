@@ -20,14 +20,12 @@ import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.DagType;
 
 public class DirectedAcyclicGraph implements Serializable {
 
 	private static final long serialVersionUID = -4076503208112904549L;
 
-	public enum DagType {
-		Random, NFG, Huawei
-	}
 
 	public final int id;
 	public int instanceNo = -1;

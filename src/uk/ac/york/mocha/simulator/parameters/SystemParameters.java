@@ -2,7 +2,13 @@ package uk.ac.york.mocha.simulator.parameters;
 
 public class SystemParameters {
 
-	public static boolean useWCET = false;
+	public static DagType dagType = DagType.NFG;
+	
+	public enum DagType {
+		Random, NFG, Huawei
+	}
+	
+	public static boolean useWCET = true;
 
 	public enum ETDistruction {
 		uniform, normal

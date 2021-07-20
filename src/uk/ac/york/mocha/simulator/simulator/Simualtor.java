@@ -8,17 +8,17 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.allocation.OnelineAllocation;
 import uk.ac.york.mocha.simulator.allocation.OnlineAndOffline;
+import uk.ac.york.mocha.simulator.allocation.OnlineBFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
-import uk.ac.york.mocha.simulator.allocation.OnlineBFD;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
+import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
-import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 
 /*
  * This is a Multiprocessor Non-preemptive Multi-DAG Simulator
