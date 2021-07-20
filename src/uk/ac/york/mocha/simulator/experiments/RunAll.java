@@ -1,7 +1,6 @@
 package uk.ac.york.mocha.simulator.experiments;
 
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
-import uk.ac.york.mocha.simulator.parameters.SystemParameters.ETDistruction;
 
 public class RunAll {
 
