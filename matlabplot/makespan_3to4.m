@@ -3,11 +3,11 @@
 for task = 3 : 4
     count = 1;
     
-     f=figure('Position', [100, 100, wid+(task-2)*200, len*4]);
+     f=figure('Position', [100, 100, wid+(task-2)*200, len*(subfigure_count+1)]);
     set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
     
     for path = path_results
-       subplot(3,1,count);
+       subplot(subfigure_count,1,count);
         data = readmatrix(strcat(path, 'taskNum/',metric ,num2str(task), '_2.0', '.txt'));
         instanceNo = readmatrix(strcat(path, 'taskNum/','instanceNum_',num2str(task), '_2.0', '.txt'));
 

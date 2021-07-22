@@ -1,11 +1,11 @@
-f=figure('Position', [100, 100, wid, len*4]);
+f=figure('Position', [100, 100, wid, len*(subfigure_count+1)]);
 set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
 task = 1;
     
 count = 1;
 for path = path_results
 
-    subplot(3,1,count);
+    subplot(subfigure_count,1,count);
     
 
     data = readmatrix(strcat(path, 'oneDAG/',metric ,num2str(task), '_2.0', '.txt'));

@@ -1,10 +1,10 @@
 % close all
-f=figure('Position', [100, 100, 850, 450*4]);
+f=figure('Position', [100, 100, 850, 450*subfigure_count]);
 set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
 
 count = 1;
 for path = path_results
-   subplot(3,1,count);
+   subplot(subfigure_count,1,count);
     x = readmatrix( "../result/recency_fault/x.txt");
     y = readmatrix( "../result/recency_fault/y.txt");
     z = readmatrix( "../result/recency_fault/z.txt");

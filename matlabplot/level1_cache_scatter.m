@@ -13,13 +13,13 @@ for i = 0 : length(methods)-1
 end
 
 task = 1;
-f=figure('Position', [100, 100, wid, len*4]);
+f=figure('Position', [100, 100, wid, len*subfigure_count]);
 set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
     
 count = 1;
 for path = path_results
     
-    subplot(3,1,count);
+    subplot(subfigure_count,1,count);
     
     instanceNo = readmatrix(strcat(path, 'oneDAG/','instanceNum_',num2str(task), '_2.0', '.txt'));
     taskParam = readmatrix(strcat(path, 'oneDAG/','taskparam_',num2str(task), '_2.0', '.txt'));

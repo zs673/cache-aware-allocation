@@ -1,9 +1,11 @@
 close all;
 
-path_results = ["../result_wcet/",  "../result_uniform/", "../result_normal/" ];
-xlabels = ["WCET", "Uniform Distribution", "Normal Distribution"];
+path_results = ["../result_wcet/", "../result_normal/" ];
+xlabels = ["WCET", "Normal Distribution"];
 
 path_figs = '../figs/';
+
+subfigure_count = 2;
 
 
 wid = 800;
