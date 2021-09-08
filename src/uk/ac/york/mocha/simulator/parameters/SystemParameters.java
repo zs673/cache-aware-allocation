@@ -2,7 +2,7 @@ package uk.ac.york.mocha.simulator.parameters;
 
 public class SystemParameters {
 
-	public static DagType dagType = DagType.NFG;
+	public static DagType dagType = DagType.Random;
 	
 	public enum DagType {
 		Random, NFG, Huawei
@@ -24,7 +24,7 @@ public class SystemParameters {
 		tasks
 	}
 
-	public static int NoS = 1000;
+	public static int NoS = 10000;
 	public static final boolean printSim = false;
 	public static final boolean printGen = false;
 

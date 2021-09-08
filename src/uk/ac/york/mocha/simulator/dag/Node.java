@@ -54,6 +54,8 @@ public class Node implements Serializable {
 	 */
 	public int offline_partition = -1;
 	public boolean now = false;
+	
+	public long finishWDM = 0;
 
 	public Node(int layer, NodeType type, int id, int dagID, Random rnd) {
 		this(-1, layer, type, id, dagID, rnd);

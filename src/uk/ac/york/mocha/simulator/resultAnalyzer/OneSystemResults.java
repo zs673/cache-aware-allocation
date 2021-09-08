@@ -32,6 +32,11 @@ public class OneSystemResults {
 		for (int i = 0; i < allMethods.size(); i++) {
 			resultsPerMethod.add(new OneSystemByMethod(allMethods.get(i), cachePerformance.get(i), maxValues));
 		}
+		
+//		for (int i = 0; i < allMethods.size(); i++) {
+//			resultsPerMethod.add(new OneSystemByMethod(allMethods.get(i), cachePerformance.get(i), maxValues));
+//		}
+
 
 		for (int i = 0; i < ResultType.values().length; i++) {
 			resultsPerMetric.add(new OneSystemByMetric(resultsPerMethod, i));

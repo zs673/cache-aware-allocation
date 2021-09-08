@@ -65,13 +65,15 @@ public class DirectedAcyclicGraph implements Serializable {
 	public long finishTime = Long.MAX_VALUE;
 	public List<Node> allocNodes = new ArrayList<>();
 
+	public List<ExecutionBlock> wdm = new ArrayList<>();
+
 	/*
 	 * Offline parameters
 	 */
 	public boolean hard = false;
 
-	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed, boolean hard,
-			DagType type) {
+	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed,
+			boolean hard, DagType type) {
 
 		this.id = id;
 		this.name = "DAG " + id;
@@ -105,6 +107,8 @@ public class DirectedAcyclicGraph implements Serializable {
 		default:
 			break;
 		}
+
+		this.hard = hard;
 	}
 
 	public void reset() {
@@ -124,8 +128,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/*****************************************************************
-	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This
-	 * method can only be invoked once! ***********
+	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This method
+	 * can only be invoked once! ***********
 	 *****************************************************************/
 	public List<DirectedAcyclicGraph> getInstances(long instanceNum) {
 
@@ -160,8 +164,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/******************************************************************
-	 ******************** Generate DAG structure ********************** This method does not depend
-	 * on external library! *********
+	 ******************** Generate DAG structure ********************** This method does not depend on
+	 * external library! *********
 	 ******************************************************************/
 	public void constructDAG() {
 		if (layeredNodes.size() > 0) {
@@ -204,7 +208,8 @@ public class DirectedAcyclicGraph implements Serializable {
 			/*
 			 * generate nodes for this layer
 			 */
-			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
+			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+					+ dag_param.parallelism_min;
 			// int nodeNum = rng.nextInt(dag_param.getParallelism()) + 1;
 			System.out.println(nodeNum);
 			List<Node> nodePerLayer = new ArrayList<>();
@@ -329,14 +334,15 @@ public class DirectedAcyclicGraph implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+						+ dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
 					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id, rng);
 
 					nodePerLayer.add(n);
-					
+
 				}
 
 				this.layeredNodes.add(nodePerLayer);
@@ -352,7 +358,7 @@ public class DirectedAcyclicGraph implements Serializable {
 					Node n = new Node(l, NodeType.NORMAL, nodeCounter, id, rng);
 
 					nodePerLayer.add(n);
-					
+
 				}
 
 				this.layeredNodes.add(nodePerLayer);
@@ -437,7 +443,8 @@ public class DirectedAcyclicGraph implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+						+ dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
@@ -604,6 +611,106 @@ public class DirectedAcyclicGraph implements Serializable {
 		length--;
 	}
 
+	private int getAactiveNodoNumber(long time) {
+
+		int nodesNum = 0;
+		for (Node n : flatNodes) {
+
+			long startTime = n.finishWDM - n.getWCET();
+			long finishTime = n.finishWDM;
+
+			if (startTime <= time && finishTime > time) {
+				nodesNum++;
+			}
+		}
+
+		return nodesNum;
+
+	}
+
+	public void getWDM() {
+		List<ExecutionBlock> wdm = new ArrayList<>();
+
+		List<Node> nodes = this.flatNodes;
+
+		for (int i = 0; i < nodes.size(); i++) {
+			Node n = nodes.get(i);
+
+			List<Node> parents = n.getParent();
+
+			long start = 0;
+			for (Node parent : parents) {
+				if (start < parent.finishWDM)
+					start = parent.finishWDM;
+			}
+
+			n.finishWDM = start + n.getWCET();
+		}
+
+		int systemTime = 0;
+
+		int ebID = 0;
+		long heightTracker = 1;
+		long widthTracker = 0;
+
+		long totoalTime = 0;
+
+		while (getAactiveNodoNumber(systemTime) > 0) {
+			int activeNodeNum = getAactiveNodoNumber(systemTime);
+
+			if (activeNodeNum == heightTracker) {
+				widthTracker++;
+				systemTime++;
+			} else {
+				ExecutionBlock eb = new ExecutionBlock(ebID, widthTracker, heightTracker);
+				wdm.add(eb);
+
+				ebID++;
+				widthTracker = 1;
+
+				heightTracker = getAactiveNodoNumber(systemTime);
+				systemTime++;
+			}
+
+			totoalTime++;
+		}
+
+		ExecutionBlock eb = new ExecutionBlock(ebID, widthTracker, heightTracker);
+		wdm.add(eb);
+
+		this.wdm = new ArrayList<>(wdm);
+
+	}
+
+	public List<ExecutionBlock> getPWDM(int coreNum) {
+		List<ExecutionBlock> pwdm = new ArrayList<>();
+
+		int id = 0;
+
+		for (ExecutionBlock eb : wdm) {
+			if (eb.height <= coreNum) {
+				pwdm.add(new ExecutionBlock(id, eb.width, eb.height));
+				id++;
+			} else {
+				long blockNum = eb.height / coreNum;
+				long lastblockHeight = eb.height % coreNum;
+
+				for (int i = 0; i < blockNum; i++) {
+					pwdm.add(new ExecutionBlock(id, eb.width, coreNum));
+					id++;
+				}
+
+				if (lastblockHeight > 0) {
+					pwdm.add(new ExecutionBlock(id, eb.width, lastblockHeight));
+					id++;
+				}
+			}
+
+		}
+
+		return pwdm;
+	}
+
 	public Node getSource() {
 		return source;
 	}
@@ -726,8 +833,9 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		for (int i = 0; i < 1; i++) {
 			SchedulingParameters sched_param = new SchedulingParameters(10, 100, 100, 50000, 1, 0);
-			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer, SystemParameters.minLayer,
-					SystemParameters.maxParal, SystemParameters.minParal, SystemParameters.connectProb, rng);
+			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer,
+					SystemParameters.minLayer, SystemParameters.maxParal, SystemParameters.minParal,
+					SystemParameters.connectProb, rng);
 			DirectedAcyclicGraph dag = new DirectedAcyclicGraph(sched_param, dag_param, 0, seed, true, DagType.Huawei);
 
 			System.out.println(dag.toString());

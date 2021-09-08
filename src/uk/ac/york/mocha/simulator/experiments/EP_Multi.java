@@ -22,7 +22,7 @@ import uk.ac.york.mocha.simulator.simulator.Simualtor.Hardware;
 import uk.ac.york.mocha.simulator.simulator.Simualtor.SimuType;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class EP1_2 {
+public class EP_Multi {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
@@ -31,88 +31,57 @@ public class EP1_2 {
 	}
 
 	public static void run() {
-		Thread t1 = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				changeTaskNumRunner(1);
-			}
-		});
-
-		Thread t2 = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				runOneDAG();
-			}
-		});
-
-		t1.start();
-//		t2.start();
-
-		try {
-			t1.join();
-			t2.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void runOneDAG() {
-		int intanceNum = 10;
-		int hyperPeriodNum = -1;
-		int seed = 1000;
-		int NoS = SystemParameters.NoS * 10; //*5
-
-		List<List<Long>> periods = new ArrayList<>();
-		for (int j = 0; j < NoS; j++) {
-			ArrayList<Long> period = new ArrayList<>();
-			long p = 144000;
-			period.add(p);
-			periods.add(period);
-		}
-
-		UUnifastDiscard uu = new UUnifastDiscard(4, 1, 1000, SystemParameters.coreNum, false, new Random(seed));
-
-		List<List<Double>> utils = new ArrayList<>();
-		for (int i = 0; i < NoS; i++) {
-			double u = uu.getUtils().get(0);
-			List<Double> us = new ArrayList<>();
-			us.add(u);
-			utils.add(us);
-//			System.out.println(u);
-		}
-
-		RunOneGroup(1, intanceNum, hyperPeriodNum, false, utils, seed, seed, periods, NoS, true, ExpName.oneDAG);
+		
+		changeTaskNumRunner(4);
+		
+//		Thread t1 = new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				
+//			}
+//		});
+//
+//		t1.run();
+//
+//		try {
+//			t1.join();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	public static void changeTaskNumRunner(int numMax) {
 
-		int intanceNum = 10;
-		int hyperPeriodNum = -1;
+		int intanceNum = 1;
+		int hyperPeriodNum = 1;
 		int seed = 1000;
+		
+		RunOneGroup(4, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS,
+				true, ExpName.taskNum);
 
-		List<Thread> threads = new ArrayList<>();
+//		List<Thread> threads = new ArrayList<>();
 
-		for (int i = 1; i <= numMax; i++) {
+//		for (int i = numMax; i <= numMax; i++) {
+//
+//			final int num = i;
+//
+//			threads.add(new Thread(new Runnable() {
+//				@Override
+//				public void run() {
+//					RunOneGroup(num, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS,
+//							true, ExpName.taskNum);
+//				}
+//			}));
+//		}
 
-			final int num = i;
-
-			threads.add(new Thread(new Runnable() {
-				@Override
-				public void run() {
-					RunOneGroup(num, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS,
-							true, ExpName.taskNum);
-				}
-			}));
-		}
-
-		for (Thread t : threads)
-			t.start();
-
-		try {
-			for (Thread t : threads)
-				t.join();
-		} catch (InterruptedException e) {
-		}
+//		for (Thread t : threads)
+//			t.run();
+//
+//		try {
+//			for (Thread t : threads)
+//				t.join();
+//		} catch (InterruptedException e) {
+//		}
 
 	}
 
@@ -129,7 +98,7 @@ public class EP1_2 {
 
 			for (int i = 0; i < periods.size(); i++) {
 				int insNo = (int) (totalHP / periods.get(0).get(i));
-				instanceNo[i] = insNo > intanceNum ? insNo : intanceNum;
+				instanceNo[i] = insNo;
 			}
 		} else if (intanceNum > 0) {
 			for (int i = 0; i < instanceNo.length; i++)

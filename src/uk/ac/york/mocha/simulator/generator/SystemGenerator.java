@@ -74,7 +74,6 @@ public class SystemGenerator {
 				/**
 				 * Set offline scheduling and allocation for the hard task
 				 */
-
 				DirectedAcyclicGraph dag = dagTasks.get(0);
 				dag.hard = hard;
 
@@ -184,10 +183,10 @@ public class SystemGenerator {
 			}
 		}
 
-		System.out.println("Number of instances");
-		for (DirectedAcyclicGraph d : dagTasks)
-			System.out.print(d.totalInstNum + "    ");
-		System.out.println();
+//		System.out.println("Number of instances");
+//		for (DirectedAcyclicGraph d : dagTasks)
+//			System.out.print(d.totalInstNum + "    ");
+//		System.out.println();
 
 		if (print) {
 			if (dags == null || dags.size() == 0) {
@@ -218,6 +217,7 @@ public class SystemGenerator {
 				dagTask = new DirectedAcyclicGraph(schedParam.get(i), dag_param, i, seed, false, type);
 			}
 
+			
 			dags.add(dagTask);
 		}
 
@@ -230,6 +230,9 @@ public class SystemGenerator {
 
 //		for (DirectedAcyclicGraph d : dags)
 //			System.out.println(d.toString());
+		
+		for(DirectedAcyclicGraph d : dags)
+			d.getWDM();
 
 		return dags;
 	}
