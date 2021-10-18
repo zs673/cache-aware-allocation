@@ -46,7 +46,7 @@ public class EP_Multi_NOP {
 
 	public static void changeTaskNoP(int nopSever) {
 
-		int startingNoP = 26;
+		int startingNoP = 2;
 		int endNoP = 32;
 		
 
