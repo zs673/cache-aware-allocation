@@ -19,13 +19,15 @@ public class EP_Multi_SysUtil {
 
 	final static DecimalFormat df = new DecimalFormat("#.###");
 
-	final static String expName = "paral_sched.txt";
+	final static String expName = "util_sched.txt";
 	final static String outFolder = "result_multi";
 
 	final static int cores = 8;
 	final static int not = 4;
 	final static int intanceNum = 1;
 	final static int hyperPeriodNum = 1;
+	final static int minParal = 1;
+	final static int maxParal = 10;
 	final static int seed = 1000;
 
 	public static void main(String args[]) {
@@ -38,24 +40,24 @@ public class EP_Multi_SysUtil {
 			System.out.println("Number of Sever Core: " + nopSever);
 		}
 
-		changeTaskParal(nopSever);
+		changeUtil(nopSever);
 	}
 
-	public static void changeTaskParal(int nopSever) {
+	public static void changeUtil(int nopSever) {
 
-		int startingParal = 2;
-		int endParal = 10;
-		SystemParameters.NoS = 1000;
+		int startingUtil = 1;
+		int endUtil = 10;
+		SystemParameters.NoS = 4;
 
 		List<ResultCap> caps = new ArrayList<>();
 
-		for (int i = startingParal; i <= endParal; i++) {
+		for (int i = startingUtil; i <= endUtil; i++) {
 			final int index = i;
 
-			double utilPerTask = (double) cores / (double) 10 / (double) not * (double) 3;
+			double utilPerTask = (double) cores / (double) 10 / (double) not * (double) index;
 
 			ResultCap r = RunOneGroup(cores, not, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
-					SystemParameters.NoS, utilPerTask, true, ExpName.taskNum, index, index, nopSever);
+					SystemParameters.NoS, utilPerTask, true, ExpName.taskNum, minParal, index, nopSever);
 
 			caps.add(r);
 
@@ -71,7 +73,7 @@ public class EP_Multi_SysUtil {
 		
 	}
 
-	private static void writeSchedToSystem(ResultCap cap, int paral, int mode) {
+	private static void writeSchedToSystem(ResultCap cap, int util, int mode) {
 		String our_file = "";
 		String he_file = "";
 		String our_out = "";
@@ -81,8 +83,8 @@ public class EP_Multi_SysUtil {
 
 		switch (mode) {
 		case 0: // intra-task interference
-			our_file = "paral" + "_" + paral + "_" + "intra" + "_" + "our" + ".txt";
-			he_file = "paral" + "_" + paral + "_" + "intra" + "_" + "he" + ".txt";
+			our_file = "util" + "_" + util + "_" + "intra" + "_" + "our" + ".txt";
+			he_file = "util" + "_" + util + "_" + "intra" + "_" + "he" + ".txt";
 
 			List<List<long[]>> intra = cap.intra_delay;
 			for (List<long[]> i : intra) {
@@ -104,8 +106,8 @@ public class EP_Multi_SysUtil {
 
 			break;
 		case 1: // inter-task interference
-			our_file = "paral" + "_" + paral + "_" + "inter" + "_" + "our" + ".txt";
-			he_file = "paral" + "_" + paral + "_" + "inter" + "_" + "he" + ".txt";
+			our_file = "util" + "_" + util + "_" + "inter" + "_" + "our" + ".txt";
+			he_file = "util" + "_" + util + "_" + "inter" + "_" + "he" + ".txt";
 
 			List<List<long[]>> inter = cap.inter_delay;
 			for (List<long[]> i : inter) {
@@ -127,8 +129,8 @@ public class EP_Multi_SysUtil {
 
 			break;
 		case 2: // response time
-			our_file = "paral" + "_" + paral + "_" + "response" + "_" + "our" + ".txt";
-			he_file = "paral" + "_" + paral + "_" + "response" + "_" + "he" + ".txt";
+			our_file = "util" + "_" + util + "_" + "response" + "_" + "our" + ".txt";
+			he_file = "util" + "_" + util + "_" + "response" + "_" + "he" + ".txt";
 
 			List<List<long[]>> response = cap.response_time;
 			for (List<long[]> i : response) {
@@ -150,7 +152,7 @@ public class EP_Multi_SysUtil {
 
 			break;
 		case 3: // sched info
-			file = "paral" + "_" + paral + "_" + "sched" + ".txt";
+			file = "util" + "_" + util + "_" + "sched" + ".txt";
 
 			out += cap.NoSched_our + " ";
 			out += cap.NoSched_he + "\n";
@@ -180,7 +182,7 @@ public class EP_Multi_SysUtil {
 					int seed = taskSeeds + offset;
 
 					for (int k = offset; k < offset + workload; k++) {
-						System.out.println("Current system number: " + (k) + " --- paral per task: " + maxPara);
+						System.out.println("Current system number: " + (k) + " --- system util: " + (utilPerTask * taskNum));
 
 						SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil,
 								util == null ? null : util.get(k), seed, randomC, SystemParameters.printGen,

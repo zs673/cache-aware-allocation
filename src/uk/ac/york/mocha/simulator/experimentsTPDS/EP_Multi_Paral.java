@@ -27,7 +27,7 @@ public class EP_Multi_Paral {
 	final static int seed = 1000;
 
 	public static void main(String args[]) {
-		int nopSever = 4;
+		int nopSever = 100;
 
 		try {
 			nopSever = Integer.parseInt(args[1]);
