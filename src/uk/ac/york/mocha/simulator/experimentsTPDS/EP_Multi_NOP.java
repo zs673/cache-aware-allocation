@@ -31,14 +31,14 @@ public class EP_Multi_NOP {
 	final static int seed = 1000;
 
 	public static void main(String args[]) {
-		int nopSever = 4;
+		int nopSever = 100;
 		SystemParameters.NoS = 1000;
 
 		try {
 			nopSever = Integer.parseInt(args[1]);
 			System.out.println("Number of Sever Core: " + nopSever);
 		} catch (Exception e) {
-			System.out.println("Number of Sever Core: " + nopSever);
+			System.out.println("Default number of Sever Core: " + nopSever);
 		}
 
 		changeTaskNoP(nopSever);
