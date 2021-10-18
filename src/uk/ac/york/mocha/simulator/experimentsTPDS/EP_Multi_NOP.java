@@ -19,10 +19,12 @@ public class EP_Multi_NOP {
 
 	final static DecimalFormat df = new DecimalFormat("#.###");
 
-	final static String expName = "paral_sched.txt";
+	final static String expName = "nop_sched.txt";
 	final static String outFolder = "result_multi";
 
-	final static int cores = 8;
+//	final static int cores = 8;
+	final static int minParal = 1;
+	final static int maxParal = 10;
 	final static int not = 4;
 	final static int intanceNum = 1;
 	final static int hyperPeriodNum = 1;
@@ -30,6 +32,7 @@ public class EP_Multi_NOP {
 
 	public static void main(String args[]) {
 		int nopSever = 4;
+		SystemParameters.NoS = 1000;
 
 		try {
 			nopSever = Integer.parseInt(args[1]);
@@ -38,29 +41,29 @@ public class EP_Multi_NOP {
 			System.out.println("Number of Sever Core: " + nopSever);
 		}
 
-		changeTaskParal(nopSever);
+		changeTaskNoP(nopSever);
 	}
 
-	public static void changeTaskParal(int nopSever) {
+	public static void changeTaskNoP(int nopSever) {
 
-		int startingParal = 2;
-		int endParal = 10;
-		SystemParameters.NoS = 1000;
+		int startingNoP = 2;
+		int endNoP = 24;
+		
 
 		List<ResultCap> caps = new ArrayList<>();
 
-		for (int i = startingParal; i <= endParal; i++) {
+		for (int i = startingNoP; i <= endNoP; i=i+2) {
 			final int index = i;
 
-			double utilPerTask = (double) cores / (double) 10 / (double) not * (double) 3;
+			double utilPerTask = (double) index / (double) 10 / (double) not * (double) 3;
 
-			ResultCap r = RunOneGroup(cores, not, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
-					SystemParameters.NoS, utilPerTask, true, ExpName.taskNum, index, index, nopSever);
+			ResultCap r = RunOneGroup(index, not, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
+					SystemParameters.NoS, utilPerTask, true, ExpName.taskNum, minParal, maxParal, nopSever);
 
 			caps.add(r);
 
 			for (int k = 0; k < 4; k++)
-				writeSchedToSystem(r, i, k);
+				writeSchedToSystem(r, index, k);
 		}
 		
 		System.out.println("--------------------------------");
@@ -71,7 +74,7 @@ public class EP_Multi_NOP {
 		
 	}
 
-	private static void writeSchedToSystem(ResultCap cap, int paral, int mode) {
+	private static void writeSchedToSystem(ResultCap cap, int cores, int mode) {
 		String our_file = "";
 		String he_file = "";
 		String our_out = "";
@@ -81,8 +84,8 @@ public class EP_Multi_NOP {
 
 		switch (mode) {
 		case 0: // intra-task interference
-			our_file = "paral" + "_" + paral + "_" + "intra" + "_" + "our" + ".txt";
-			he_file = "paral" + "_" + paral + "_" + "intra" + "_" + "he" + ".txt";
+			our_file = "nop" + "_" + cores + "_" + "intra" + "_" + "our" + ".txt";
+			he_file = "nop" + "_" + cores + "_" + "intra" + "_" + "he" + ".txt";
 
 			List<List<long[]>> intra = cap.intra_delay;
 			for (List<long[]> i : intra) {
@@ -104,8 +107,8 @@ public class EP_Multi_NOP {
 
 			break;
 		case 1: // inter-task interference
-			our_file = "paral" + "_" + paral + "_" + "inter" + "_" + "our" + ".txt";
-			he_file = "paral" + "_" + paral + "_" + "inter" + "_" + "he" + ".txt";
+			our_file = "nop" + "_" + cores + "_" + "inter" + "_" + "our" + ".txt";
+			he_file = "nop" + "_" + cores + "_" + "inter" + "_" + "he" + ".txt";
 
 			List<List<long[]>> inter = cap.inter_delay;
 			for (List<long[]> i : inter) {
@@ -127,8 +130,8 @@ public class EP_Multi_NOP {
 
 			break;
 		case 2: // response time
-			our_file = "paral" + "_" + paral + "_" + "response" + "_" + "our" + ".txt";
-			he_file = "paral" + "_" + paral + "_" + "response" + "_" + "he" + ".txt";
+			our_file = "nop" + "_" + cores + "_" + "response" + "_" + "our" + ".txt";
+			he_file = "nop" + "_" + cores + "_" + "response" + "_" + "he" + ".txt";
 
 			List<List<long[]>> response = cap.response_time;
 			for (List<long[]> i : response) {
@@ -150,7 +153,7 @@ public class EP_Multi_NOP {
 
 			break;
 		case 3: // sched info
-			file = "paral" + "_" + paral + "_" + "sched" + ".txt";
+			file = "nop" + "_" + cores + "_" + "sched" + ".txt";
 
 			out += cap.NoSched_our + " ";
 			out += cap.NoSched_he + "\n";
@@ -180,7 +183,7 @@ public class EP_Multi_NOP {
 					int seed = taskSeeds + offset;
 
 					for (int k = offset; k < offset + workload; k++) {
-						System.out.println("Current system number: " + (k) + " --- paral per task: " + maxPara);
+						System.out.println("Current system number: " + (k) + " --- number of cores: " + cores);
 
 						SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil,
 								util == null ? null : util.get(k), seed, randomC, SystemParameters.printGen,
