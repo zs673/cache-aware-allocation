@@ -18,8 +18,6 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 public class EP_Multi_Paral {
 
 	final static DecimalFormat df = new DecimalFormat("#.###");
-
-	final static String expName = "paral_sched.txt";
 	final static String outFolder = "result_multi";
 
 	final static int cores = 8;
@@ -29,7 +27,7 @@ public class EP_Multi_Paral {
 	final static int seed = 1000;
 
 	public static void main(String args[]) {
-		int nopSever = 100;
+		int nopSever = 4;
 
 		try {
 			nopSever = Integer.parseInt(args[1]);
@@ -278,36 +276,6 @@ public class EP_Multi_Paral {
 		}
 
 		return true;
-	}
-
-}
-
-class ResultCap {
-	public int NoSched_our = 0;
-	public int NoSched_he = 0;
-
-	public List<List<long[]>> inter_delay = new ArrayList<>();
-	public List<List<long[]>> intra_delay = new ArrayList<>();
-	public List<List<long[]>> response_time = new ArrayList<>();
-
-	public synchronized void addResponseTime(List<long[]> response) {
-		inter_delay.add(response);
-	}
-
-	public synchronized void addIntraDelay(List<long[]> delays) {
-		intra_delay.add(delays);
-	}
-
-	public synchronized void addInterDelay(List<long[]> delays) {
-		inter_delay.add(delays);
-	}
-
-	public synchronized void incrementOur() {
-		NoSched_our++;
-	}
-
-	public synchronized void incrementHe() {
-		NoSched_he++;
 	}
 
 }
