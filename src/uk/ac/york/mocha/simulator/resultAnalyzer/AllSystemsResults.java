@@ -8,7 +8,7 @@ import java.util.List;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DAG;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ETDistruction;
 import uk.ac.york.mocha.simulator.simulator.Utils;
@@ -78,7 +78,7 @@ public class AllSystemsResults {
 		StringBuilder builder = new StringBuilder();
 
 		for (int i = 0; i < resPerSystem.size(); i++) {
-			List<DirectedAcyclicGraph> dags = resPerSystem.get(i).allMethods.get(0);
+			List<DAG> dags = resPerSystem.get(i).allMethods.get(0);
 
 			String dagsInfo = "";
 			for (int j = 0; j < 1; j++) {

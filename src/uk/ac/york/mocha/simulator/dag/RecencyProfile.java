@@ -8,9 +8,9 @@ import java.util.Random;
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
+import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class RecencyProfile {
 
@@ -577,77 +577,77 @@ public class RecencyProfile {
 //			System.out.println();
 //		}
 
-//		long time = 0;
-//		boolean fault = false;
-//
-//		Random rng = new Random(1000);
-//
-//		StringBuilder distance = new StringBuilder();
-//		StringBuilder recency = new StringBuilder();
-//
-//		for (; time <= SystemParameters.v4; time += 1) {
-//			double speedUp = -1;
-//
-//			if (SystemParameters.v1 <= time && time <= SystemParameters.v2) {
-//				speedUp = (SystemParameters.delta2 - SystemParameters.delta1) / (double) SystemParameters.v2
-//						* (double) time + SystemParameters.delta1;
-//
-//				if (fault && rng.nextInt(100) < SystemParameters.fault_rate) {
-//					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
-//							- SystemParameters.fault_median)) / (double) 100;
-//
-//					speedUp = speedUp + speedUp * faultRange;
-//				}
-//
-//			}
-//
-//			if (SystemParameters.v2 < time && time <= SystemParameters.v3) {
-//				speedUp = (SystemParameters.delta3 - SystemParameters.delta2) / (double) SystemParameters.v3
-//						* (double) time + SystemParameters.delta2;
-//
-//				if (fault && rng.nextInt(100) < SystemParameters.fault_rate) {
-//					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
-//							- SystemParameters.fault_median)) / (double) 100;
-//
-//					speedUp = speedUp + speedUp * faultRange;
-//				}
-//			}
-//
-//			if (SystemParameters.v3 < time && time <= SystemParameters.v4) {
-//				speedUp = (SystemParameters.delta4 - SystemParameters.delta3) / (double) SystemParameters.v4
-//						* (double) time + SystemParameters.delta3;
-//
-//				if (fault && rng.nextInt(100) < SystemParameters.fault_rate) {
-//					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
-//							- SystemParameters.fault_median)) / (double) 100;
-//
-//					speedUp = speedUp + speedUp * faultRange;
-//				}
-//			}
-//
-//			distance.append(time + "\n");
-//			recency.append(speedUp + "\n");
-////			System.out.println(time);
-////			System.out.println(speedUp);
-//		}
-//
-//		Utils.writeResult("result/recency_distance.txt", distance.toString());
-//		Utils.writeResult("result/recency_value.txt", recency.toString());
+		long time = 0;
+		boolean fault = false;
 
-//		for(double i=-2; i<=2;i=i+0.01) {
-//			double d =Erf.erf(i);
-//			System.out.println(d);
-//		}
+		Random rng = new Random(1000);
 
-		RecencyProfile rp = new RecencyProfile(RecencyType.TIME_CURVE, 8, 1000);
+		StringBuilder distance = new StringBuilder();
+		StringBuilder recency = new StringBuilder();
 
-		Node n = new Node(1000000, -1, NodeType.NORMAL, -1, -1, new Random());
+		for (; time <= SystemParameters.v4; time += 1) {
+			double speedUp = -1;
 
-		for (long i = SystemParameters.v1; i < SystemParameters.v4; i++) {
+			if (SystemParameters.v1 <= time && time <= SystemParameters.v2) {
+				speedUp = (SystemParameters.delta2 - SystemParameters.delta1) / (double) SystemParameters.v2
+						* (double) time + SystemParameters.delta1;
 
-			long a = rp.computeET(i, null, null, null, n, 8, true, false, 0, false).getFirst();
-			System.out.println(a);
+				if (fault && rng.nextInt(100) < SystemParameters.fault_rate) {
+					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
+							- SystemParameters.fault_median)) / (double) 100;
+
+					speedUp = speedUp + speedUp * faultRange;
+				}
+
+			}
+
+			if (SystemParameters.v2 < time && time <= SystemParameters.v3) {
+				speedUp = (SystemParameters.delta3 - SystemParameters.delta2) / (double) SystemParameters.v3
+						* (double) time + SystemParameters.delta2;
+
+				if (fault && rng.nextInt(100) < SystemParameters.fault_rate) {
+					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
+							- SystemParameters.fault_median)) / (double) 100;
+
+					speedUp = speedUp + speedUp * faultRange;
+				}
+			}
+
+			if (SystemParameters.v3 < time && time <= SystemParameters.v4) {
+				speedUp = (SystemParameters.delta4 - SystemParameters.delta3) / (double) SystemParameters.v4
+						* (double) time + SystemParameters.delta3;
+
+				if (fault && rng.nextInt(100) < SystemParameters.fault_rate) {
+					double faultRange = ((double) (rng.nextInt(SystemParameters.fault_range)
+							- SystemParameters.fault_median)) / (double) 100;
+
+					speedUp = speedUp + speedUp * faultRange;
+				}
+			}
+
+			distance.append(time + "\n");
+			recency.append(speedUp + "\n");
+//			System.out.println(time);
+//			System.out.println(speedUp);
 		}
+
+		Utils.writeResult("result/recency_distance.txt", distance.toString());
+		Utils.writeResult("result/recency_value.txt", recency.toString());
+
+		for(double i=-2; i<=2;i=i+0.01) {
+			double d =Erf.erf(i);
+			System.out.println(d);
+		}
+
+//		RecencyProfile rp = new RecencyProfile(RecencyType.TIME_DEFAULT, 8, 1000);
+//
+//		Node n = new Node(1000000, -1, NodeType.NORMAL, -1, -1, new Random());
+//
+//		for (long i = SystemParameters.v1; i < SystemParameters.v4; i++) {
+//
+//			long a = rp.computeET(i, null, null, null, n, 8, true, false, 0, false).getFirst();
+//			System.out.println(a);
+//		}
 
 	}
 }

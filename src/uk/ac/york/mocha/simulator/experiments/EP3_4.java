@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DAG;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
@@ -90,8 +90,8 @@ public class EP3_4 {
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false, SystemParameters.dagType);
+			List<DAG> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+					periods == null ? null : periods.get(i), false, SystemParameters.dagType).getFirst();
 
 			OneSystemResults res = null;
 
@@ -108,24 +108,24 @@ public class EP3_4 {
 
 	}
 
-	public static OneSystemResults testOneCaseThreePattern(List<DirectedAcyclicGraph> dags, int tasks,
+	public static OneSystemResults testOneCaseThreePattern(List<DAG> dags, int tasks,
 			int[] NoInstances, int cores, int taskSeed, int tableSeed, RecencyType type) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT, type,
 				dags, cores, tableSeed, false, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE, type,
 				dags, cores, tableSeed, true, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
-		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
-		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
+		List<DAG> m0 = pair0.getFirst();
+		List<DAG> m1 = pair1.getFirst();
 
-		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
+		List<List<DAG>> allMethods = new ArrayList<>();
 
-		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
+		List<DAG> method0 = new ArrayList<>();
+		List<DAG> method1 = new ArrayList<>();
 
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
@@ -348,8 +348,8 @@ public class EP3_4 {
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false, SystemParameters.dagType);
+			List<DAG> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+					periods == null ? null : periods.get(i), false, SystemParameters.dagType).getFirst();
 
 			OneSystemResults res = null;
 
@@ -398,24 +398,24 @@ public class EP3_4 {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults oneTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
+	public static OneSystemResults oneTestCase(List<DAG> dags, int tasks, int[] NoInstances, int cores,
 			int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
-		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
-		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
+		List<DAG> m0 = pair0.getFirst();
+		List<DAG> m2 = pair2.getFirst();
 
-		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
+		List<List<DAG>> allMethods = new ArrayList<>();
 
-		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+		List<DAG> method0 = new ArrayList<>();
+		List<DAG> method2 = new ArrayList<>();
 
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
@@ -451,24 +451,24 @@ public class EP3_4 {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults RecencyFaultTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
+	public static OneSystemResults RecencyFaultTestCase(List<DAG> dags, int tasks, int[] NoInstances,
 			int cores, int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
-		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
-		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
+		List<DAG> m0 = pair0.getFirst();
+		List<DAG> m2 = pair2.getFirst();
 
-		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
+		List<List<DAG>> allMethods = new ArrayList<>();
 
-		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+		List<DAG> method0 = new ArrayList<>();
+		List<DAG> method2 = new ArrayList<>();
 
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
@@ -531,8 +531,8 @@ public class EP3_4 {
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false, SystemParameters.dagType);
+			List<DAG> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+					periods == null ? null : periods.get(i), false, SystemParameters.dagType).getFirst();
 
 			OneSystemResults res = null;
 
@@ -551,30 +551,30 @@ public class EP3_4 {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults testOneCaseThreeMethod(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
+	public static OneSystemResults testOneCaseThreeMethod(List<DAG> dags, int tasks, int[] NoInstances,
 			int cores, int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
-		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
-		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
-		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
+		List<DAG> m0 = pair0.getFirst();
+		List<DAG> m1 = pair1.getFirst();
+		List<DAG> m2 = pair2.getFirst();
 
-		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
+		List<List<DAG>> allMethods = new ArrayList<>();
 
-		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+		List<DAG> method0 = new ArrayList<>();
+		List<DAG> method1 = new ArrayList<>();
+		List<DAG> method2 = new ArrayList<>();
 
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.

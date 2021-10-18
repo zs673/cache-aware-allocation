@@ -8,7 +8,7 @@ import java.util.Random;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DAG;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.generator.UUnifastDiscard;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -160,8 +160,8 @@ public class EP_Methods {
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false, DagType.Random);
+			List<DAG> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+					periods == null ? null : periods.get(i), false, DagType.Random).getFirst();
 
 			OneSystemResults res = null;
 
@@ -211,20 +211,20 @@ public class EP_Methods {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults testOneCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
+	public static OneSystemResults testOneCase(List<DAG> dags, int tasks, int[] NoInstances, int cores,
 			int taskSeed, int tableSeed) {
 
 		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheWFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair0 = cacheWFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheFFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheFFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair1 = cacheFFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.BEST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheBFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair2 = cacheBFSim.simulate(SystemParameters.printSim);
 
 //		Simualtor cacheRASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.RANDOM,
 //				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
@@ -232,21 +232,21 @@ public class EP_Methods {
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair4 = cacheCASim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair4 = cacheCASim.simulate(SystemParameters.printSim);
 
-		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
-		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
-		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
+		List<DAG> m0 = pair0.getFirst();
+		List<DAG> m1 = pair1.getFirst();
+		List<DAG> m2 = pair2.getFirst();
 //		List<DirectedAcyclicGraph> m3 = pair3.getFirst();
-		List<DirectedAcyclicGraph> m4 = pair4.getFirst();
+		List<DAG> m4 = pair4.getFirst();
 
-		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
+		List<List<DAG>> allMethods = new ArrayList<>();
 
-		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+		List<DAG> method0 = new ArrayList<>();
+		List<DAG> method1 = new ArrayList<>();
+		List<DAG> method2 = new ArrayList<>();
 //		List<DirectedAcyclicGraph> method3 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method4 = new ArrayList<>();
+		List<DAG> method4 = new ArrayList<>();
 
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.

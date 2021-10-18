@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DAG;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults.ResultType;
 
 public class OneSystemByMethod {
 
-	public List<DirectedAcyclicGraph> dags;
+	public List<DAG> dags;
 	private long[][] maxValues;
 
 	private DecimalFormat df = new DecimalFormat("#.###");
@@ -18,7 +18,7 @@ public class OneSystemByMethod {
 	public List<List<Double>> resultsPerMethod = new ArrayList<>();
 	double[] cachePerformance;
 
-	public OneSystemByMethod(List<DirectedAcyclicGraph> dags, double[] cachePerformance, long[][] maxValues) {
+	public OneSystemByMethod(List<DAG> dags, double[] cachePerformance, long[][] maxValues) {
 		this.dags = new ArrayList<>(dags);
 		this.cachePerformance = cachePerformance;
 		this.maxValues = maxValues;

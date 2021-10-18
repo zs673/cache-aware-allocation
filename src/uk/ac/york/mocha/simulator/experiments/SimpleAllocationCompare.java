@@ -8,7 +8,7 @@ import java.util.Random;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DAG;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.generator.UUnifastDiscard;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -377,8 +377,8 @@ public class SimpleAllocationCompare {
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false, DagType.Random);
+			List<DAG> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+					periods == null ? null : periods.get(i), false, DagType.Random).getFirst();
 
 			OneSystemResults res = null;
 
@@ -433,12 +433,12 @@ public class SimpleAllocationCompare {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults testOneCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
+	public static OneSystemResults testOneCase(List<DAG> dags, int tasks, int[] NoInstances, int cores,
 			int taskSeed, int tableSeed, boolean fault) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 //		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
 //				RecencyType.TIME, dags, cores, tableSeed, false, false);
@@ -446,17 +446,17 @@ public class SimpleAllocationCompare {
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
-		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
+		List<DAG> m0 = pair0.getFirst();
 //		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
-		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
+		List<DAG> m2 = pair2.getFirst();
 
-		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
+		List<List<DAG>> allMethods = new ArrayList<>();
 
-		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
+		List<DAG> method0 = new ArrayList<>();
 //		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+		List<DAG> method2 = new ArrayList<>();
 
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
@@ -495,12 +495,12 @@ public class SimpleAllocationCompare {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults RecencyFaultTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
+	public static OneSystemResults RecencyFaultTestCase(List<DAG> dags, int tasks, int[] NoInstances,
 			int cores, int taskSeed, int tableSeed, boolean fault) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 //		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
 //				RecencyType.TIME, dags, cores, tableSeed, false, false);
@@ -508,17 +508,17 @@ public class SimpleAllocationCompare {
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
+		Pair<List<DAG>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
-		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
+		List<DAG> m0 = pair0.getFirst();
 //		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
-		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
+		List<DAG> m2 = pair2.getFirst();
 
-		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
+		List<List<DAG>> allMethods = new ArrayList<>();
 
-		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
+		List<DAG> method0 = new ArrayList<>();
 //		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+		List<DAG> method2 = new ArrayList<>();
 
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.

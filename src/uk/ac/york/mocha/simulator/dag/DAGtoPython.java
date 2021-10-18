@@ -20,9 +20,9 @@ public class DAGtoPython {
 
 		for (int i = 0; i < 10000; i++) {
 			SystemGenerator gen = new SystemGenerator(8, 1, true, true, null, i, true, true);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true, DagType.Random);
+			List<DAG> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true, DagType.Random).getFirst();
 
-			DirectedAcyclicGraph dag = dags.get(0);
+			DAG dag = dags.get(0);
 
 			for (int j = 0; j < dag.getFlatNodes().size(); j++) {
 				dag.getFlatNodes().get(i).priority = dag.getFlatNodes().size() - j;
@@ -32,7 +32,7 @@ public class DAGtoPython {
 		}
 	}
 
-	public static Pair<Long, List<int[]>> pharseDAGForPython(DirectedAcyclicGraph dag, int coreNum) {
+	public static Pair<Long, List<int[]>> pharseDAGForPython(DAG dag, int coreNum) {
 
 		List<Node> nodes = dag.getFlatNodes();
 
@@ -92,7 +92,7 @@ public class DAGtoPython {
 			String s = null;
 			String makespanS = "";
 			while ((s = stdInput.readLine()) != null) {
-				System.out.println(s);
+//				System.out.println(s);
 				makespanS += s + "";
 			}
 

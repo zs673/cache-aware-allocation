@@ -36,7 +36,7 @@ public class StructuralParameters implements Serializable {
 			System.exit(-1);
 		}
 
-		this.parallelism = rng.nextInt(maxParall - minparall) + minparall;
+		this.parallelism = maxParall == minparall ? minparall : rng.nextInt(maxParall - minparall) + minparall;
 		this.parallelism_max = maxParall;
 		this.parallelism_min = minparall;
 

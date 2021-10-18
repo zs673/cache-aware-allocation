@@ -6,10 +6,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DAG;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
@@ -18,10 +19,10 @@ public class Utils {
 	/*
 	 * Order nodes by 1) its DAG priority and 2) its WCET.
 	 */
-	public static int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+	public static int compareNode(List<DAG> dags, Node c1, Node c2) {
 
-		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
-		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+		DAG dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+		DAG dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
 
 		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
 			return -1;
@@ -41,10 +42,10 @@ public class Utils {
 
 	}
 
-	public static int compareNodeWithHard(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+	public static int compareNodeWithHard(List<DAG> dags, Node c1, Node c2) {
 
-		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
-		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+		DAG dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+		DAG dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
 
 		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
 			return -1;
@@ -123,28 +124,51 @@ public class Utils {
 		}
 	}
 
-	public static DirectedAcyclicGraph getDagByIndex(List<DirectedAcyclicGraph> dags, int id, int instanceID) {
-		for (DirectedAcyclicGraph dag : dags)
+	public static DAG getDagByIndex(List<DAG> dags, int id, int instanceID) {
+		for (DAG dag : dags)
 			if (dag.id == id && dag.instanceNo == instanceID)
 				return dag;
 
 		return null;
 	}
 
-	public static List<DirectedAcyclicGraph> deepCopy(List<DirectedAcyclicGraph> dags) {
+	public static List<DAG> deepCopy(List<DAG> dags) {
 
-		List<DirectedAcyclicGraph> dp = new ArrayList<>();
+		List<DAG> dp = new ArrayList<>();
 
-		for (DirectedAcyclicGraph d : dags)
+		for (DAG d : dags)
 			dp.add(d.deepCopy());
 
 		return dp;
 	}
 
 	public static void writeResult(String filename, String result) {
+
 		PrintWriter writer = null;
 		try {
 			writer = new PrintWriter(new FileWriter(new File(filename), false));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		writer.println(result);
+		writer.close();
+	}
+
+	public static void writeResult(String path, String file, String result) {
+
+		File directory = new File(path);
+		if (!directory.exists()) {
+			directory.mkdirs();
+		}
+
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter(new FileWriter(new File(path + "/" + file), false));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {

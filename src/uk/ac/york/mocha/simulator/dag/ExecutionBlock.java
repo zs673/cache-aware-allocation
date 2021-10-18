@@ -12,14 +12,24 @@ public class ExecutionBlock implements Serializable {
 	public long width;
 	public long height;
 
-	public ExecutionBlock(int id, long width, long height) {
+	public long start;
+	public long end;
+
+	public ExecutionBlock(int id, long width, long height, long start) {
+
 		this.width = width;
 		this.height = height;
+
+		this.start = start;
+		this.end = this.start + this.width;
+
 		this.id = id;
 	}
 
+
+
 	@Override
 	public String toString() {
-		return "EB " + id + ": Width " + width + " Height " + height;
+		return "EB_" + id + "   Width: " + width + " Height: " + height + " Start: " + start + " End: " + end;
 	}
 }

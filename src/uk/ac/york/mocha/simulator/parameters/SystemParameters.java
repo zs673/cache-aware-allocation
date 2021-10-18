@@ -24,7 +24,7 @@ public class SystemParameters {
 		tasks
 	}
 
-	public static int NoS = 10000;
+	public static int NoS = 1000;
 	public static final boolean printSim = false;
 	public static final boolean printGen = false;
 
@@ -47,7 +47,7 @@ public class SystemParameters {
 	public static final double connectProb = 0.5;
 	public static final int minLayer = 5;
 	public static final int maxLayer = 8;
-	public static int minParal = 2;
+	public static int minParal = 1;
 	public static int maxParal = 10;
 
 	/* parameters for NFJ DAGs */
@@ -99,7 +99,7 @@ public class SystemParameters {
 
 	public final static int MAX_PRIORITY = 1000;
 
-	public static double utilPerTask = 2.0;
+	public static double utilPerTask = 0.5;
 
 	/*
 	 * Harmonic periods

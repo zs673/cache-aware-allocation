@@ -13,7 +13,7 @@ import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.dag.DAG;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.dag.RecencyProfile;
@@ -53,7 +53,7 @@ public class Simualtor {
 	/**********************************************************************
 	 ************************ DAGs to be executed *************************
 	 **********************************************************************/
-	public List<DirectedAcyclicGraph> dags;
+	public List<DAG> dags;
 
 	/**********************************************************************
 	 *********************** Current system time **************************
@@ -64,10 +64,10 @@ public class Simualtor {
 	 ************************* Runtime queues *****************************
 	 **********************************************************************/
 	/* a sleeping queue for DAGs waiting to be RELEASED */
-	List<DirectedAcyclicGraph> sleepingDAGs;
+	List<DAG> sleepingDAGs;
 
 	/* a ready queue for DAGs waiting to be EXECUTED */
-	List<DirectedAcyclicGraph> readyDAGs;
+	List<DAG> readyDAGs;
 
 	/* a ready queue for the nodes waiting to be EXECUTED */
 	List<Node> readyNodes;
@@ -104,7 +104,7 @@ public class Simualtor {
 	/********************* Runtime queues *********************************/
 
 	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
-			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean affinity, boolean recency_fault) {
+			List<DAG> dags, int procNum, int recencySeed, boolean affinity, boolean recency_fault) {
 
 		this.type = type;
 		this.hardware = hardware;
@@ -146,12 +146,12 @@ public class Simualtor {
 		this.recency_fault = recency_fault;
 	}
 
-	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
+	public Pair<List<DAG>, double[]> simulate(boolean printSim) {
 		
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
 		 */
-		for (DirectedAcyclicGraph dag : dags) {
+		for (DAG dag : dags) {
 				dag.reset();
 		}
 		
@@ -238,9 +238,9 @@ public class Simualtor {
 //		res.add(makespan);
 //		res.add(finish);
 
-		List<DirectedAcyclicGraph> result = new ArrayList<>();
+		List<DAG> result = new ArrayList<>();
 
-		for (DirectedAcyclicGraph d : dags) {
+		for (DAG d : dags) {
 			result.add(d.deepCopy());
 		}
 
@@ -351,7 +351,7 @@ public class Simualtor {
 				history_level2.get(clusterID).add(n);
 				history_level3.add(n);
 
-				DirectedAcyclicGraph d = Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo());
+				DAG d = Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo());
 				d.allocNodes.add(n);
 
 				/*
@@ -381,7 +381,7 @@ public class Simualtor {
 		 * Checking whether the sleeping DAGs can be released now.
 		 */
 		for (int i = 0; i < sleepingDAGs.size(); i++) {
-			DirectedAcyclicGraph dag = sleepingDAGs.get(i);
+			DAG dag = sleepingDAGs.get(i);
 			if (dag.releaseTime <= systemTime) {
 
 				sleepingDAGs.remove(dag);
@@ -395,7 +395,7 @@ public class Simualtor {
 		 * Check whether the ready DAGs are finished now.
 		 */
 		for (int i = 0; i < readyDAGs.size(); i++) {
-			DirectedAcyclicGraph dag = readyDAGs.get(i);
+			DAG dag = readyDAGs.get(i);
 			if (dag.finishTime <= systemTime) {
 				readyDAGs.remove(dag);
 				i--;
@@ -551,7 +551,7 @@ public class Simualtor {
 
 		res += "DAG Execution Summary: \n\n";
 
-		for (DirectedAcyclicGraph dag : dags) {
+		for (DAG dag : dags) {
 			res += "DAG_" + dag.id + "_" + dag.instanceNo + "   finishes at  dag.finishTime. \n";
 			System.out.printf(
 					"---  DAG_" + dag.id + "_" + dag.instanceNo

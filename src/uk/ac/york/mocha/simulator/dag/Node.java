@@ -32,7 +32,13 @@ public class Node implements Serializable {
 	private List<Node> successors;
 	private List<Node> predecessors;
 
+	private List<Node> anc;
+	private List<Node> des;
+	private List<Node> con;
+
 	public int priority = -1;
+
+	public long finishWithNoP = -1;
 
 	/*
 	 * Simulation parameters
@@ -54,7 +60,7 @@ public class Node implements Serializable {
 	 */
 	public int offline_partition = -1;
 	public boolean now = false;
-	
+
 	public long finishWDM = 0;
 
 	public Node(int layer, NodeType type, int id, int dagID, Random rnd) {
@@ -73,47 +79,75 @@ public class Node implements Serializable {
 
 		this.successors = new ArrayList<>();
 		this.predecessors = new ArrayList<>();
+		
+		
 
 		this.rng = rng;
 	}
-
-	public Node deepCopy() {
-		Node copy = new Node(this.WCET, this.layer, this.type, this.id, this.dagID, this.rng);
-		copy.BCET = BCET;
-		copy.MCET = MCET;
-
-		copy.start = start;
-		copy.finish = finish;
-		copy.finishAt = finishAt;
-		copy.partition = partition;
-		copy.affinity = affinity;
-		copy.delayed = delayed;
-		copy.rng = rng;
-
-		return copy;
+	
+	public void constrcutRelations(List<Node> all) {
+		getAnc();
+		getDes();
+		getCon(all);
 	}
 
-	@Override
-	public String toString() {
-		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
+	private void getAnc() {
+		this.anc = new ArrayList<>(this.predecessors);
+
+		int sizeBefore = anc.size();
+		int sizeAfter = 0;
+		while (sizeBefore != sizeAfter) {
+			sizeBefore = anc.size();
+
+			for (int i=0; i<anc.size();i++) {
+				for (Node p : anc.get(i).predecessors) {
+					if (!anc.contains(p))
+						anc.add(p);
+				}
+			}
+
+			sizeAfter = anc.size();
+		}
+
 	}
 
-	public String getFullName() {
-		return "N " + dagID + "_" + dagInstNo + "_" + id;
+	private void getDes() {
+		this.des = new ArrayList<>(this.successors);
+
+		int sizeBefore = des.size();
+		int sizeAfter = 0;
+		while (sizeBefore != sizeAfter) {
+			sizeBefore = des.size();
+
+			for (int i=0; i<des.size();i++) {
+				for (Node p : des.get(i).successors) {
+					if (!des.contains(p))
+						des.add(p);
+				}
+			}
+
+			sizeAfter = des.size();
+		}
+
 	}
 
-	public String getExeInfo() {
-		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: "
-				+ finishAt + ", duration: " + (finishAt - start) + ", partition: " + partition + ", affinity: "
-				+ affinity;
+	private void getCon(List<Node> all) {
+		this.con = new ArrayList<>(all);
+		con.removeAll(anc);
+		con.removeAll(des);
 	}
 
-	public void printExeInfo(String prefix) {
-		System.out.printf(prefix
-				+ " Node %2d_%2d_%2d    ---    WCET: %5d, starts: %5d, finishes: %5d, duration: %5d, partition: %2d, affinity: %2d\n",
-				dagID, dagInstNo, id, WCET, start, finishAt, (finishAt - start), partition, affinity);
+	public List<Node> getHighCon(){
+		List<Node> highCon = new ArrayList<>();
+		
+		for(Node n : con) {
+			if(n.priority > this.priority)
+				highCon.add(n);
+		}
+		
+		return highCon;
 	}
-
+	
 	/*
 	 * Return the WORST-CASE execution time of the node
 	 */
@@ -201,6 +235,10 @@ public class Node implements Serializable {
 	public void addParent(Node n) {
 		predecessors.add(n);
 	}
+	
+	public List<Node> getCon(){
+		return con;
+	}
 
 	public int getDagID() {
 		return dagID;
@@ -216,6 +254,27 @@ public class Node implements Serializable {
 
 	public void setDagInstNo(int dagInstNo) {
 		this.dagInstNo = dagInstNo;
+	}
+
+	@Override
+	public String toString() {
+		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
+	}
+
+	public String getFullName() {
+		return "N " + dagID + "_" + dagInstNo + "_" + id;
+	}
+
+	public String getExeInfo() {
+		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: "
+				+ finishAt + ", duration: " + (finishAt - start) + ", partition: " + partition + ", affinity: "
+				+ affinity;
+	}
+
+	public void printExeInfo(String prefix) {
+		System.out.printf(prefix
+				+ " Node %2d_%2d_%2d    ---    WCET: %5d, starts: %5d, finishes: %5d, duration: %5d, partition: %2d, affinity: %2d\n",
+				dagID, dagInstNo, id, WCET, start, finishAt, (finishAt - start), partition, affinity);
 	}
 
 }
