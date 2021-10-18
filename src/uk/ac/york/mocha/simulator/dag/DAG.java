@@ -72,8 +72,7 @@ public class DAG implements Serializable {
 	 */
 	public boolean hard = false;
 
-	public DAG(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed, boolean hard,
-			DagType type) {
+	public DAG(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed, boolean hard, DagType type) {
 
 		this.id = id;
 		this.name = "DAG " + id;
@@ -128,8 +127,8 @@ public class DAG implements Serializable {
 	}
 
 	/*****************************************************************
-	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This method
-	 * can only be invoked once! ***********
+	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This
+	 * method can only be invoked once! ***********
 	 *****************************************************************/
 	public List<DAG> getInstances(long instanceNum) {
 
@@ -164,8 +163,8 @@ public class DAG implements Serializable {
 	}
 
 	/*******************************************************************
-	 ******************** Generate DAG structure *********************** This method does not depend on
-	 * external library! ********
+	 ******************** Generate DAG structure *********************** This method does not
+	 * depend on external library! ********
 	 *******************************************************************/
 	public void constructDAG() {
 		if (layeredNodes.size() > 0) {
@@ -211,7 +210,7 @@ public class DAG implements Serializable {
 			int nodeNum = dag_param.parallelism_max == dag_param.parallelism_min ? dag_param.parallelism_min
 					: rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
 			// int nodeNum = rng.nextInt(dag_param.getParallelism()) + 1;
-//			System.out.println(nodeNum);
+			// System.out.println(nodeNum);
 			List<Node> nodePerLayer = new ArrayList<>();
 
 			for (int k = 0; k < nodeNum; k++) {
@@ -336,8 +335,7 @@ public class DAG implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
-						+ dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
@@ -447,8 +445,7 @@ public class DAG implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
-						+ dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
@@ -620,7 +617,7 @@ public class DAG implements Serializable {
 	private int getAactiveNodoNumber(long time) {
 
 		int nodesNum = 0;
-		
+
 		for (Node n : flatNodes) {
 
 			long startTime = n.finishWithNoP - n.getWCET();
@@ -635,69 +632,70 @@ public class DAG implements Serializable {
 
 	}
 
-//	public void getWDM() {
-//		List<ExecutionBlock> wdm = new ArrayList<>();
-//
-//		List<Node> nodes = this.flatNodes;
-//
-//		for (int i = 0; i < nodes.size(); i++) {
-//			Node n = nodes.get(i);
-//
-//			List<Node> parents = n.getParent();
-//
-//			long start = 0;
-//			for (Node parent : parents) {
-//				if (start < parent.finishWDM)
-//					start = parent.finishWDM;
-//			}
-//
-//			n.finishWDM = start + n.getWCET();
-//		}
-//
-//		int systemTime = 0;
-//
-//		int ebID = 0;
-//		long heightTracker = 1;
-//		long widthTracker = 0;
-//
-//		while (getAactiveNodoNumber(systemTime) > 0) {
-//			int activeNodeNum = getAactiveNodoNumber(systemTime);
-//
-//			if (activeNodeNum == heightTracker) {
-//				widthTracker++;
-//				systemTime++;
-//			} else {
-//				ExecutionBlock eb = new ExecutionBlock(ebID, widthTracker, heightTracker, systemTime - widthTracker);
-//
-//				if (wdm.size() > 1 && eb.start != wdm.get(wdm.size() - 1).end) {
-//					System.out.println("DirectedAcyclicGraph.getWDM()");
-//					System.exit(-1);
-//				}
-//
-//				wdm.add(eb);
-//
-//				ebID++;
-//				widthTracker = 1;
-//
-//				heightTracker = getAactiveNodoNumber(systemTime);
-//				systemTime++;
-//			}
-//		}
-//
-//		ExecutionBlock eb = new ExecutionBlock(ebID, widthTracker, heightTracker, systemTime - widthTracker);
-//		wdm.add(eb);
-//
-//		this.wdm = new ArrayList<>(wdm);
-//	}
+	// public void getWDM() {
+	// List<ExecutionBlock> wdm = new ArrayList<>();
+	//
+	// List<Node> nodes = this.flatNodes;
+	//
+	// for (int i = 0; i < nodes.size(); i++) {
+	// Node n = nodes.get(i);
+	//
+	// List<Node> parents = n.getParent();
+	//
+	// long start = 0;
+	// for (Node parent : parents) {
+	// if (start < parent.finishWDM)
+	// start = parent.finishWDM;
+	// }
+	//
+	// n.finishWDM = start + n.getWCET();
+	// }
+	//
+	// int systemTime = 0;
+	//
+	// int ebID = 0;
+	// long heightTracker = 1;
+	// long widthTracker = 0;
+	//
+	// while (getAactiveNodoNumber(systemTime) > 0) {
+	// int activeNodeNum = getAactiveNodoNumber(systemTime);
+	//
+	// if (activeNodeNum == heightTracker) {
+	// widthTracker++;
+	// systemTime++;
+	// } else {
+	// ExecutionBlock eb = new ExecutionBlock(ebID, widthTracker, heightTracker,
+	// systemTime - widthTracker);
+	//
+	// if (wdm.size() > 1 && eb.start != wdm.get(wdm.size() - 1).end) {
+	// System.out.println("DirectedAcyclicGraph.getWDM()");
+	// System.exit(-1);
+	// }
+	//
+	// wdm.add(eb);
+	//
+	// ebID++;
+	// widthTracker = 1;
+	//
+	// heightTracker = getAactiveNodoNumber(systemTime);
+	// systemTime++;
+	// }
+	// }
+	//
+	// ExecutionBlock eb = new ExecutionBlock(ebID, widthTracker, heightTracker,
+	// systemTime - widthTracker);
+	// wdm.add(eb);
+	//
+	// this.wdm = new ArrayList<>(wdm);
+	// }
 
 	public List<ExecutionBlock> getPWDM(int coreNum) {
-		
+
 		getFinishTimeForAllNodes(coreNum);
-		
+
 		List<ExecutionBlock> pwdm = new ArrayList<>();
 
-		
-		long lastfinish = flatNodes.get(flatNodes.size()-1).finishWithNoP;
+		long lastfinish = flatNodes.get(flatNodes.size() - 1).finishWithNoP;
 		long systemTime = 0;
 
 		int ebID = 0;
@@ -730,53 +728,53 @@ public class DAG implements Serializable {
 
 		ExecutionBlock eb = new ExecutionBlock(ebID, widthTracker, heightTracker, systemTime - widthTracker);
 		pwdm.add(eb);
-		
-		for(int i=0; i<pwdm.size();i++) {
-			if(pwdm.get(i).height == 0) {
+
+		for (int i = 0; i < pwdm.size(); i++) {
+			if (pwdm.get(i).height == 0) {
 				pwdm.remove(pwdm.get(i));
 				i--;
 			}
 		}
 
-//		System.out.println("*** CoreNum: " + coreNum);
-//		for(ExecutionBlock eeb : pwdm) {
-//			System.out.println("EB" + id + ": " + eeb.height);
-//		}
-		
-//		int id = 0;
-//
-//		for (ExecutionBlock eb : wdm) {
-//			if (eb.height <= coreNum) {
-//				pwdm.add(new ExecutionBlock(id, eb.width, eb.height, eb.start));
-//				id++;
-//			} else {
-//				long blockNum = eb.height / coreNum;
-//				long lastblockHeight = eb.height % coreNum;
-//
-//				int i = 0;
-//				for (; i < blockNum; i++) {
-//					pwdm.add(new ExecutionBlock(id, eb.width, coreNum, eb.start + eb.width * (i)));
-//					id++;
-//				}
-//
-//				if (lastblockHeight > 0) {
-//					pwdm.add(new ExecutionBlock(id, eb.width, lastblockHeight, eb.start + eb.width * (i)));
-//					id++;
-//				}
-//			}
-//
-//		}
-//
-//		for (int i = 0; i < pwdm.size() - 1; i++) {
-//			ExecutionBlock eb1 = pwdm.get(i);
-//			ExecutionBlock eb2 = pwdm.get(i + 1);
-//
-//			eb2.start = eb1.end;
-//			eb2.end = eb2.start + eb2.width;
-//		}
-		
-		
-		
+		// System.out.println("*** CoreNum: " + coreNum);
+		// for(ExecutionBlock eeb : pwdm) {
+		// System.out.println("EB" + id + ": " + eeb.height);
+		// }
+
+		// int id = 0;
+		//
+		// for (ExecutionBlock eb : wdm) {
+		// if (eb.height <= coreNum) {
+		// pwdm.add(new ExecutionBlock(id, eb.width, eb.height, eb.start));
+		// id++;
+		// } else {
+		// long blockNum = eb.height / coreNum;
+		// long lastblockHeight = eb.height % coreNum;
+		//
+		// int i = 0;
+		// for (; i < blockNum; i++) {
+		// pwdm.add(new ExecutionBlock(id, eb.width, coreNum, eb.start +
+		// eb.width * (i)));
+		// id++;
+		// }
+		//
+		// if (lastblockHeight > 0) {
+		// pwdm.add(new ExecutionBlock(id, eb.width, lastblockHeight, eb.start +
+		// eb.width * (i)));
+		// id++;
+		// }
+		// }
+		//
+		// }
+		//
+		// for (int i = 0; i < pwdm.size() - 1; i++) {
+		// ExecutionBlock eb1 = pwdm.get(i);
+		// ExecutionBlock eb2 = pwdm.get(i + 1);
+		//
+		// eb2.start = eb1.end;
+		// eb2.end = eb2.start + eb2.width;
+		// }
+
 		return pwdm;
 	}
 
@@ -786,7 +784,7 @@ public class DAG implements Serializable {
 			n.finishWithNoP = -1;
 
 		for (Node n : flatNodes) {
-			if(n.finishWithNoP == -1)
+			if (n.finishWithNoP == -1)
 				getFinish(n, NoP);
 		}
 
@@ -799,9 +797,9 @@ public class DAG implements Serializable {
 			}
 		}
 
-		long start = n.getParent().size()==0? 0 : n.getParent().stream().mapToLong(c -> c.finishWithNoP).max().getAsLong();
-		
-		if(start <0) {
+		long start = n.getParent().size() == 0 ? 0 : n.getParent().stream().mapToLong(c -> c.finishWithNoP).max().getAsLong();
+
+		if (start < 0) {
 			System.err.println("start time less than 0!");
 			System.exit(-1);
 		}
@@ -812,8 +810,7 @@ public class DAG implements Serializable {
 			n.finishWithNoP = finish;
 			return finish;
 		} else {
-			long intraInterference = (long) Math
-					.ceil((double) n.getHighCon().stream().mapToLong(c -> c.getWCET()).sum() / (double) NoP);
+			long intraInterference = (long) Math.ceil((double) n.getHighCon().stream().mapToLong(c -> c.getWCET()).sum() / (double) NoP);
 			long finish = start + n.getWCET() + intraInterference;
 
 			n.finishWithNoP = finish;
@@ -943,9 +940,8 @@ public class DAG implements Serializable {
 
 		for (int i = 0; i < 1; i++) {
 			SchedulingParameters sched_param = new SchedulingParameters(10, 100, 100, 50000, 1, 0);
-			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer,
-					SystemParameters.minLayer, SystemParameters.maxParal, SystemParameters.minParal,
-					SystemParameters.connectProb, rng);
+			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer, SystemParameters.minLayer,
+					SystemParameters.maxParal, SystemParameters.minParal, SystemParameters.connectProb, rng);
 			DAG dag = new DAG(sched_param, dag_param, 0, seed, true, DagType.Huawei);
 
 			System.out.println(dag.toString());

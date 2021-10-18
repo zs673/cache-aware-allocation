@@ -29,7 +29,7 @@ public class EP_Multi_Paral {
 	final static int seed = 1000;
 
 	public static void main(String args[]) {
-		int nopSever = 4;
+		int nopSever = 100;
 
 		try {
 			nopSever = Integer.parseInt(args[1]);
@@ -44,8 +44,8 @@ public class EP_Multi_Paral {
 	public static void changeTaskParal(int nopSever) {
 
 		int startingParal = 2;
-		int endParal = 5;
-		SystemParameters.NoS = 4;
+		int endParal = 10;
+		SystemParameters.NoS = 1000;
 
 		List<ResultCap> caps = new ArrayList<>();
 
