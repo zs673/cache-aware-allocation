@@ -47,14 +47,14 @@ public class EP_Multi_SysUtil {
 	public static void changeUtil(int nopSever) {
 
 		int startingUtil = 1;
-		int endUtil = 10;
+		int endUtil = 20;
 
 		List<ResultCap> caps = new ArrayList<>();
 
 		for (int i = startingUtil; i <= endUtil; i++) {
 			final int index = i;
 
-			double utilPerTask = (double) cores / (double) 10 / (double) not * (double) index;
+			double utilPerTask = (double) cores / (double) 10 / (double) not * (double) index / (double) 2;
 
 			ResultCap r = RunOneGroup(cores, not, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
 					SystemParameters.NoS, Double.parseDouble(df.format(utilPerTask)), true, ExpName.taskNum, minParal, maxParal,  nopSever);
