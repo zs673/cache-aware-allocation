@@ -12,7 +12,7 @@ class ResultCap {
 	public List<List<long[]>> response_time = new ArrayList<>();
 
 	public synchronized void addResponseTime(List<long[]> response) {
-		inter_delay.add(response);
+		response_time.add(response);
 	}
 
 	public synchronized void addIntraDelay(List<long[]> delays) {

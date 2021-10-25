@@ -31,13 +31,14 @@ public class EP_Multi_SysUtil {
 	final static int seed = 1000;
 
 	public static void main(String args[]) {
-		int nopSever = 4;
+		int nopSever = 100;
+		SystemParameters.NoS = 1000;
 
 		try {
 			nopSever = Integer.parseInt(args[1]);
-			System.out.println("Number of Sever Core: " + nopSever);
+			System.out.println("Input received, Number of Sever Core: " + nopSever);
 		} catch (Exception e) {
-			System.out.println("Number of Sever Core: " + nopSever);
+			System.out.println("No input given, using the default Number of Sever Core: " + nopSever);
 		}
 
 		changeUtil(nopSever);
@@ -47,7 +48,6 @@ public class EP_Multi_SysUtil {
 
 		int startingUtil = 1;
 		int endUtil = 10;
-		SystemParameters.NoS = 4;
 
 		List<ResultCap> caps = new ArrayList<>();
 
@@ -57,7 +57,7 @@ public class EP_Multi_SysUtil {
 			double utilPerTask = (double) cores / (double) 10 / (double) not * (double) index;
 
 			ResultCap r = RunOneGroup(cores, not, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
-					SystemParameters.NoS, Double.parseDouble(df.format(utilPerTask)), true, ExpName.taskNum, maxParal, minParal, nopSever);
+					SystemParameters.NoS, Double.parseDouble(df.format(utilPerTask)), true, ExpName.taskNum, minParal, maxParal,  nopSever);
 
 			caps.add(r);
 
@@ -260,7 +260,7 @@ public class EP_Multi_SysUtil {
 		}
 
 		for (Thread t : workers)
-			t.run();
+			t.start();
 		for (Thread t : workers) {
 			try {
 				t.join();
