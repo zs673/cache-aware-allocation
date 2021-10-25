@@ -104,6 +104,12 @@ public class TPDSHe {
 			e.printStackTrace();
 		}
 
+		/**
+		 * Here we carry on the calcualtion from Python world and keep going.
+		 */
+		/*
+		 * Here we add inter-task interference to the response time.
+		 */
 		List<Long> delay_by_lower = new ArrayList<>();
 
 		for (int i = 0; i < dags.size() - 1; i++) {
@@ -129,14 +135,29 @@ public class TPDSHe {
 
 		for (int i = 1; i < dags.size(); i++) {
 
-			long total = 0;
-			for (int j = i - 1; j >= 0; j--) {
-				total += dags.get(j).getFlatNodes().stream().mapToLong(c -> c.getWCET()).sum() * (long) Math
-						.ceil((double) response_time.get(i) / (double) dags.get(j).getSchedParameters().getPeriod());
-			}
+			long old_response = response_time.get(i);
+			long new_response = 0;
+			long inter = 0;
+			
+			while(old_response != new_response) {
+				old_response = new_response;
+				
+				long total = 0;
+				for (int j = i - 1; j >= 0; j--) {
+					total += dags.get(j).getFlatNodes().stream().mapToLong(c -> c.getWCET()).sum() * (long) Math
+							.ceil((double) old_response / (double) dags.get(j).getSchedParameters().getPeriod());
+				}
 
-			long delay = (long) Math.ceil((double) total / (double) coreNum);
-			delay_by_higher.add(delay);
+				inter = (long) Math.ceil((double) total / (double) coreNum);
+				
+				new_response = response_time.get(i) + inter;
+				
+				if(new_response > dags.get(i).getSchedParameters().getPeriod()) {
+					break;
+				}
+			}
+			response_time.set(i, new_response);
+			delay_by_higher.add(inter);
 		}
 
 		List<Long> allDelay = new ArrayList<>();

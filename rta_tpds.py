@@ -2026,22 +2026,22 @@ def TPDS_rta_multi(G_, C_, T_list, task_idx, m):
     # V. calculate interference from other higher prioirty tasks
     # need fixed point calculation here
     R0_0 = R0
-    R0_prime = 0
+    # R0_prime = 0
 
-    while (abs(R0_prime - R0_0) > 1):
-        R0_0 = R0_prime
-        I_HP = 0
-        for j in range(0, task_idx):
-            t_j = T_list[j]
-            w_j = sum(C_list[j].values())
-            I_HP = I_HP + 1.0 / m * math.ceil(R0_prime / t_j) * w_j # add ceiling function
-        R0_prime = R0 + I_HP
+    # while (abs(R0_prime - R0_0) > 1):
+    #     R0_0 = R0_prime
+    #     I_HP = 0
+    #     for j in range(0, task_idx):
+    #         t_j = T_list[j]
+    #         w_j = sum(C_list[j].values())
+    #         I_HP = I_HP + 1.0 / m * math.ceil(R0_prime / t_j) * w_j # add ceiling function
+    #     R0_prime = R0 + I_HP
 
-        # if R > D then return the current R'
-        if R0_prime > T_list[task_idx]:
-            break
+    #     # if R > D then return the current R'
+    #     if R0_prime > T_list[task_idx]:
+    #         break
 
-    return R0_prime
+    return R0
 
 
 time_EO = 0

@@ -17,7 +17,7 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class EP_Multi_SysUtil {
 
-	final static DecimalFormat df = new DecimalFormat("#.###");
+	final static DecimalFormat df = new DecimalFormat("#.#");
 
 	final static String expName = "util_sched.txt";
 	final static String outFolder = "result_multi";
@@ -57,7 +57,7 @@ public class EP_Multi_SysUtil {
 			double utilPerTask = (double) cores / (double) 10 / (double) not * (double) index;
 
 			ResultCap r = RunOneGroup(cores, not, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
-					SystemParameters.NoS, utilPerTask, true, ExpName.taskNum, minParal, index, nopSever);
+					SystemParameters.NoS, Double.parseDouble(df.format(utilPerTask)), true, ExpName.taskNum, maxParal, minParal, nopSever);
 
 			caps.add(r);
 
@@ -80,6 +80,8 @@ public class EP_Multi_SysUtil {
 		String he_out = "";
 		String file = "";
 		String out = "";
+		
+		System.out.println("util: " + util);
 
 		switch (mode) {
 		case 0: // intra-task interference
@@ -258,7 +260,7 @@ public class EP_Multi_SysUtil {
 		}
 
 		for (Thread t : workers)
-			t.start();
+			t.run();
 		for (Thread t : workers) {
 			try {
 				t.join();
