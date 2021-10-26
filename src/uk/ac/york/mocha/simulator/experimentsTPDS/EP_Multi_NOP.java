@@ -41,6 +41,7 @@ public class EP_Multi_NOP {
 			if(Integer.parseInt(args[1]) == 1) {
 				SystemParameters.david = true;
 				outFolder = "result_multi_daivd";
+				System.out.println("Using david's utilisation!");
 			}
 			
 		} catch (Exception e) {
