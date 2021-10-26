@@ -28,7 +28,7 @@ public class DavidUtilisationGenerator {
 			 * analysis will use the priority passed from Java. 0 - use RTSS priority with
 			 * CPC model. 1 - use priority passed from java space.
 			 */
-			Process process = Runtime.getRuntime().exec("python runner.py " + num + " " + sum);
+			Process process = Runtime.getRuntime().exec("python3 runner.py " + num + " " + sum);
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
