@@ -32,7 +32,7 @@ public class EP_Multi_NOP_fixUtil {
 
 	public static void main(String args[]) {
 		int nopSever = 1;
-		SystemParameters.NoS = 1;
+		SystemParameters.NoS = 1000;
 
 		try {
 			nopSever = Integer.parseInt(args[0]);
