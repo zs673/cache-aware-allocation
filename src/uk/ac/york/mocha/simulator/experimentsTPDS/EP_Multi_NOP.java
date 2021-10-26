@@ -20,7 +20,7 @@ public class EP_Multi_NOP {
 	final static DecimalFormat df = new DecimalFormat("#.###");
 
 	final static String expName = "nop_sched.txt";
-	final static String outFolder = "result_multi";
+	static String outFolder = "result_multi";
 
 //	final static int cores = 8;
 	final static int minParal = 1;
@@ -37,6 +37,12 @@ public class EP_Multi_NOP {
 		try {
 			nopSever = Integer.parseInt(args[0]);
 			System.out.println("Input received, Number of Sever Core: " + nopSever);
+			
+			if(Integer.parseInt(args[1]) == 1) {
+				SystemParameters.david = true;
+				outFolder = "result_multi_daivd";
+			}
+			
 		} catch (Exception e) {
 			System.out.println("Default number of Sever Core: " + nopSever);
 		}
@@ -187,7 +193,7 @@ public class EP_Multi_NOP {
 
 						SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil,
 								util == null ? null : util.get(k), seed, randomC, SystemParameters.printGen,
-								utilPerTask, maxPara, minPara);
+								utilPerTask, maxPara, minPara, SystemParameters.david);
 
 						Pair<List<DAG>, List<DAG>> p = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
 								periods == null ? null : periods.get(k), false, SystemParameters.dagType);

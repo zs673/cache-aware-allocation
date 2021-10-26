@@ -36,9 +36,11 @@ public class SystemGenerator {
 	public int maxPara;
 	public int minPara;
 
+	public boolean david;
+
 	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
 			List<Double> assignedUtils, int seed, boolean randomC, boolean print, double utilPerTask, int maxPara,
-			int minPara) {
+			int minPara, boolean david) {
 
 		if (utilPerTask > 0) {
 			this.totalUtil = utilPerTask * (double) totalTasks;
@@ -58,17 +60,26 @@ public class SystemGenerator {
 		this.randomC = randomC;
 		this.maxPara = maxPara;
 		this.minPara = minPara;
+
+		this.david = david;
+	}
+
+	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
+			List<Double> assignedUtils, int seed, boolean randomC, boolean print, double utilPerTask, int maxPara,
+			int minPara) {
+		this(total_partitions, totalTasks, isHarmonic, takeAllUtil, assignedUtils, seed, randomC, print, utilPerTask,
+				maxPara, minPara, false);
 	}
 
 	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
 			List<Double> assignedUtils, int seed, boolean randomC, boolean print) {
 
 		this(total_partitions, totalTasks, isHarmonic, takeAllUtil, assignedUtils, seed, randomC, print,
-				SystemParameters.utilPerTask, SystemParameters.maxParal, SystemParameters.minParal);
+				SystemParameters.utilPerTask, SystemParameters.maxParal, SystemParameters.minParal, false);
 	}
 
-	public Pair<List<DAG>, List<DAG>> generatedDAGInstancesInOneHP(
-			int forceInstanceNum, int hyperPeriodNum, List<Long> periods, boolean hard, DagType type) {
+	public Pair<List<DAG>, List<DAG>> generatedDAGInstancesInOneHP(int forceInstanceNum, int hyperPeriodNum,
+			List<Long> periods, boolean hard, DagType type) {
 
 		if (periods != null && periods.size() != total_tasks) {
 			System.err
@@ -259,7 +270,7 @@ public class SystemGenerator {
 			dags.add(dagTask);
 		}
 
-		generateWCETs(dags);
+		generateWCETs(dags, david);
 
 //		for (DirectedAcyclicGraph d : dags) {
 //			d.findPath(true);
@@ -275,7 +286,7 @@ public class SystemGenerator {
 		return dags;
 	}
 
-	private void generateWCETs(List<DAG> dags) {
+	private void generateWCETs(List<DAG> dags, boolean david) {
 
 		if (print) {
 			System.out.println("Assigned and generated WCET (in us):");
@@ -286,27 +297,44 @@ public class SystemGenerator {
 
 			long totalWCET = d.getSchedParameters().getWCET();
 			List<Node> node = d.getFlatNodes();
-
 			long[] c = new long[d.getNodeNum()];
 			long sumC = 0;
 			long sum = 0;
 
-			for (int i = 0; i < c.length; i++) {
-				c[i] = randomC ? ran.nextInt(100) : 100;
-				sumC += c[i];
-			}
+			if (david) {
+				List<Double> ratio = DavidUtilisationGenerator.getDavidUtilVector(c.length, 1);
 
-			double ratio = (double) sumC / (double) totalWCET;
+				for (int i = 0; i < c.length; i++) {
+					long cNode = (long) Math.ceil((double) totalWCET * (double) ratio.get(i));
 
-			for (int i = 0; i < c.length; i++) {
-				long cNode = (long) Math.ceil((double) c[i] / ratio);
-				sum += cNode;
-				if (cNode == 0)
-					cNode = 1;
-				node.get(i).setWCET(cNode);
+					if (cNode == 0)
+						cNode = 1;
+
+					sum += cNode;
+					node.get(i).setWCET(cNode);
+				}
+
+			} else {
+				for (int i = 0; i < c.length; i++) {
+					c[i] = randomC ? ran.nextInt(100) : 100;
+					sumC += c[i];
+				}
+
+				double ratio = (double) sumC / (double) totalWCET;
+
+				for (int i = 0; i < c.length; i++) {
+					long cNode = (long) Math.ceil((double) c[i] / ratio);
+
+					if (cNode == 0)
+						cNode = 1;
+
+					sum += cNode;
+					node.get(i).setWCET(cNode);
+				}
 			}
 
 			d.getSchedParameters().setWCET(sum);
+
 			if (print)
 				System.out.printf("|    DAG_%2d   |   Assigned WCET: %10d   |   Actual WCET: %10d   |\n", d.id,
 						totalWCET, sum);
@@ -388,28 +416,34 @@ public class SystemGenerator {
 		 * generate utils by UUifastDiscard
 		 */
 		List<Double> utils = null;
-		if (this.assignedUtils == null) {
-			UUnifastDiscard unifastDiscard = new UUnifastDiscard(totalUtil, total_tasks, 1000, cores, takeAllUtil, ran);
-			while (true) {
-				utils = unifastDiscard.getUtils();
 
-				double tt = 0;
-				for (int i = 0; i < utils.size(); i++) {
-					tt += utils.get(i);
+		if (david) {
+			utils = new ArrayList<>(DavidUtilisationGenerator.getDavidUtilVector(total_tasks, totalUtil));
+		} else {
+			if (this.assignedUtils == null) {
+				UUnifastDiscard unifastDiscard = new UUnifastDiscard(totalUtil, total_tasks, 1000, cores, takeAllUtil,
+						ran);
+				while (true) {
+					utils = unifastDiscard.getUtils();
+
+					double tt = 0;
+					for (int i = 0; i < utils.size(); i++) {
+						tt += utils.get(i);
+					}
+
+					if (utils != null)
+						if (utils.size() == total_tasks && tt <= totalUtil)
+							break;
+				}
+			} else {
+				if (this.assignedUtils.size() != total_tasks) {
+					System.err.println(
+							"SystemGenerator.generateSchedParam(): pre-assigned utilisations does not match task number");
+					System.exit(-1);
 				}
 
-				if (utils != null)
-					if (utils.size() == total_tasks && tt <= totalUtil)
-						break;
+				utils = new ArrayList<>(this.assignedUtils);
 			}
-		} else {
-			if (this.assignedUtils.size() != total_tasks) {
-				System.err.println(
-						"SystemGenerator.generateSchedParam(): pre-assigned utilisations does not match task number");
-				System.exit(-1);
-			}
-
-			utils = new ArrayList<>(this.assignedUtils);
 		}
 
 		if (print) {

@@ -2,6 +2,8 @@ package uk.ac.york.mocha.simulator.parameters;
 
 public class SystemParameters {
 
+	public static boolean david = true;
+	
 	public static DagType dagType = DagType.Random;
 	
 	public enum DagType {
@@ -26,7 +28,7 @@ public class SystemParameters {
 
 	public static int NoS = 1000;
 	public static final boolean printSim = false;
-	public static final boolean printGen = false;
+	public static final boolean printGen = true;
 
 	/**********************************************************************
 	 ************************** Number of cores ***************************
