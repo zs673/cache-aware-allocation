@@ -27,11 +27,12 @@ public class EP_Multi_Paral {
 	final static int seed = 1000;
 
 	public static void main(String args[]) {
-		int nopSever = 100;
-
+		int nopSever = 1;
+		SystemParameters.NoS = 1000;
+		
 		try {
-			nopSever = Integer.parseInt(args[1]);
-			System.out.println("Number of Sever Core: " + nopSever);
+			nopSever = Integer.parseInt(args[0]);
+			System.out.println("Input received, Number of Sever Core: " + nopSever);
 		} catch (Exception e) {
 			System.out.println("Number of Sever Core: " + nopSever);
 		}
@@ -43,7 +44,6 @@ public class EP_Multi_Paral {
 
 		int startingParal = 2;
 		int endParal = 10;
-		SystemParameters.NoS = 1000;
 
 		List<ResultCap> caps = new ArrayList<>();
 

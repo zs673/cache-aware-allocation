@@ -31,12 +31,12 @@ public class EP_Multi_NOP_fixUtil {
 	final static int seed = 1000;
 
 	public static void main(String args[]) {
-		int nopSever = 100;
+		int nopSever = 1;
 		SystemParameters.NoS = 1000;
 
 		try {
-			nopSever = Integer.parseInt(args[1]);
-			System.out.println("Number of Sever Core: " + nopSever);
+			nopSever = Integer.parseInt(args[0]);
+			System.out.println("Input received, Number of Sever Core: " + nopSever);
 		} catch (Exception e) {
 			System.out.println("Default number of Sever Core: " + nopSever);
 		}

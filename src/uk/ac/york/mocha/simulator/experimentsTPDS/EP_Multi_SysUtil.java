@@ -31,11 +31,11 @@ public class EP_Multi_SysUtil {
 	final static int seed = 1000;
 
 	public static void main(String args[]) {
-		int nopSever = 100;
+		int nopSever = 4;
 		SystemParameters.NoS = 1000;
 
 		try {
-			nopSever = Integer.parseInt(args[1]);
+			nopSever = Integer.parseInt(args[0]);
 			System.out.println("Input received, Number of Sever Core: " + nopSever);
 		} catch (Exception e) {
 			System.out.println("No input given, using the default Number of Sever Core: " + nopSever);
