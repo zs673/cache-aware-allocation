@@ -25,7 +25,7 @@ public class EP_Multi_NOP {
 //	final static int cores = 8;
 	final static int minParal = 1;
 	final static int maxParal = 10;
-	final static int not = 4;
+	final static int not = 5;
 	final static int intanceNum = 1;
 	final static int hyperPeriodNum = 1;
 	final static int seed = 1000;

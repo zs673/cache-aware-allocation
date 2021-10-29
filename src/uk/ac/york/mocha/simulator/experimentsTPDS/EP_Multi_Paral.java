@@ -22,7 +22,7 @@ public class EP_Multi_Paral {
 	final static String expName = "paral";
 
 	final static int cores = 8;
-	final static int not = 4;
+	final static int not = 5;
 	final static int intanceNum = 1;
 	final static int hyperPeriodNum = 1;
 	final static int seed = 1000;

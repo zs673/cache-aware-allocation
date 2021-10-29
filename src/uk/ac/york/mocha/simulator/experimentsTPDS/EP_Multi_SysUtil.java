@@ -23,7 +23,7 @@ public class EP_Multi_SysUtil {
 	static String outFolder = "result_multi";
 
 	final static int cores = 8;
-	final static int not = 4;
+	final static int not = 5;
 	final static int intanceNum = 1;
 	final static int hyperPeriodNum = 1;
 	final static int minParal = 1;
