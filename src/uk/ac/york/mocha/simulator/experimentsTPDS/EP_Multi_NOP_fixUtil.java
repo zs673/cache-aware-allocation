@@ -29,6 +29,7 @@ public class EP_Multi_NOP_fixUtil {
 	final static int intanceNum = 1;
 	final static int hyperPeriodNum = 1;
 	final static int seed = 1000;
+	final static int util = 3;
 
 	public static void main(String args[]) {
 		int nopSever = 1;
@@ -62,7 +63,7 @@ public class EP_Multi_NOP_fixUtil {
 		for (int i = startingNoP; i <= endNoP; i=i+2) {
 			final int index = i;
 
-			double utilPerTask = (double) 8 / (double) 10 / (double) not * (double) 5;
+			double utilPerTask = (double) 8 / (double) 10 / (double) not * (double) util;
 
 			ResultCap r = RunOneGroup(index, not, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
 					SystemParameters.NoS, utilPerTask, true, ExpName.taskNum, minParal, maxParal, nopSever);

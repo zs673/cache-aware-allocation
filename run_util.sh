@@ -1,0 +1,1 @@
+nohup java -jar util.jar 100 1 -> util_d.txt &

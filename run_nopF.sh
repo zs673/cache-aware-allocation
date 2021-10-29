@@ -1,0 +1,1 @@
+nohup java -jar nopF.jar 100 1 -> nopF_d.txt &

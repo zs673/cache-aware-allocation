@@ -1,0 +1,1 @@
+nohup java -jar not.jar 100 1 -> not_d.txt &

@@ -17,7 +17,7 @@ import uk.ac.york.mocha.simulator.schedule.TPDSHe;
 
 public class EP_Multi_NOT {
 
-	final static DecimalFormat df = new DecimalFormat("#.#");
+	final static DecimalFormat df = new DecimalFormat("#.###");
 
 	final static String expName = "not";
 	static String outFolder = "result_multi";
@@ -28,7 +28,8 @@ public class EP_Multi_NOT {
 	final static int minParal = 1;
 	final static int maxParal = 10;
 	final static int seed = 1000;
-
+	final static int util = 3;
+	
 	public static void main(String args[]) {
 		int nopSever = 1;
 		SystemParameters.NoS = 1000;
@@ -60,7 +61,7 @@ public class EP_Multi_NOT {
 		for (int i = startingNOT; i <= endNOT; i++) {
 			final int index = i;
 
-			double utilPerTask = (double) 3.2 / (double) index ;
+			double utilPerTask = (double) 0.8 * (double) util / (double) index ;
 
 			ResultCap r = RunOneGroup(cores, index, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
 					SystemParameters.NoS, Double.parseDouble(df.format(utilPerTask)), true, ExpName.taskNum, minParal,

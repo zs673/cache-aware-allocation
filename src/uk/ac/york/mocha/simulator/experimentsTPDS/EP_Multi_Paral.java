@@ -26,6 +26,7 @@ public class EP_Multi_Paral {
 	final static int intanceNum = 1;
 	final static int hyperPeriodNum = 1;
 	final static int seed = 1000;
+	final static int util = 3;
 
 	public static void main(String args[]) {
 		int nopSever = 1;
@@ -58,7 +59,7 @@ public class EP_Multi_Paral {
 		for (int i = startingParal; i <= endParal; i++) {
 			final int index = i;
 
-			double utilPerTask = (double) cores / (double) 10 / (double) not * (double) 3;
+			double utilPerTask = (double) cores / (double) 10 / (double) not * (double) util;
 
 			ResultCap r = RunOneGroup(cores, not, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
 					SystemParameters.NoS, utilPerTask, true, ExpName.taskNum, index, index, nopSever);

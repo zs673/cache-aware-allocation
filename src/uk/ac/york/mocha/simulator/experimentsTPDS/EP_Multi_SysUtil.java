@@ -17,7 +17,7 @@ import uk.ac.york.mocha.simulator.schedule.TPDSHe;
 
 public class EP_Multi_SysUtil {
 
-	final static DecimalFormat df = new DecimalFormat("#.#");
+	final static DecimalFormat df = new DecimalFormat("#.###");
 
 	final static String expName = "util";
 	static String outFolder = "result_multi";

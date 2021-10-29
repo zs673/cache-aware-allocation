@@ -1,0 +1,1 @@
+nohup java -jar paral.jar 100 1 -> paral_d.txt &
