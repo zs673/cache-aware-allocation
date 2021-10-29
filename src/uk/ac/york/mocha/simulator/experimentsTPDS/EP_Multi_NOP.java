@@ -11,15 +11,15 @@ import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
 import uk.ac.york.mocha.simulator.schedule.InfoCap;
+import uk.ac.york.mocha.simulator.schedule.RTSSOur;
 import uk.ac.york.mocha.simulator.schedule.SemiWorkConversing;
 import uk.ac.york.mocha.simulator.schedule.TPDSHe;
-import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class EP_Multi_NOP {
 
 	final static DecimalFormat df = new DecimalFormat("#.###");
 
-	final static String expName = "nop_sched.txt";
+	final static String expName = "nop";
 	static String outFolder = "result_multi";
 
 //	final static int cores = 8;
@@ -37,13 +37,13 @@ public class EP_Multi_NOP {
 		try {
 			nopSever = Integer.parseInt(args[0]);
 			System.out.println("Input received, Number of Sever Core: " + nopSever);
-			
-			if(Integer.parseInt(args[1]) == 1) {
+
+			if (Integer.parseInt(args[1]) == 1) {
 				SystemParameters.david = true;
 				outFolder = "result_multi_daivd";
 				System.out.println("Using david's utilisation!");
 			}
-			
+
 		} catch (Exception e) {
 			System.out.println("Default number of Sever Core: " + nopSever);
 		}
@@ -55,11 +55,10 @@ public class EP_Multi_NOP {
 
 		int startingNoP = 2;
 		int endNoP = 32;
-		
 
 		List<ResultCap> caps = new ArrayList<>();
 
-		for (int i = startingNoP; i <= endNoP; i=i+2) {
+		for (int i = startingNoP; i <= endNoP; i = i + 2) {
 			final int index = i;
 
 			double utilPerTask = (double) index / (double) 10 / (double) not * (double) 3;
@@ -70,105 +69,15 @@ public class EP_Multi_NOP {
 			caps.add(r);
 
 			for (int k = 0; k < 4; k++)
-				writeSchedToSystem(r, index, k);
+				ResultCollector.writeSchedToSystem(r, index, k, expName, outFolder);
 		}
-		
+
 		System.out.println("--------------------------------");
 		for (ResultCap cap : caps) {
-			System.out.println(cap.NoSched_our + " " + cap.NoSched_he);
+			System.out.println(cap.NoSched_our + " " + cap.NoSched_he + " " + cap.NoSched_seq);
 		}
 		System.out.println("------------- DONE -------------");
-		
-	}
 
-	private static void writeSchedToSystem(ResultCap cap, int cores, int mode) {
-		String our_file = "";
-		String he_file = "";
-		String our_out = "";
-		String he_out = "";
-		String file = "";
-		String out = "";
-
-		switch (mode) {
-		case 0: // intra-task interference
-			our_file = "nop" + "_" + cores + "_" + "intra" + "_" + "our" + ".txt";
-			he_file = "nop" + "_" + cores + "_" + "intra" + "_" + "he" + ".txt";
-
-			List<List<long[]>> intra = cap.intra_delay;
-			for (List<long[]> i : intra) {
-				long[] our = i.get(0);
-				for (long l : our) {
-					our_out += l + " ";
-				}
-				our_out += "\n";
-
-				long[] he = i.get(1);
-				for (long l : he) {
-					he_out += l + " ";
-				}
-				he_out += "\n";
-			}
-
-			Utils.writeResult(outFolder, our_file, our_out);
-			Utils.writeResult(outFolder, he_file, he_out);
-
-			break;
-		case 1: // inter-task interference
-			our_file = "nop" + "_" + cores + "_" + "inter" + "_" + "our" + ".txt";
-			he_file = "nop" + "_" + cores + "_" + "inter" + "_" + "he" + ".txt";
-
-			List<List<long[]>> inter = cap.inter_delay;
-			for (List<long[]> i : inter) {
-				long[] our = i.get(0);
-				for (long l : our) {
-					our_out += l + " ";
-				}
-				our_out += "\n";
-
-				long[] he = i.get(1);
-				for (long l : he) {
-					he_out += l + " ";
-				}
-				he_out += "\n";
-			}
-
-			Utils.writeResult(outFolder, our_file, our_out);
-			Utils.writeResult(outFolder, he_file, he_out);
-
-			break;
-		case 2: // response time
-			our_file = "nop" + "_" + cores + "_" + "response" + "_" + "our" + ".txt";
-			he_file = "nop" + "_" + cores + "_" + "response" + "_" + "he" + ".txt";
-
-			List<List<long[]>> response = cap.response_time;
-			for (List<long[]> i : response) {
-				long[] our = i.get(0);
-				for (long l : our) {
-					our_out += l + " ";
-				}
-				our_out += "\n";
-
-				long[] he = i.get(1);
-				for (long l : he) {
-					he_out += l + " ";
-				}
-				he_out += "\n";
-			}
-
-			Utils.writeResult(outFolder, our_file, our_out);
-			Utils.writeResult(outFolder, he_file, he_out);
-
-			break;
-		case 3: // sched info
-			file = "nop" + "_" + cores + "_" + "sched" + ".txt";
-
-			out += cap.NoSched_our + " ";
-			out += cap.NoSched_he + "\n";
-
-			Utils.writeResult(outFolder, file, out);
-
-			break;
-		}
 	}
 
 	public static ResultCap RunOneGroup(int cores, int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
@@ -202,9 +111,13 @@ public class EP_Multi_NOP {
 						List<DAG> dagsInOneHP = p.getFirst();
 						List<DAG> dagTasks = p.getSecond();
 
+						List<InfoCap> seq = new RTSSOur().getResponseTime(dagsInOneHP, cores);
 						List<InfoCap> he = new TPDSHe().getResponseTime(dagTasks, cores);
 						List<InfoCap> our = new SemiWorkConversing().getResponseTime(dagsInOneHP, cores);
 
+						if (isSchedulable(dagsInOneHP, seq))
+							cap.incrementSeq();
+						
 						if (isSchedulable(dagTasks, he))
 							cap.incrementHe();
 
@@ -214,12 +127,15 @@ public class EP_Multi_NOP {
 						if (our != null) {
 							long[] interDelayHe = new long[dagTasks.size()];
 							long[] interDelayOur = new long[dagTasks.size()];
+							long[] interDelaySeq = new long[dagTasks.size()];
 
 							long[] intraDelayHe = new long[dagTasks.size()];
 							long[] intraDelayOur = new long[dagTasks.size()];
+							long[] intraDelaySeq = new long[dagTasks.size()];
 
 							long[] responseTimeHe = new long[dagTasks.size()];
 							long[] responseTimeOur = new long[dagTasks.size()];
+							long[] responseTimeSeq = new long[dagTasks.size()];
 
 							for (int j = 0; j < he.size(); j++) {
 								interDelayHe[j] = he.get(j).best_inter;
@@ -239,20 +155,36 @@ public class EP_Multi_NOP {
 								if (responseTimeOur[index] < our.get(j).best_response_time)
 									responseTimeOur[index] = our.get(j).best_response_time;
 							}
+							
+							for (int j = 0; j < seq.size(); j++) {
+								int index = dagsInOneHP.get(j).id;
+
+								if (interDelaySeq[index] < seq.get(j).best_inter)
+									interDelaySeq[index] = seq.get(j).best_inter;
+
+								if (intraDelaySeq[index] < seq.get(j).best_intra)
+									intraDelaySeq[index] = seq.get(j).best_intra;
+
+								if (responseTimeSeq[index] < seq.get(j).best_response_time)
+									responseTimeSeq[index] = seq.get(j).best_response_time;
+							}
 
 							List<long[]> interDelays = new ArrayList<>();
 							interDelays.add(interDelayOur);
 							interDelays.add(interDelayHe);
+							interDelays.add(interDelaySeq);
 							cap.addInterDelay(interDelays);
 
 							List<long[]> intraDelays = new ArrayList<>();
 							intraDelays.add(intraDelayOur);
 							intraDelays.add(intraDelayHe);
+							intraDelays.add(intraDelaySeq);
 							cap.addIntraDelay(intraDelays);
 
 							List<long[]> response_times = new ArrayList<>();
 							response_times.add(responseTimeOur);
 							response_times.add(responseTimeHe);
+							response_times.add(responseTimeSeq);
 							cap.addResponseTime(response_times);
 						}
 
@@ -291,4 +223,3 @@ public class EP_Multi_NOP {
 	}
 
 }
-

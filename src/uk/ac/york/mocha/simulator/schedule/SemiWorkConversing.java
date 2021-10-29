@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.DAG;
+import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.ExecutionBlock;
 import uk.ac.york.mocha.simulator.dag.Node;
 
@@ -45,8 +45,6 @@ public class SemiWorkConversing {
 		List<ExecutionBlock> system = new ArrayList<>();
 
 		for (DAG d : dags) {
-			
-			
 			Pair<Long, List<int[]>> res = DAGtoPython.pharseDAGForPython(d, cores);
 			List<int[]> prio = res.getSecond();
 			for (Node n : d.getFlatNodes()) {

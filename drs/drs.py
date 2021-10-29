@@ -26,7 +26,7 @@ environment variables, and only check these variables at import time (i.e. if yo
 import numpy before DRS, it's too late and NumPy will be using multithreading)
 """
 
-from __future__ import annotations
+# from __future__ import annotations
 
 import os
 from typing import Iterable, Dict, List, Optional, Tuple, Union, Sequence, NamedTuple

@@ -6,6 +6,7 @@ import java.util.List;
 class ResultCap {
 	public int NoSched_our = 0;
 	public int NoSched_he = 0;
+	public int NoSched_seq = 0;
 
 	public List<List<long[]>> inter_delay = new ArrayList<>();
 	public List<List<long[]>> intra_delay = new ArrayList<>();
@@ -25,6 +26,10 @@ class ResultCap {
 
 	public synchronized void incrementOur() {
 		NoSched_our++;
+	}
+	
+	public synchronized void incrementSeq() {
+		NoSched_seq++;
 	}
 
 	public synchronized void incrementHe() {

@@ -125,8 +125,9 @@ public class TPDSHe {
 
 			long maxDelay = (long) Math.ceil((double) maxWorkload / (double) coreNum);
 			response_time.set(i, response_time.get(i) + maxDelay);
-
 			delay_by_lower.add(maxDelay);
+		
+//			delay_by_lower.add((long) 0 );
 		}
 		delay_by_lower.add((long) 0);
 

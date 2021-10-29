@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.DAG;
+import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
@@ -75,7 +75,7 @@ public class SystemGenerator {
 			List<Double> assignedUtils, int seed, boolean randomC, boolean print) {
 
 		this(total_partitions, totalTasks, isHarmonic, takeAllUtil, assignedUtils, seed, randomC, print,
-				SystemParameters.utilPerTask, SystemParameters.maxParal, SystemParameters.minParal, false);
+				SystemParameters.utilPerTask, SystemParameters.minParal, SystemParameters.maxParal, false);
 	}
 
 	public Pair<List<DAG>, List<DAG>> generatedDAGInstancesInOneHP(int forceInstanceNum, int hyperPeriodNum,
