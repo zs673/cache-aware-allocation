@@ -33,7 +33,7 @@ public class EP_Multi_NOP {
 
 	public static void main(String args[]) {
 		int nopSever = 1;
-		SystemParameters.NoS = 1000;
+		SystemParameters.NoS = 10;
 
 		try {
 			nopSever = Integer.parseInt(args[0]);
