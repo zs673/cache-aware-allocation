@@ -53,7 +53,7 @@ public class EP_Multi_NOT {
 
 	public static void changeUtil(int nopSever) {
 
-		int startingNOT = 1;
+		int startingNOT = 8;
 		int endNOT = 10;
 
 		List<ResultCap> caps = new ArrayList<>();
