@@ -10,14 +10,14 @@ colors=[[0.8500 0.3250 0.0980]; [0 0.4470 0.7410];  [0.9290 0.6940 0.1250]; [0.4
 markers=['o', '*','^'];
 systemNo = 1000;
 legends = ["our","He2019","Zhao2020"];
-xlabels = ["System Utilisation U", "Parallel Degree of DAGs p", "Number of Cores m"];
+xlabels = ["System Utilisation", "Parallel Degree of DAGs", "Number of Cores", "Number of Tasks"];
 
-file_pre = ["util","paral","nopF"];
+file_pre = ["util","paral","nopF","not"];
 file_end = "sched";
 
-startingVar = [1,2,2];
-endingVar = [12,10,32];
-space = [1,1,2];
+startingVar = [1,2,2,1];
+endingVar = [12,10,32,10];
+space = [1,1,2,1];
 
 for k = 1:length(xlabels)
     coloums = 1: (endingVar(k))/space(k);
@@ -40,7 +40,7 @@ for k = 1:length(xlabels)
         count=count+1;
     end
     
-    data = data / systemNo;
+    data = data / systemNo * 100;
     
     f=figure('Position', [100, 100, wid, len]);
     set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);

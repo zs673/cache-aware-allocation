@@ -54,7 +54,7 @@ public class EP_Multi_SysUtil {
 	public static void changeUtil(int nopSever) {
 
 		int startingUtil = 1;
-		int endUtil = 15;
+		int endUtil = 6;
 
 		List<ResultCap> caps = new ArrayList<>();
 
@@ -85,7 +85,7 @@ public class EP_Multi_SysUtil {
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, double utilPerTask,
 			boolean randomC, ExpName name, int maxPara, int minPara, int nopSever) {
 
-		int workload = NoS / nopSever;
+		int workload = 50000 / nopSever;
 		final int taskSeeds = 1000;
 
 		ResultCap cap = new ResultCap();
@@ -100,6 +100,14 @@ public class EP_Multi_SysUtil {
 					int seed = taskSeeds + offset;
 
 					for (int k = offset; k < offset + workload; k++) {
+						cap.checkFinish();
+						
+						if(cap.isFinish())
+							return;
+						
+						boolean ourS = false;
+						boolean heS = false;
+						
 						System.out.println(
 								"Current system number: " + (k) + " --- system util: " + (utilPerTask * taskNum));
 
@@ -120,24 +128,29 @@ public class EP_Multi_SysUtil {
 						if (isSchedulable(dagsInOneHP, seq))
 							cap.incrementSeq();
 
-						if (isSchedulable(dagTasks, he))
+						if (isSchedulable(dagTasks, he)) {
 							cap.incrementHe();
+							heS = true;
+						}
 
-						if (isSchedulable(dagsInOneHP, our))
+						if (isSchedulable(dagsInOneHP, our)) {
 							cap.incrementOur();
+							ourS = true;
+						}
 
-						if (our != null) {
+						if (ourS && heS) {
+							cap.addCounter();
 							long[] interDelayHe = new long[dagTasks.size()];
 							long[] interDelayOur = new long[dagTasks.size()];
-							long[] interDelaySeq = new long[dagTasks.size()];
+//							long[] interDelaySeq = new long[dagTasks.size()];
 
 							long[] intraDelayHe = new long[dagTasks.size()];
 							long[] intraDelayOur = new long[dagTasks.size()];
-							long[] intraDelaySeq = new long[dagTasks.size()];
+//							long[] intraDelaySeq = new long[dagTasks.size()];
 
 							long[] responseTimeHe = new long[dagTasks.size()];
 							long[] responseTimeOur = new long[dagTasks.size()];
-							long[] responseTimeSeq = new long[dagTasks.size()];
+//							long[] responseTimeSeq = new long[dagTasks.size()];
 
 							for (int j = 0; j < he.size(); j++) {
 								interDelayHe[j] = he.get(j).best_inter;
@@ -158,35 +171,35 @@ public class EP_Multi_SysUtil {
 									responseTimeOur[index] = our.get(j).best_response_time;
 							}
 
-							for (int j = 0; j < seq.size(); j++) {
-								int index = dagsInOneHP.get(j).id;
-
-								if (interDelaySeq[index] < seq.get(j).best_inter)
-									interDelaySeq[index] = seq.get(j).best_inter;
-
-								if (intraDelaySeq[index] < seq.get(j).best_intra)
-									intraDelaySeq[index] = seq.get(j).best_intra;
-
-								if (responseTimeSeq[index] < seq.get(j).best_response_time)
-									responseTimeSeq[index] = seq.get(j).best_response_time;
-							}
+//							for (int j = 0; j < seq.size(); j++) {
+//								int index = dagsInOneHP.get(j).id;
+//
+//								if (interDelaySeq[index] < seq.get(j).best_inter)
+//									interDelaySeq[index] = seq.get(j).best_inter;
+//
+//								if (intraDelaySeq[index] < seq.get(j).best_intra)
+//									intraDelaySeq[index] = seq.get(j).best_intra;
+//
+//								if (responseTimeSeq[index] < seq.get(j).best_response_time)
+//									responseTimeSeq[index] = seq.get(j).best_response_time;
+//							}
 
 							List<long[]> interDelays = new ArrayList<>();
 							interDelays.add(interDelayOur);
 							interDelays.add(interDelayHe);
-							interDelays.add(interDelaySeq);
+//							interDelays.add(interDelaySeq);
 							cap.addInterDelay(interDelays);
 
 							List<long[]> intraDelays = new ArrayList<>();
 							intraDelays.add(intraDelayOur);
 							intraDelays.add(intraDelayHe);
-							intraDelays.add(intraDelaySeq);
+//							intraDelays.add(intraDelaySeq);
 							cap.addIntraDelay(intraDelays);
 
 							List<long[]> response_times = new ArrayList<>();
 							response_times.add(responseTimeOur);
 							response_times.add(responseTimeHe);
-							response_times.add(responseTimeSeq);
+//							response_times.add(responseTimeSeq);
 							cap.addResponseTime(response_times);
 						}
 

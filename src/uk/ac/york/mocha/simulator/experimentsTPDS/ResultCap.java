@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 class ResultCap {
+	
+	boolean finish = false;
+	
+	int counter = 0;
+	
 	public int NoSched_our = 0;
 	public int NoSched_he = 0;
 	public int NoSched_seq = 0;
@@ -35,5 +40,20 @@ class ResultCap {
 	public synchronized void incrementHe() {
 		NoSched_he++;
 	}
+	
+	public synchronized boolean isFinish() {
+		return finish;
+	}
+	
+	public synchronized void addCounter() {
+		counter++;
+		System.out.println("counter: " + counter);
+	}
+	
+	public synchronized void checkFinish() {
+		if(counter >= 5)
+			finish = true;
+	}
+
 
 }

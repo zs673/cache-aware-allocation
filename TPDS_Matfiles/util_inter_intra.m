@@ -35,10 +35,10 @@ for j = 1: length(file_end)
 
             mean = reshape(data_per_file.',1,[]); %median(data_per_file);
             if i==1
-                boxplot(mean, 'position', pos, 'widths', 0.65, 'symbol','.', 'color', colors(i,:));
+                boxplot(mean, 'position', pos, 'widths', 0.65, 'symbol','.', 'color', colors(i,:),'symbol', '');
                 hold on;
             else
-                boxplot(mean, 'position', pos+1, 'widths', 0.65, 'symbol','.', 'color', colors(i,:));
+                boxplot(mean, 'position', pos+1, 'widths', 0.65, 'symbol','.', 'color', colors(i,:),'symbol', '');
                 hold on;
             end
         end 
@@ -46,11 +46,11 @@ for j = 1: length(file_end)
     end
     
     xlim([0.5, 20.5]);
-    if(j==1)
-        ylim([-500, 100000]);
-    else
-        ylim([-1000, 200000]);
-    end
+%     if(j==1)
+%         ylim([-500, 100000]);
+%     else
+        ylim([-3000, 200000]);
+%     end
     
     legends = ["our","He2019"];
 
@@ -72,7 +72,7 @@ for j = 1: length(file_end)
     end
     
     c = findall(gca,'Tag','Box');
-    hleg1 = legend(c(1:2),legends,'location','northwest','Orientation','vertical');
+    hleg1 = legend(c(2:3),legends,'location','northwest','Orientation','vertical');
     set(hleg1,'FontSize',14);
     if(j==1)
        saveas(gcf,strcat(path_figs, strcat("ep_intra_", file_pre, ".eps")),'epsc');
