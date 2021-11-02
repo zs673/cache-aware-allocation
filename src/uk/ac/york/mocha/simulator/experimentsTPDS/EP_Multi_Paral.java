@@ -136,6 +136,7 @@ public class EP_Multi_Paral {
 						}
 
 						if (ourS && heS) {
+							cap.addCounter();
 							long[] interDelayHe = new long[dagTasks.size()];
 							long[] interDelayOur = new long[dagTasks.size()];
 //							long[] interDelaySeq = new long[dagTasks.size()];

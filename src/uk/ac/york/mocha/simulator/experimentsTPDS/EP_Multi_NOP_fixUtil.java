@@ -143,6 +143,7 @@ public class EP_Multi_NOP_fixUtil {
 						}
 
 						if (ourS && heS) {
+							cap.addCounter();
 							long[] interDelayHe = new long[dagTasks.size()];
 							long[] interDelayOur = new long[dagTasks.size()];
 //							long[] interDelaySeq = new long[dagTasks.size()];
