@@ -51,7 +51,7 @@ class ResultCap {
 	}
 	
 	public synchronized void checkFinish() {
-		if(counter >= 5)
+		if(counter >= 1000)
 			finish = true;
 	}
 
