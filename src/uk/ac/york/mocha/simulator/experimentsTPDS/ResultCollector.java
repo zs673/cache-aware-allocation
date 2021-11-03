@@ -50,14 +50,14 @@ public class ResultCollector {
 				}
 				he_out += "\n";
 
-				long[] seq = i.get(2);
-				for (int k = 0; k < seq.length; k++) {
-					if (k < seq.length - 1)
-						seq_out += seq[k] + ",";
-					else
-						seq_out += seq[k];
-				}
-				seq_out += "\n";
+//				long[] seq = i.get(2);
+//				for (int k = 0; k < seq.length; k++) {
+//					if (k < seq.length - 1)
+//						seq_out += seq[k] + ",";
+//					else
+//						seq_out += seq[k];
+//				}
+//				seq_out += "\n";
 			}
 
 			Utils.writeResult(folder, our_file, our_out);
@@ -90,14 +90,14 @@ public class ResultCollector {
 				}
 				he_out += "\n";
 
-				long[] seq = i.get(2);
-				for (int k = 0; k < seq.length; k++) {
-					if (k < seq.length - 1)
-						seq_out += seq[k] + ",";
-					else
-						seq_out += seq[k];
-				}
-				seq_out += "\n";
+//				long[] seq = i.get(2);
+//				for (int k = 0; k < seq.length; k++) {
+//					if (k < seq.length - 1)
+//						seq_out += seq[k] + ",";
+//					else
+//						seq_out += seq[k];
+//				}
+//				seq_out += "\n";
 			}
 
 			Utils.writeResult(folder, our_file, our_out);
@@ -130,14 +130,14 @@ public class ResultCollector {
 				}
 				he_out += "\n";
 
-				long[] seq = i.get(2);
-				for (int k = 0; k < seq.length; k++) {
-					if (k < seq.length - 1)
-						seq_out += seq[k] + ",";
-					else
-						seq_out += seq[k];
-				}
-				seq_out += "\n";
+//				long[] seq = i.get(2);
+//				for (int k = 0; k < seq.length; k++) {
+//					if (k < seq.length - 1)
+//						seq_out += seq[k] + ",";
+//					else
+//						seq_out += seq[k];
+//				}
+//				seq_out += "\n";
 			}
 
 			Utils.writeResult(folder, our_file, our_out);
