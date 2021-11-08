@@ -14,6 +14,14 @@ import uk.ac.york.mocha.simulator.dag.Node;
 
 public class Utils {
 
+	public static void assignPriorityOur(List<DirectedAcyclicGraph> dags) {
+		
+	}
+	
+	public static void assignPriorityHe(List<DirectedAcyclicGraph> dags) {
+		
+	}
+	
 	/*
 	 * Order nodes by 1) its DAG priority and 2) its WCET.
 	 */

@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.allocation.OnelineAllocation;
+import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineAndOffline;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
@@ -156,7 +156,7 @@ public class Simualtor {
 		}
 		
 		boolean cacheAware = false;
-		OnelineAllocation allocM = null;
+		AllocationMethods allocM = null;
 
 		switch (alloc) {
 		case RANDOM:
@@ -257,7 +257,7 @@ public class Simualtor {
 	/******************************************************************
 	 ********** Choose the next node in the queue to execute **********
 	 ******************************************************************/
-	private void ExecuteReadyNodes(List<Integer> availableProc, OnelineAllocation allocM, boolean cacheAware) {
+	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethods allocM, boolean cacheAware) {
 
 		for (Node n : readyNodes) {
 			if (n.getDagID() == 0 && n.getDagInstNo() == 0 && n.getId() == 5) {

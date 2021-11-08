@@ -7,7 +7,7 @@ import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineFFD extends OnelineAllocation {
+public class OnlineFFD extends AllocationMethods {
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,

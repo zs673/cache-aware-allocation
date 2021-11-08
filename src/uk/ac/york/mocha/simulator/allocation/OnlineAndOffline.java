@@ -12,7 +12,7 @@ import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineAndOffline extends OnelineAllocation {
+public class OnlineAndOffline extends AllocationMethods {
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,

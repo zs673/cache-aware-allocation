@@ -6,7 +6,7 @@ import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 
-public abstract class OnelineAllocation {
+public abstract class AllocationMethods {
 
 //	protected abstract int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2);
 

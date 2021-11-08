@@ -12,7 +12,7 @@ import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineCacheAware extends AllocationMethods {
+public class OnlineWFWithOrdering extends AllocationMethods {
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
@@ -23,11 +23,11 @@ public class OnlineCacheAware extends AllocationMethods {
 		/*
 		 * Entry for debugging a single node
 		 */
-		for (Node n : readyNodes) {
-			if (n.getDagID() == 0 && n.getDagInstNo() == 1 && n.getId() == 0) {
-				break;
-			}
-		}
+//		for (Node n : readyNodes) {
+//			if (n.getDagID() == 0 && n.getDagInstNo() == 0 && n.getId() == 0) {
+//				break;
+//			}
+//		}
 
 		if (readyNodes.size() == 0 || availableProcs.size() == 0)
 			return;
@@ -37,7 +37,69 @@ public class OnlineCacheAware extends AllocationMethods {
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.
 		 */
-		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		readyNodes.sort((c1, c2) -> Utils.compareNodeWithHard(dags, c1, c2));
+
+		/**
+		 * Allocation for hard real-time tasks
+		 */
+//		List<Integer> allocProcsHard = new ArrayList<>();
+//		List<Node> allocNodesHard = new ArrayList<>();
+//		List<Node> hardAsSoft = new ArrayList<>();
+//
+//		for (int i = 0; i < readyNodes.size(); i++) {
+//			Node n = readyNodes.get(i);
+//
+//			if (n.priority > -1) {
+//
+//				int offlineAlloc = n.offline_partition;
+//				hardAsSoft.add(n);
+//				if (availableProcs.contains(offlineAlloc) && !allocProcsHard.contains(offlineAlloc)) {
+//					n.partition = offlineAlloc;
+//
+//					allocProcsHard.add(offlineAlloc);
+//					allocNodesHard.add(n);
+//				} else { //if (!availableProcs.contains(offlineAlloc) && availableProcs.size() > 0) 
+//					Pair<Long, Integer> res = table.computeET(-1, history_level1, history_level2, history_level3, n,
+//							offlineAlloc, true, recency_fault, 0);
+////					long et_diff_wait = n.getWCET() - res.getFirst();
+//					int cache = res.getSecond();
+//
+//					if (cache != 1) {
+//						hardAsSoft.add(n);
+//					}
+//
+////					List<Integer> free_proc_update = new ArrayList<>();
+////					for(int j=0; j<availableProcs.size();j++) {
+////						if(!allocNodesHard.contains(availableProcs.get(j))) {
+////							free_proc_update.add(availableProcs.get(j));
+////						}
+////					}
+////					
+////					List<Long> et_conserving = new ArrayList<>();
+////					for(int j=0; j< free_proc_update.size(); j++) {
+////						
+////					}
+//				}
+//
+//			}
+//
+//		}
+
+		/**
+		 * Allocation for soft real-time tasks
+		 */
+//		List<Node> softNodes = readyNodes.stream().filter(c -> c.priority == -1).collect(Collectors.toList());
+//		List<Node> restNodes = new ArrayList<>();
+//		restNodes.addAll(hardAsSoft);
+//		restNodes.addAll(softNodes);
+//
+//		List<Integer> softProcs = new ArrayList<>();
+//		for (int i = 0; i < availableProcs.size(); i++) {
+//			int proc = availableProcs.get(i);
+//			if (!allocProcsHard.contains(proc)) {
+//				softProcs.add(proc);
+//			}
+//		}
 
 		List<Node> preEligible = new ArrayList<>();
 		for (int i = 0; i < availableProcs.size(); i++) {
@@ -60,9 +122,8 @@ public class OnlineCacheAware extends AllocationMethods {
 					 * Option 1: Speed up by ABSOLUTE vaue
 					 */
 					long WCET = n.getWCET();
-					long realET = table
-							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, recency_fault, 0)
-							.getFirst();
+					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true,
+							recency_fault, 0).getFirst();
 					long speedup = WCET - realET;
 
 					/*
@@ -105,7 +166,7 @@ public class OnlineCacheAware extends AllocationMethods {
 
 			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory,
 					preEligible, availableP, availableTimeAllProcs, table, currentTime, affinity, history_level1,
-					history_level2, history_level3,recency_fault);
+					history_level2, history_level3, recency_fault);
 
 			Node n = preEligible.get(p.getFirst().intValue());
 
@@ -123,7 +184,7 @@ public class OnlineCacheAware extends AllocationMethods {
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
 			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, RecencyProfile table, long time,
 			boolean affinity, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3,boolean recency_fault) {
+			List<Node> history_level3, boolean recency_fault) {
 
 		int row = -1;
 		int col = -1;
@@ -204,13 +265,13 @@ public class OnlineCacheAware extends AllocationMethods {
 
 					for (Node affected : affectedNodes) {
 						long affectedTimeOneNode = table
-								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition,
-										true, recency_fault, et_n)
+								.computeET(-1, history_level1, history_level2, history_level3, affected,
+										affected.partition, true, recency_fault, et_n)
 								.getFirst()
 								- table.computeET(-1, history_level1, history_level2, history_level3, affected,
 										affected.partition, true, recency_fault, 0).getFirst();
 
-						affectedTime += affectedTimeOneNode < 0? 0 : affectedTimeOneNode;
+						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 
 						if (affectedTime < 0) {
 							System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");
@@ -228,33 +289,6 @@ public class OnlineCacheAware extends AllocationMethods {
 
 			}
 
-//			if (freeProcIndex.size() > 1) {
-//				/*
-//				 * Search in history for same node & DAG allocation
-//				 */
-//				List<Long> NodeHis = new ArrayList<>();
-//
-//				for (int i = 0; i < freeProcIndex.size(); i++)
-//					NodeHis.add((long) 0);
-//
-//				for (int i = 0; i < freeProcIndex.size(); i++) {
-//					int procIndex = freeProcIndex.get(i);
-//
-//					List<Node> nodesInProc = allocHistory.get(procIndex);
-//
-//					long Nodenum = 0;
-//					for (Node nh : nodesInProc)
-//						Nodenum += nh.finishAt - nh.start;
-//
-//					NodeHis.set(i, Nodenum);
-//				}
-//
-//				long minExecutionTime = Collections.min(NodeHis);
-//				int minETIndex = NodeHis.indexOf(minExecutionTime);
-//
-//				col = freeProcIndex.get(minETIndex);
-//			}
-
 		}
 
 		if (row == -1 || col == -1) {
@@ -267,105 +301,3 @@ public class OnlineCacheAware extends AllocationMethods {
 	}
 
 }
-
-/****************************************************************************************************************************
- ******************************************************* OLD VERSIONS *******************************************************
- ****************************************************************************************************************************/
-
-/******************************************************************************
- * v0.2 ***********************************************************************
- * 
- * @Override public void getEligibileNode(List<DirectedAcyclicGraph> dags,
- *           List<Node> readyNodes, List<Integer> availableProcs,
- *           List<List<Node>> history, Recency table) {
- *
- *           if (readyNodes.size() == 0 || availableProcs.size() == 0) return;
- *
- *           readyNodes.stream().forEach(c -> c.partition = -1);
- *
- *           readyNodes.sort((c1, c2) -> compareNode(dags, c1, c2));
- *
- *           List<Node> preEligible = new ArrayList<>();
- *
- *           for (Node n : readyNodes) { if (n.getDagID() == 1 &&
- *           n.getDagInstNo() == 2 && n.getId() == 5) {
- *           System.out.println("check"); break; } }
- *
- *           for (int i = 0; i < availableProcs.size(); i++) { if (i >=
- *           readyNodes.size()) break; preEligible.add(readyNodes.get(i)); }
- *
- *           List<Integer> availableP = new ArrayList<>(availableProcs);
- *
- *           for (Node n : preEligible) { List<Long> ETdrop = new ArrayList<>();
- *
- *           for (int i = 0; i < availableP.size(); i++) { int proc =
- *           availableP.get(i);
- *
- *           ETdrop.add(n.getWCET() - table.computeET(history, n, proc, true));
- *           }
- *
- *           int procIndex = getIndexOfMaximum(ETdrop); n.partition =
- *           availableP.get(procIndex); availableP.remove(procIndex); } }
- *
- *           private int getIndexOfMaximum(List<Long> l) { int index = -1; long
- *           max = Long.MIN_VALUE;
- *
- *
- *           for (int i = 0; i < l.size(); i++) { if (max < l.get(i)) { max =
- *           l.get(i); index = i; } }
- *
- *           if (index == -1) System.out.println();
- *
- *           return index; }
- *
- ***********************************************************************************/
-
-/******************************************************************************
- * v0.1 ***********************************************************************
- * 
- * @Override public void getEligibileNode(List<DirectedAcyclicGraph> dags,
- *           List<Node> readyNodes, List<Integer> availableProcs,
- *           List<List<Node>> history, Recency table) {
- * 
- *           if (readyNodes.size() == 0) return;
- * 
- *           readyNodes.stream().forEach(c -> c.partition = -1);
- * 
- * 
- *           sort ready nodes list by FPS+WF, take first procNum nodes to
- *           execute.
- * 
- *           readyNodes.sort((c1, c2) -> compareNode(dags, c1, c2));
- * 
- *           if (availableProcs.size() == 1 || readyNodes.size() == 1) {
- *           readyNodes.get(0).partition = availableProcs.get(0); }
- * 
- *           List<Node> preEligible = new ArrayList<>();
- * 
- *           for (int i = 0; i < availableProcs.size(); i++) { if (i >=
- *           readyNodes.size()) break; preEligible.add(readyNodes.get(i)); }
- * 
- *           List<Node> eligibile = new ArrayList<>();
- * 
- *           for (int i = 0; i < availableProcs.size(); i++) { if
- *           (preEligible.size() == 0) break;
- * 
- *           int proc = availableProcs.get(i);
- * 
- *           List<Long> ETdrop = preEligible.stream().map(n -> (n.getWCET() -
- *           table.computeET(history, n, proc, true)))
- *           .collect(Collectors.toList());
- * 
- *           int maxIndex = getIndexOfMaximum(ETdrop);
- * 
- *           preEligible.get(maxIndex).partition = availableProcs.get(i);
- * 
- *           eligibile.add(preEligible.get(maxIndex));
- *           preEligible.remove(maxIndex);
- * 
- * 
- *           }
- * 
- * 
- *           }
- ***********************************************************************************/
