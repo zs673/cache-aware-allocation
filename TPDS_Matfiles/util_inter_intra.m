@@ -1,6 +1,6 @@
 
 %%%%%% Fixed parameters %%%%%%
-path_results = "../result_multi_daivd1/";
+path_results = "../result_multi_daivd2/";
 path_figs = '../TPDS_figures/';
 
 wid = 800;
@@ -14,7 +14,7 @@ file_pre = "util";
 file_end = ["intra","inter"];
 
 startingVar = 1;
-endingVar = 10;
+endingVar = 6;
 space = 1;
 
 
@@ -45,14 +45,14 @@ for j = 1: length(file_end)
         pos = pos + 2;
     end
     
-    xlim([0.5, 20.5]);
+    xlim([0.5, 12.5]);
 %     if(j==1)
 %         ylim([-500, 100000]);
 %     else
-        ylim([-3000, 200000]);
+        ylim([-3000, 60000]);
 %     end
     
-    legends = ["our","He2019"];
+    legends = ["mDAG-CA","He2019"];
 
     coloums = 1.5: 2:20;
     
@@ -64,7 +64,7 @@ for j = 1: length(file_end)
     set(gca,'xtick',coloums);
     set(gca,'xticklabel',xticklabel,'FontSize',12);
     
-    xlabel("System Utilisation U",'FontSize', 14)
+    xlabel("System Utilisation",'FontSize', 14)
     if(j==1)
        ylabel("Intra-task Interference",'FontSize', 14)
     else

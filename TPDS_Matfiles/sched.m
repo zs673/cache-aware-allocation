@@ -1,4 +1,4 @@
-
+close all
 %%%%%% Fixed parameters %%%%%%
 path_results = "../result_multi_daivd1/";
 path_figs = '../TPDS_figures/';
@@ -9,7 +9,7 @@ len = 300;
 colors=[[0.8500 0.3250 0.0980]; [0 0.4470 0.7410];  [0.9290 0.6940 0.1250]; [0.4660, 0.6740, 0.1880]; [0.3010, 0.7450, 0.9330]; [0.6350, 0.0780, 0.1840]];
 markers=['o', '*','^'];
 systemNo = 1000;
-legends = ["our","He2019","Zhao2020"];
+legends = ["mDAG-CA","He2019","Zhao2020"];
 xlabels = ["System Utilisation", "Parallel Degree of DAGs", "Number of Cores", "Number of Tasks"];
 
 file_pre = ["util","paral","nopF","not"];
@@ -65,7 +65,12 @@ for k = 1:length(xlabels)
         h=legend(legends,'location','northeast','Orientation','horizontal');
     end
     if(k==3)
-        h=legend(legends,'location','southeast','Orientation','vertical');
+        h=legend(legends,'location','best','Orientation','vertical');
+        rect = [0.805, 0.4, .0, .0];
+        set(h, 'Position', rect)
+    end
+    if(k==4)
+        h=legend(legends,'location','northeast','Orientation','horizontal');
     end
     set(h,'FontSize',14);
 
