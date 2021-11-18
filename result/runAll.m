@@ -15,14 +15,18 @@ systemNoLarge = systemNo * 5;
 xlim_value = 300;
 
 recency
-
+% 
 recency_boxplot
 recency_scatter
 level1_cache_scatter
 
-makespan_1
-makespan_2
-makespan_3to4
+% makespan_1
+% makespan_2
+% makespan_3to4
+
+% util_makespan
+% util_makespan_2
+% util_makespan_3to4
 
 recency_fault
 recency_fault_util

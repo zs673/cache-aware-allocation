@@ -9,8 +9,8 @@ public class SchedulingParameters implements Serializable {
 	private int partition;
 	private int priority;
 
-	private final long period;
-	private final long deadline;
+	private long period;
+	private long deadline;
 	private long WCET;
 	private double util;
 
@@ -32,10 +32,18 @@ public class SchedulingParameters implements Serializable {
 		this.priority = priority;
 	}
 
+	public void setPeriod(long period) {
+		this.period = period;
+	
+	}
 	public long getPeriod() {
 		return period;
 	}
 
+	public void setDeadline(long deadline) {
+		this.deadline = deadline;
+	}
+	
 	public long getDeadline() {
 		return deadline;
 	}

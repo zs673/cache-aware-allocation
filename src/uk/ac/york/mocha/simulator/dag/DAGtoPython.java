@@ -17,7 +17,7 @@ public class DAGtoPython {
 	public static void main(String args[]) {
 
 		for (int i = 0; i < 10000; i++) {
-			SystemGenerator gen = new SystemGenerator(8, 1, true, true, null, i, true, true);
+			SystemGenerator gen = new SystemGenerator(8, 1, true, true, null, i, true, false);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true);
 
 			DirectedAcyclicGraph dag = dags.get(0);
@@ -90,7 +90,7 @@ public class DAGtoPython {
 			String s = null;
 			String makespanS = "";
 			while ((s = stdInput.readLine()) != null) {
-				System.out.println(s);
+//				System.out.println(s);
 				makespanS += s + "";
 			}
 

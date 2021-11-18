@@ -32,8 +32,10 @@ public class SystemGenerator {
 
 	private boolean randomC;
 
-	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
-			List<Double> assignedUtils, int seed, boolean randomC, boolean print) {
+	public int periodToUitl = 2;
+
+	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil, List<Double> assignedUtils,
+			int seed, boolean randomC, boolean print) {
 
 		this.totalUtil = SystemParameters.utilPerTask * (double) totalTasks;
 		this.takeAllUtil = takeAllUtil;
@@ -48,18 +50,16 @@ public class SystemGenerator {
 		this.randomC = randomC;
 	}
 
-	public List<DirectedAcyclicGraph> generatedDAGInstancesInOneHP(int forceInstanceNum, int hyperPeriodNum,
-			List<Long> periods, boolean hard) {
+	public List<DirectedAcyclicGraph> generatedDAGInstancesInOneHP(int forceInstanceNum, int hyperPeriodNum, List<Long> periods,
+			boolean hard) {
 
 		if (periods != null && periods.size() != total_tasks) {
-			System.err
-					.println("SystemGenerator.generatedDAGInstancesInOneHP(): # of given periods != # of total tasks");
+			System.err.println("SystemGenerator.generatedDAGInstancesInOneHP(): # of given periods != # of total tasks");
 			System.exit(-1);
 		}
 
 		if (print)
-			System.out.println(
-					"----------------------------------- Scheduling parameters -----------------------------------");
+			System.out.println("----------------------------------- Scheduling parameters -----------------------------------");
 
 		List<DirectedAcyclicGraph> dagTasks = null;
 		boolean schedulable = false;
@@ -118,22 +118,24 @@ public class SystemGenerator {
 				}
 			}
 
-//			/*
-//			 * Set allocation for hard real-time nodes
-//			 */
-//			List<Node> hardNodes = new ArrayList<>(dagTasks.get(0).getFlatNodes());
-//			hardNodes.sort((c1, c2) -> -Integer.compare(c1.priority, c2.priority));
-//
-//			int currentCore = 0;
-//			for (int i = 0; i < hardNodes.size(); i++) {
-//				Node n = hardNodes.get(i);
-//				n.offline_partition = currentCore;
-//
-//				if (currentCore == 7)
-//					currentCore = 0;
-//				else
-//					currentCore++;
-//			}
+			// /*
+			// * Set allocation for hard real-time nodes
+			// */
+			// List<Node> hardNodes = new
+			// ArrayList<>(dagTasks.get(0).getFlatNodes());
+			// hardNodes.sort((c1, c2) -> -Integer.compare(c1.priority,
+			// c2.priority));
+			//
+			// int currentCore = 0;
+			// for (int i = 0; i < hardNodes.size(); i++) {
+			// Node n = hardNodes.get(i);
+			// n.offline_partition = currentCore;
+			//
+			// if (currentCore == 7)
+			// currentCore = 0;
+			// else
+			// currentCore++;
+			// }
 		} else {
 			dagTasks = generateSporadicDAGs(periods, hard);
 		}
@@ -143,8 +145,8 @@ public class SystemGenerator {
 
 		if (hyperPeriodNum > 0) {
 
-			long hyperPeriod = Utils.getHyperPeriod(
-					dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
+			long hyperPeriod = Utils
+					.getHyperPeriod(dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
 
 			long totoalDuration = hyperPeriod * hyperPeriodNum;
 
@@ -154,8 +156,7 @@ public class SystemGenerator {
 				dag.totalInstNum = instances > forceInstanceNum ? instances : forceInstanceNum;
 
 				if (dag.totalInstNum <= 0) {
-					System.err.println(
-							"SystemGenerator.generatedDAGInstancesInOneHP(): DAG instances is less or equal to 0!");
+					System.err.println("SystemGenerator.generatedDAGInstancesInOneHP(): DAG instances is less or equal to 0!");
 					System.exit(-1);
 				}
 
@@ -172,8 +173,8 @@ public class SystemGenerator {
 			}
 
 		} else {
-			long hyperPeriod = Utils.getHyperPeriod(
-					dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
+			long hyperPeriod = Utils
+					.getHyperPeriod(dagTasks.stream().map(c -> c.getSchedParameters().getPeriod()).collect(Collectors.toList()));
 
 			for (DirectedAcyclicGraph dag : dagTasks) {
 				int instances = (int) (hyperPeriod / dag.getSchedParameters().getPeriod());
@@ -183,12 +184,12 @@ public class SystemGenerator {
 			}
 		}
 
-		System.out.println("Number of instances");
-		for (DirectedAcyclicGraph d : dagTasks)
-			System.out.print(d.totalInstNum + "    ");
-		System.out.println();
-
 		if (print) {
+			System.out.println("Number of instances");
+			for (DirectedAcyclicGraph d : dagTasks)
+				System.out.print(d.totalInstNum + "    ");
+			System.out.println();
+
 			if (dags == null || dags.size() == 0) {
 				System.out.println("SystemGenerator.generatedDAGInstancesInOneHP()");
 				System.exit(-1);
@@ -202,13 +203,45 @@ public class SystemGenerator {
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
 		List<SchedulingParameters> schedParam = generateSchedParam(periods);
 
+		switch (periodToUitl) {
+		case 1:
+			for (SchedulingParameters sp : schedParam) {
+				sp.setPeriod(sp.getPeriod() * 2);
+			}
+
+			break;
+
+		case 2:
+			/* we do nothing here */
+
+			break;
+
+		case 3:
+
+			for (SchedulingParameters sp : schedParam) {
+				sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 1.5));
+			}
+
+			break;
+
+		case 4:
+
+			for (SchedulingParameters sp : schedParam) {
+				sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 2));
+			}
+
+			break;
+
+		default:
+			break;
+		}
+
 		/*
 		 * Assign scheduling parameters to each DAG
 		 */
 		for (int i = 0; i < total_tasks; i++) {
-			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer,
-					SystemParameters.minLayer, SystemParameters.maxParal, SystemParameters.minParal,
-					SystemParameters.connectProb, ran);
+			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer, SystemParameters.minLayer,
+					SystemParameters.maxParal, SystemParameters.minParal, SystemParameters.connectProb, ran);
 			DirectedAcyclicGraph dagTask = null;
 
 			if (i == 0 && hard) {
@@ -222,13 +255,13 @@ public class SystemGenerator {
 
 		generateWCETs(dags);
 
-//		for (DirectedAcyclicGraph d : dags) {
-//			d.findPath(true);
-//			d.findPath(false);
-//		}
+		// for (DirectedAcyclicGraph d : dags) {
+		// d.findPath(true);
+		// d.findPath(false);
+		// }
 
-//		for (DirectedAcyclicGraph d : dags)
-//			System.out.println(d.toString());
+		// for (DirectedAcyclicGraph d : dags)
+		// System.out.println(d.toString());
 
 		return dags;
 	}
@@ -266,8 +299,7 @@ public class SystemGenerator {
 
 			d.getSchedParameters().setWCET(sum);
 			if (print)
-				System.out.printf("|    DAG_%2d   |   Assigned WCET: %10d   |   Actual WCET: %10d   |\n", d.id,
-						totalWCET, sum);
+				System.out.printf("|    DAG_%2d   |   Assigned WCET: %10d   |   Actual WCET: %10d   |\n", d.id, totalWCET, sum);
 
 		}
 
@@ -362,8 +394,7 @@ public class SystemGenerator {
 			}
 		} else {
 			if (this.assignedUtils.size() != total_tasks) {
-				System.err.println(
-						"SystemGenerator.generateSchedParam(): pre-assigned utilisations does not match task number");
+				System.err.println("SystemGenerator.generateSchedParam(): pre-assigned utilisations does not match task number");
 				System.exit(-1);
 			}
 
@@ -386,13 +417,14 @@ public class SystemGenerator {
 		 */
 		List<Integer> priorities = new ArrayList<>();
 		for (int i = 0; i < total_tasks; i++) {
-//			priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
+			// priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
 
 			if (i == 0)
 				priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
 			else {
 				priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
-//				priorities.add(10); // TODO: Now we have equal priority for non real-time DAGs.
+				// priorities.add(10); // TODO: Now we have equal priority for
+				// non real-time DAGs.
 			}
 		}
 
@@ -414,20 +446,21 @@ public class SystemGenerator {
 		for (int i = 0; i < total_tasks; i++) {
 			long WCET = (long) Math.ceil((double) periods.get(i) * utils.get(i));
 
-			SchedulingParameters param = new SchedulingParameters(priorities.get(i), periods.get(i), periods.get(i),
-					WCET, utils.get(i), -1);
+			SchedulingParameters param = new SchedulingParameters(priorities.get(i), periods.get(i), periods.get(i), WCET, utils.get(i),
+					-1);
 
 			schedParams.add(param);
 		}
 
-//		schedParams.sort((p1, p2) -> Long.compare(p1.getWCET(), p2.getWCET()));
+		// schedParams.sort((p1, p2) -> Long.compare(p1.getWCET(),
+		// p2.getWCET()));
 
 		return schedParams;
 	}
 
-//	public static void main(String args[]) {
-//		SystemGenerator gen = new SystemGenerator(100, 1000, 32, 16, true, 1000);
-//		gen.generatedDAGInstancesInOneHP(-1, -1, null);
-//	}
+	// public static void main(String args[]) {
+	// SystemGenerator gen = new SystemGenerator(100, 1000, 32, 16, true, 1000);
+	// gen.generatedDAGInstancesInOneHP(-1, -1, null);
+	// }
 
 }

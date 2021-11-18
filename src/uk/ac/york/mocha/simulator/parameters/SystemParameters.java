@@ -7,7 +7,7 @@ public class SystemParameters {
 	 **********************************************************************/
 	public enum ExpName {
 		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, offline_multi, methods, periods,
-		tasks
+		tasks, sysUtil
 	}
 
 	public static int NoS = 1000;

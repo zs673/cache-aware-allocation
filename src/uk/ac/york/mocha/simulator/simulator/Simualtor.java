@@ -12,6 +12,8 @@ import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
+import uk.ac.york.mocha.simulator.allocation.OnlineWFWithOrdering;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareWithOrdering;
 import uk.ac.york.mocha.simulator.allocation.onlineBFD;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
@@ -38,7 +40,7 @@ public class Simualtor {
 	};
 
 	public enum Allocation {
-		BEST_FIT, WORST_FIT, CACHE_AWARE, OFFLINE_CACHE_AWARE, RANDOM, FIRST_FIT
+		BEST_FIT, WORST_FIT, CACHE_AWARE, OFFLINE_CACHE_AWARE, RANDOM, FIRST_FIT, CACHE_AWARE_OUR, WORST_FIT_OUR
 	};
 
 	private SimuType type;
@@ -176,6 +178,13 @@ public class Simualtor {
 			break;
 		case OFFLINE_CACHE_AWARE:
 			allocM = new OnlineAndOffline();
+		case CACHE_AWARE_OUR:
+			Utils.assignPriorityOur(dags);
+			allocM = new OnlineCacheAwareWithOrdering();
+			break;
+		case WORST_FIT_OUR:
+			Utils.assignPriorityOur(dags);
+			allocM = new OnlineWFWithOrdering();
 			break;
 
 		default:
