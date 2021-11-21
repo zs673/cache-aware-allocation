@@ -47,7 +47,7 @@ public class EP_multiDAG {
 
 	public static void changeTaskPeriodRunner(int numMax) {
 
-		int intanceNum = 10;
+		int intanceNum = 50;
 		int hyperPeriodNum = -1;
 		int seed = 1000;
 
