@@ -167,7 +167,7 @@ xlabel({'\fontsize{12}Profile - linear                          Profile - S curv
 ylabel('Normalised makespan','FontSize', 14)
 
 c = findobj(gca,'Tag','Box');
-h = legend([c(2),c(1)],"WFD","AJLR",'FontAngle','italic','location','southeast','Orientation','horizontal');
+h = legend([c(2),c(1)],"WF+EO","AJLR",'FontAngle','italic','location','southeast','Orientation','horizontal');
 set(h,'FontSize',14);
 
 % title({'Recency Profile 1               Recency Profile 2               Recency Profile 3'})

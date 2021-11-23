@@ -111,13 +111,17 @@ for task = 1
     legendEle =  sort(legendEle,'descend');
     
 
-%     if(task == 1)
-%         h = legend(c(legendEle),methods,'FontAngle','italic','location','southeast','Orientation','horizontal');
-%         set(h,'FontSize',14);
-% %     else
-% %         h = legend(c(legendEle),methods,'FontAngle','italic','location','northeast','Orientation','horizontal');
-% %         set(h,'FontSize',12);        
-%     end
+    if(task == 1)
+        h = legend(c(legendEle),methods,'FontAngle','italic','location','southeast','Orientation','horizontal');
+        set(h,'FontSize',14);
+%     else
+%         h = legend(c(legendEle),methods,'FontAngle','italic','location','northeast','Orientation','horizontal');
+%         set(h,'FontSize',12);        
+    end
+%     
+%     c = findall(gca,'Tag','Box');
+%     hleg1 = legend(c(1:1),methods,'location','northeast','Orientation','vertical');
+%     set(hleg1,'FontSize',14);
     
     
     saveas(gcf,strcat('figs/','ep_',metric,num2str(task),'.eps'), 'epsc');

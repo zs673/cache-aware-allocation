@@ -35,9 +35,9 @@ for task = 1:4
         boxplot(datam(:,10), 'position', pos(:,4), 'widths', 0.65, 'symbol','.', 'color', colors(m,:));
         hold on;
         
-        boxplot(datam(:,11:13), 'position', pos(:,5:7), 'widths', 0.65, 'symbol','.', 'color', colors(m,:));
+        boxplot(datam(:,(1:3)+instanceNo(2)), 'position', pos(:,5:7), 'widths', 0.65, 'symbol','.', 'color', colors(m,:));
         hold on;
-        boxplot(datam(:,20), 'position', pos(:,8), 'widths', 0.65, 'symbol','.', 'color', colors(m,:));
+        boxplot(datam(:,10+instanceNo(2)), 'position', pos(:,8), 'widths', 0.65, 'symbol','.', 'color', colors(m,:));
         hold on;
         
 %         if(task > 2 )

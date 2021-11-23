@@ -53,8 +53,8 @@ set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
 
      end
      
-xlim([0 16]);
-ylim([-0.1 1.0]);
+xlim([0 13]);
+ylim([-0.1 1.05]);
 xticks = 2:3:15;
 xticklables = ["1", "2", "3", "4", "5"];
 
@@ -72,7 +72,7 @@ xlabel('Number of DAG tasks in the system','FontSize', 14)
 ylabel('Normalised makespan','FontSize', 14)
 
 c = findobj(gca,'Tag','Box');
-h = legend([c(3), c(2), c(1)],"WFD","AJLR", "AJLR-critical",'FontAngle','italic','location','southeast','Orientation','horizontal');
+h = legend([c(3), c(2), c(1)],"WF+EO","AJLR", "AJLR-critical",'FontAngle','italic','location','southeast','Orientation','horizontal');
 set(h,'FontSize',14);
 
 % title({'Recency Profile 1               Recency Profile 2               Recency Profile 3'})

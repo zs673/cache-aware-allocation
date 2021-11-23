@@ -2,6 +2,8 @@ package uk.ac.york.mocha.simulator.experiments;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
@@ -47,13 +49,13 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 
 	public static void changeTaskPeriodRunner(int numMax) {
 
-		int intanceNum = 20;
+		int intanceNum = 10;
 		int hyperPeriodNum = -1;
 		int seed = 1000;
 
 		List<Thread> threads = new ArrayList<>();
 
-		for (int i = 1; i <= numMax; i++) {
+		for (int i = 1; i <= numMax; i+=2) {
 
 			final int index = i;
 
@@ -63,8 +65,8 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 
 					List<Double> utils = new ArrayList<>();
 
-					double firstUtil = 0.1 * index;
-					double secondUtil = 0.1;
+					double firstUtil = 0.8 * index;
+					double secondUtil = 0.8;
 					utils.add(firstUtil);
 					utils.add(secondUtil);
 
@@ -113,13 +115,20 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 
 		taskSeed = 1000;
 		for (int i = 0; i < NoS; i++) {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(new Date());
+			int hours = calendar.get(Calendar.HOUR_OF_DAY);
+			int minutes = calendar.get(Calendar.MINUTE);
+			int seconds = calendar.get(Calendar.SECOND);
+
 			System.out.println(
 					"\n\n****************************************************************************************************");
-			System.out.println("Change Task Number: " + taskNum + " --- Current system number: " + (i + 1));
+			System.out.println("First DAG Util: " + periodToUtil + " --- Current system number: " + (i + 1) + ", time: "
+					+ hours + ":" + minutes + ":" + seconds + ".");
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
-
+			gen.periodToUitl = periodToUtil;
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
 					periods == null ? null : periods.get(i), false);
 

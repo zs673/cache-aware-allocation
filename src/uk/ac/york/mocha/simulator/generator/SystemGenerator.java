@@ -1,6 +1,7 @@
 package uk.ac.york.mocha.simulator.generator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -203,38 +204,40 @@ public class SystemGenerator {
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
 		List<SchedulingParameters> schedParam = generateSchedParam(periods);
 
-		switch (periodToUitl) {
-		case 1:
-			for (SchedulingParameters sp : schedParam) {
-				sp.setPeriod(sp.getPeriod() * 2);
-			}
-
-			break;
-
-		case 2:
-			/* we do nothing here */
-
-			break;
-
-		case 3:
-
-			for (SchedulingParameters sp : schedParam) {
-				sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 1.5));
-			}
-
-			break;
-
-		case 4:
-
-			for (SchedulingParameters sp : schedParam) {
-				sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 2));
-			}
-
-			break;
-
-		default:
-			break;
-		}
+		
+		
+//		switch (periodToUitl) {
+//		case 1:
+//			for (SchedulingParameters sp : schedParam) {
+//				sp.setPeriod(sp.getPeriod() * 2);
+//			}
+//
+//			break;
+//
+//		case 2:
+//			/* we do nothing here */
+//
+//			break;
+//
+//		case 3:
+//
+//			for (SchedulingParameters sp : schedParam) {
+//				sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 1.5));
+//			}
+//
+//			break;
+//
+//		case 4:
+//
+//			for (SchedulingParameters sp : schedParam) {
+//				sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 2));
+//			}
+//
+//			break;
+//
+//		default:
+//			break;
+//		}
 
 		/*
 		 * Assign scheduling parameters to each DAG
@@ -364,6 +367,11 @@ public class SystemGenerator {
 			periods = new ArrayList<>(periodsT);
 		}
 		periods.sort((p1, p2) -> Double.compare(p1, p2));
+		
+		long period = periods.get(1);
+		long pc = (long) Math.ceil((double) period / (double) periodToUitl);
+		periods.set(0, pc);
+		System.out.println("period: " + Arrays.toString(periods.toArray()));
 
 		if (print) {
 			System.out.print("task periods & deadline (in us): ");
