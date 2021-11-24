@@ -450,12 +450,12 @@ public class SystemGenerator {
 			System.out.println();
 		}
 
-		System.out.println("period: " + Arrays.toString(periods.toArray()));
-		System.out.println("util: " + Arrays.toString(utils.toArray()));
-		System.out.print("workload:");
-		for(int i=0; i<utils.size();i++) {
-			System.out.print((long) (utils.get(i) * periods.get(i)) + ", ");
-		}
+//		System.out.println("period: " + Arrays.toString(periods.toArray()));
+//		System.out.println("util: " + Arrays.toString(utils.toArray()));
+//		System.out.print("workload:");
+//		for(int i=0; i<utils.size();i++) {
+//			System.out.print((long) (utils.get(i) * periods.get(i)) + ", ");
+//		}
 		
 
 		/*

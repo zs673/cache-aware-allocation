@@ -73,7 +73,7 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 					for (int i = 0; i < SystemParameters.NoS; i++) {
 						List<Long> p = new ArrayList<>();
 						p.add(periodOne[index - 1] / 10);
-						p.add((long) (144 * 1000 / 10));
+						p.add((long) (144 * 1000));
 						periods.add(p);
 					}
 
