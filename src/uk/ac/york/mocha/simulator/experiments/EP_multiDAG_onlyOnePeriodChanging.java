@@ -30,13 +30,12 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 			nos = Integer.parseInt(args[0]);
 			System.out.println("Input received, Number of Systems: " + nos);
 
-
 		} catch (Exception e) {
 			System.out.println("No input given, using the default Number of Sever Core: " + nos);
 		}
-		
+
 		SystemParameters.NoS = nos;
-		
+
 		changeTaskPeriodRunner(9);
 
 	}
@@ -49,7 +48,7 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 
 		List<Thread> threads = new ArrayList<>();
 
-		long[] periodOne = { 144000, 72000, 48000, 36000, 28800, 24000, 20500, 18000, 16000};
+		long[] periodOne = { 144000, 72000, 48000, 36000, 28800, 24000, 20500, 18000, 16000 };
 
 		for (int i = 1; i <= numMax; i += 2) {
 
@@ -73,8 +72,8 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 					List<List<Long>> periods = new ArrayList<>();
 					for (int i = 0; i < SystemParameters.NoS; i++) {
 						List<Long> p = new ArrayList<>();
-						p.add(periodOne[index - 1]*4);
-						p.add((long) (144 * 1000));
+						p.add(periodOne[index - 1] * 10);
+						p.add((long) (144 * 1000 * 10));
 						periods.add(p);
 					}
 
@@ -167,12 +166,12 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 
 			runners.add(t);
 		}
-		
-		for(Thread t : runners) {
+
+		for (Thread t : runners) {
 			t.start();
 		}
-		
-		for(Thread t : runners) {
+
+		for (Thread t : runners) {
 			try {
 				t.join();
 			} catch (InterruptedException e) {
