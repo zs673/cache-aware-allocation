@@ -27,9 +27,9 @@ public class EP3_4 {
 	public static void main(String args[]) {
 
 		faultsInRecency3D();
-		oneTaskWithFaults();
-
-		oneTaskWithDifferentPatterns();
+//		oneTaskWithFaults();
+//
+//		oneTaskWithDifferentPatterns();
 
 	}
 
