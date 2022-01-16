@@ -84,7 +84,7 @@ public class Simualtor {
 	List<List<Node>> allocNodes;
 
 	/* Control for enable/disable week cluster-level affinity */
-	boolean affinity;
+	boolean lcif;
 
 	/* Execution history by cache level */
 	List<List<Node>> history_level1;
@@ -99,14 +99,13 @@ public class Simualtor {
 	int totalAccess = 0;
 
 	boolean recency_fault = false;
-	boolean execution_fault = false;
 
 	DecimalFormat df = new DecimalFormat("#.###");
 
 	/********************* Runtime queues *********************************/
 
 	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
-			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean affinity, boolean recency_fault) {
+			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean lcif, boolean recency_fault) {
 
 		this.type = type;
 		this.hardware = hardware;
@@ -120,7 +119,7 @@ public class Simualtor {
 		this.readyNodes = new ArrayList<>();
 		this.currentExe = new Node[procNum];
 		this.allProcs = new long[procNum];
-		this.affinity = affinity;
+		this.lcif = lcif;
 
 		profile = new RecencyProfile(recency, procNum, recencySeed);
 
@@ -147,8 +146,12 @@ public class Simualtor {
 		this.cachePerformance = new long[4];
 		this.recency_fault = recency_fault;
 	}
-
+	
 	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
+		return simulate(printSim, false);
+	}
+
+	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim, boolean onlyCritical) {
 		
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
@@ -220,7 +223,7 @@ public class Simualtor {
 			/*
 			 * Execute ready nodes on available processors
 			 */
-			ExecuteReadyNodes(availableProc, allocM, cacheAware);
+			ExecuteReadyNodes(availableProc, allocM, cacheAware, onlyCritical);
 
 			/*
 			 * advance to next time unit.
@@ -266,7 +269,7 @@ public class Simualtor {
 	/******************************************************************
 	 ********** Choose the next node in the queue to execute **********
 	 ******************************************************************/
-	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethods allocM, boolean cacheAware) {
+	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethods allocM, boolean cacheAware, boolean onlyCritical) {
 
 		for (Node n : readyNodes) {
 			if (n.getDagID() == 0 && n.getDagInstNo() == 0 && n.getId() == 5) {
@@ -278,7 +281,7 @@ public class Simualtor {
 		 * get ready nodes to execute by the specified allocation method
 		 */
 		allocM.allocate(dags, readyNodes, availableProc, allProcs, history_level1, history_level2, history_level3,
-				allocNodes, profile, systemTime, affinity, recency_fault);
+				allocNodes, profile, systemTime, lcif, recency_fault, onlyCritical);
 
 		String[] oneSched = new String[allProcs.length];
 		for (int i = 0; i < oneSched.length; i++) {
@@ -302,7 +305,7 @@ public class Simualtor {
 
 			n.start = systemTime;
 			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n,
-					n.partition, cacheAware, execution_fault, 0);
+					n.partition, cacheAware, false, 0);
 
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();

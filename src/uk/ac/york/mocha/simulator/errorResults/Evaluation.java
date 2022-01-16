@@ -1,4 +1,4 @@
-package uk.ac.york.mocha.simulator.error;
+package uk.ac.york.mocha.simulator.errorResults;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,17 +37,17 @@ public class Evaluation {
 		int jump = 1;
 
 		List<List<Double>> results = new ArrayList<>();
-		List<List<Double>> reference = new ArrayList<>();
+//		List<List<Double>> reference = new ArrayList<>();
 
 		SystemParameters.utilPerTask = 1.6;
 
-		for (int i = 100; i < faultRate; i = i + jump) {
+		for (int i = 0; i < faultRate; i = i + jump) {
 			SystemParameters.fault_rate = i;
 
 			List<Double> res = new ArrayList<>();
-			List<Double> ref = new ArrayList<>();
+//			List<Double> ref = new ArrayList<>();
 
-			for (int j = 50; j < faultEffect; j = j + jump) {
+			for (int j = 0; j < faultEffect; j = j + jump) {
 
 				SystemParameters.fault_median = j;
 				SystemParameters.fault_range = j * 2;
@@ -55,11 +55,11 @@ public class Evaluation {
 				List<Double> r = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
 						true, ExpName.recency_fault);
 
-				List<Double> r1 = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
-						false, ExpName.recency_fault);
+//				List<Double> r1 = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
+//						false, ExpName.recency_fault);
 				
-				System.out.println("r: " + r1);
-				System.out.println("r1: " + r1);
+				System.out.println("r: " + r);
+//				System.out.println("r1: " + r1);
 
 				Median med = new Median();
 
@@ -69,20 +69,20 @@ public class Evaluation {
 					r_array[k] = d;
 				}
 
-				double[] r1_array = new double[r1.size()];
-				for (int k = 0; k < r1.size(); k++) {
-					double d = r1.get(k);
-					r1_array[k] = d;
-				}
+//				double[] r1_array = new double[r1.size()];
+//				for (int k = 0; k < r1.size(); k++) {
+//					double d = r1.get(k);
+//					r1_array[k] = d;
+//				}
 
 				res.add(med.evaluate(r_array));
-				ref.add(med.evaluate(r1_array));
+//				ref.add(med.evaluate(r1_array));
 
 				System.out.println("fault rate: " + i + "  fault effect: " + j);
 			}
 
 			results.add(res);
-			reference.add(ref);
+//			reference.add(ref);
 		}
 
 		StringBuilder xs = new StringBuilder();
@@ -140,18 +140,18 @@ public class Evaluation {
 			System.out.println();
 		}
 
-		for (List<Double> dl : reference) {
-			for (int i = 0; i < dl.size(); i++) {
-
-				if (i < dl.size() - 1)
-					rs.append(dl.get(i) + ",");
-				else
-					rs.append(dl.get(i) + "\n");
-
-				System.out.print(dl.get(i) + "    ");
-			}
-			System.out.println();
-		}
+//		for (List<Double> dl : reference) {
+//			for (int i = 0; i < dl.size(); i++) {
+//
+//				if (i < dl.size() - 1)
+//					rs.append(dl.get(i) + ",");
+//				else
+//					rs.append(dl.get(i) + "\n");
+//
+//				System.out.print(dl.get(i) + "    ");
+//			}
+//			System.out.println();
+//		}
 
 		System.out.println("-------------------------------------------");
 		System.out.println(xs);
@@ -243,7 +243,7 @@ public class Evaluation {
 	}
 	
 	/**
-	 * This test case will generate two fixed DAG strcuture.
+	 * This test case will generate two fixed DAG structure.
 	 */
 	public static OneSystemResults oneTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
 			int taskSeed, int tableSeed) {
@@ -253,7 +253,7 @@ public class Evaluation {
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();

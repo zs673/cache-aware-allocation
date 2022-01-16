@@ -27,6 +27,8 @@ public class Node implements Serializable {
 	private List<Node> predecessors;
 	
 	public int priority = -1;
+	
+	public boolean isCritical = false;
 
 	/*
 	 * Simualtion parameters
@@ -77,7 +79,8 @@ public class Node implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
+		return "Node " + dagID + "_" + id + ", C:" + WCET;
+//		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
 	}
 	
 	public String getFullName() {

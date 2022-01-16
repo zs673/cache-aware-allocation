@@ -98,7 +98,7 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
 			ExpName name, int periodTime) {
 
-		ResultCap rc = new ResultCap();
+		ResultCapsule rc = new ResultCapsule();
 
 		int[] instanceNo = new int[taskNum];
 

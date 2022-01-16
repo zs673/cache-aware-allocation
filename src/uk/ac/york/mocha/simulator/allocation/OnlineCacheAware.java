@@ -18,7 +18,7 @@ public class OnlineCacheAware extends AllocationMethods {
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
 			long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
 			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime,
-			boolean affinity, boolean recency_fault) {
+			boolean lcif, boolean recency_fault, boolean onlyCritical) {
 
 		/*
 		 * Entry for debugging a single node
@@ -51,22 +51,31 @@ public class OnlineCacheAware extends AllocationMethods {
 		List<List<Long>> speedUpTable = new ArrayList<>();
 
 		for (Node n : preEligible) {
+
+			boolean falutsOccur = false;
+			if (recency_fault && onlyCritical && n.isCritical) {
+				falutsOccur = true;
+			}
+
+			if (recency_fault && !onlyCritical && !n.isCritical) {
+				falutsOccur = true;
+			}
+
 			List<Long> ETdrop = new ArrayList<>();
 
 			for (int i = 0; i < history_level1.size(); i++) {
 				int proc = i;
 				if (availableP.contains(proc)) {
 					/*
-					 * Option 1: Speed up by ABSOLUTE vaue
+					 * Option 1: Speed up by ABSOLUTE value
 					 */
 					long WCET = n.getWCET();
-					long realET = table
-							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, recency_fault, 0)
-							.getFirst();
+					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true,
+							falutsOccur, 0).getFirst();
 					long speedup = WCET - realET;
 
 					/*
-					 * Option 2: Speed up by RELATIVE vaue
+					 * Option 2: Speed up by RELATIVE value
 					 */
 					// double speedup = ((double) (n.getWCET() - table.computeET(history_level1,
 					// history_level2, history_level3, n, proc, true))) / (double) n.getWCET();
@@ -104,8 +113,8 @@ public class OnlineCacheAware extends AllocationMethods {
 				break;
 
 			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory,
-					preEligible, availableP, availableTimeAllProcs, table, currentTime, affinity, history_level1,
-					history_level2, history_level3,recency_fault);
+					preEligible, availableP, availableTimeAllProcs, table, currentTime, lcif, history_level1,
+					history_level2, history_level3, recency_fault, onlyCritical);
 
 			Node n = preEligible.get(p.getFirst().intValue());
 
@@ -122,8 +131,8 @@ public class OnlineCacheAware extends AllocationMethods {
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
 			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, RecencyProfile table, long time,
-			boolean affinity, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3,boolean recency_fault) {
+			boolean lcif, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
+			boolean recency_fault, boolean onlyCritical) {
 
 		int row = -1;
 		int col = -1;
@@ -144,7 +153,7 @@ public class OnlineCacheAware extends AllocationMethods {
 			}
 		}
 
-		if (affinity) {
+		if (lcif) {
 			Node n = preEligible.get(row);
 			List<Integer> freeProcIndex = new ArrayList<>();
 			List<Integer> freeProc = new ArrayList<>();
@@ -203,14 +212,25 @@ public class OnlineCacheAware extends AllocationMethods {
 					long affectedTime = 0;
 
 					for (Node affected : affectedNodes) {
+						
+						boolean falutsOccur = false;
+						if (recency_fault && onlyCritical && affected.isCritical) {
+							falutsOccur = true;
+						}
+
+						if (recency_fault && !onlyCritical && !affected.isCritical) {
+							falutsOccur = true;
+						}
+						
+						
 						long affectedTimeOneNode = table
-								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition,
-										true, recency_fault, et_n)
+								.computeET(-1, history_level1, history_level2, history_level3, affected,
+										affected.partition, true, falutsOccur, et_n)
 								.getFirst()
 								- table.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, recency_fault, 0).getFirst();
+										affected.partition, true, falutsOccur, 0).getFirst();
 
-						affectedTime += affectedTimeOneNode < 0? 0 : affectedTimeOneNode;
+						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 
 						if (affectedTime < 0) {
 							System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");

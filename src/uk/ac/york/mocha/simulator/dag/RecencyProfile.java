@@ -655,11 +655,11 @@ public class RecencyProfile {
 		// System.out.println(d);
 		// }
 
-		RecencyProfile rp = new RecencyProfile(RecencyType.TIME_CURVE, 8, 1000);
+		RecencyProfile rp = new RecencyProfile(RecencyType.TIME_DEFAULT, 8, 1000);
 
 		Node n = new Node(1000000, -1, NodeType.NORMAL, -1, -1);
 
-		for (long i = SystemParameters.v1; i < SystemParameters.v4; i++) {
+		for (long i = SystemParameters.v1; i < SystemParameters.v4; i+=100) {
 
 			long a = rp.computeET(i, null, null, null, n, 8, true, false, 0).getFirst();
 			System.out.println(a);

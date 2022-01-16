@@ -26,11 +26,11 @@ xlim_value = 300;
 
 % util_makespan_extend
 
-utilOneDAG_makespan
+% utilOneDAG_makespan
 
-% recency_fault
+recency_fault
 % recency_fault_util
-% 
+
 % recency_fault_pattern
 % 
 % online_and_offline_taskNum

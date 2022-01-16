@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -17,8 +18,10 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
+import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class DirectedAcyclicGraph implements Serializable {
 
@@ -90,6 +93,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		this.shortestPath = new ArrayList<>();
 
 		constructDAG();
+		
 	}
 
 	public void reset() {
@@ -395,8 +399,13 @@ public class DirectedAcyclicGraph implements Serializable {
 	public void findPath(boolean longest) {
 		visited = new int[flatNodes.size()];
 
-		path = new int[layers];
-		bestPath = new int[layers];
+		path = new int[flatNodes.size()];
+		bestPath = new int[flatNodes.size()];
+		
+		for(int i=0; i<flatNodes.size();i++) {
+			path[i] = -1;
+			bestPath[i] = -1;
+		}
 
 		/*
 		 * compute a longest path from begin to end
@@ -414,13 +423,19 @@ public class DirectedAcyclicGraph implements Serializable {
 
 			}
 
-//			System.out.println("Critical Path: " + (longest? Arrays.toString(longestPath.toArray()): Arrays.toString(shortestPath.toArray())));
+//			System.out.println("Critical Path: "
+//					+ (longest ? Arrays.toString(longestPath.toArray()) : Arrays.toString(shortestPath.toArray())));
 //			System.out.println("distance: " + bestDistance + "      edges: " + bestLength);
 		}
 
 		else {
 			System.err.println("Did not find critical path");
 			System.exit(-1);
+		}
+		
+		if(longest) {
+			for(Node n : longestPath)
+				n.isCritical = true;
 		}
 	}
 
@@ -438,8 +453,6 @@ public class DirectedAcyclicGraph implements Serializable {
 
 				for (int i = 0; i < length; i++)
 					bestPath[i] = path[i];
-				for (int i = length; i < bestPath.length; i++)
-					bestPath[i] = -1;
 
 				bestLength = length;
 				bestDistance = distance;
@@ -581,20 +594,39 @@ public class DirectedAcyclicGraph implements Serializable {
 		return out;
 	}
 
-//	public static void main(String args[]) {
-//		int seed = 1000;
-//		Random rng = new Random(seed);
+	public static void main(String args[]) {
+	
+		for(int i=0; i<999999; i++) {
+			System.out.println("********************* " + i + " *********************");
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 8, false, true, null, i, true,
+					SystemParameters.printGen);
+			gen.generatedDAGInstancesInOneHP(1, -1, null, false);
+			
+		}
+
+
+//		for (int i = 0; i < dags.size(); i++) {
+//			System.out.println("*****************************************************");
+//			System.out.println("**********************  DAG " + i + "  **********************");
+//			System.out.println("*****************************************************");
+//			
+//			DirectedAcyclicGraph dag = dags.get(i);
+//			System.out.println(dag.toString());
 //
+//			
+//			System.out.println("\n\nDONE\n\n\n\n");
+//		}
+
 //		for (int i = 0; i < 1; i++) {
-//			int minLayer = rng.nextInt(10);
-//			int maxLayer = minLayer + rng.nextInt(15) + 5;
-//			int parallelism = rng.nextInt(10) + 5;
-//			double connectProb = (double) rng.nextInt(9) / 10 + 0.2;
+//			int minLayer = 50;
+//			int maxLayer = 80;
+//			int parallelism = rng.nextInt(10)+2;
+//			double connectProb = 0.5;
 //
 //			SchedulingParameters sched_param = new SchedulingParameters(10, 100, 100, 50000, 1, 0);
-//			StructuralParameters dag_param = new StructuralParameters(maxLayer, minLayer, parallelism, connectProb,
-//					seed);
-//			DirectedAcyclicGraph dag = new DirectedAcyclicGraph(sched_param, dag_param, 0, rng.nextInt());
+//			StructuralParameters dag_param = new StructuralParameters(maxLayer, minLayer,  parallelism, 1, connectProb,
+//					rng);
+//			DirectedAcyclicGraph dag = new DirectedAcyclicGraph(sched_param, dag_param, 0, rng.nextInt(), false);
 //
 //			System.out.println(dag.toString());
 //
@@ -604,9 +636,13 @@ public class DirectedAcyclicGraph implements Serializable {
 //
 //			for (DirectedAcyclicGraph d : instances)
 //				System.out.println(d.instanceNo + "   " + d.startTime);
+//			
+//			System.out.println("\n\n------------------------------------------------------\n\n");
+//			System.out.println("Finding longest path...");
+//			dag.findPath(true);
 //		}
 //
 //		System.out.println("finished");
-//
-//	}
+
+	}
 }

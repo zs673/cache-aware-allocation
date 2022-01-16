@@ -1,7 +1,6 @@
 package uk.ac.york.mocha.simulator.generator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -142,6 +141,10 @@ public class SystemGenerator {
 		} else {
 			dagTasks = generateSporadicDAGs(periods, hard);
 		}
+		
+		for(DirectedAcyclicGraph d : dagTasks)
+			d.findPath(true);
+		
 		/************************************************************************************/
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
@@ -169,10 +172,10 @@ public class SystemGenerator {
 
 		} else if (forceInstanceNum > 0) {
 
-			long duration = dagTasks.get(total_tasks - 1).getSchedParameters().getPeriod() * forceInstanceNum;
+//			long duration = dagTasks.get(total_tasks - 1).getSchedParameters().getPeriod() * forceInstanceNum;
 
 			for (DirectedAcyclicGraph dag : dagTasks) {
-				dag.totalInstNum = (long) Math.ceil((double) duration / (double) dag.getSchedParameters().getPeriod());
+				dag.totalInstNum = forceInstanceNum; //(long) Math.ceil((double) duration / (double) dag.getSchedParameters().getPeriod());
 				dags.addAll(dag.getInstances(dag.totalInstNum));
 			}
 

@@ -5,7 +5,7 @@ import java.util.List;
 
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 
-public class ResultCap {
+public class ResultCapsule {
 
 	public List<OneSystemResults> allSys = new ArrayList<>();
 	

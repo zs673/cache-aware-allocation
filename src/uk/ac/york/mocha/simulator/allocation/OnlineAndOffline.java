@@ -18,7 +18,7 @@ public class OnlineAndOffline extends AllocationMethods {
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
 			long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
 			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime,
-			boolean affinity, boolean recency_fault) {
+			boolean affinity, boolean recency_fault, boolean onlyCritical) {
 
 		/*
 		 * Entry for debugging a single node
