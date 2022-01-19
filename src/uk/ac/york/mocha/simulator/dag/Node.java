@@ -13,21 +13,44 @@ public class Node implements Serializable {
 		SOURCE, SINK, NORMAL
 	}
 
+	/*
+	 * Node identifiers: id - node ID; dagID - the ID of its DAG; daginstNo -
+	 * the instance Number of its DAG.
+	 */
 	private final int id;
 	private final int dagID;
 	private int dagInstNo = Integer.MIN_VALUE;
 
+	/*
+	 * The layer of the node in the DAG strcuture
+	 */
 	private final int layer;
+
+	/*
+	 * The type of the node, can be SOURCE, SINK, or Normal
+	 */
 	private final NodeType type;
 
+	/*
+	 * The worst-case execution time of the node
+	 */
 	private long WCET;
-//	private long WCETinRange;
+	// private long WCETinRange;
 
+	/*
+	 * A list of successors/predecessors of the node.
+	 */
 	private List<Node> successors;
 	private List<Node> predecessors;
-	
+
+	/*
+	 * The priority of the node
+	 */
 	public int priority = -1;
-	
+
+	/*
+	 * Is the node belongs to the critcal path of the DAG.
+	 */
 	public boolean isCritical = false;
 
 	/*
@@ -39,16 +62,25 @@ public class Node implements Serializable {
 
 	public int partition = -1;
 	public int affinity = -1;
-	
+
 	public int delayed = -1;
 	public long expectedET = -1;
-	
+
 	/*
 	 * Offline parameters
 	 */
 	public int offline_partition = -1;
 	public boolean now = false;
 	
+	/*
+	 * The CRP of the node
+	 */
+	public CacheRecencyProfile crp;
+	
+	/*
+	 * The variability of the node
+	 */
+	public CacheVariabilityProfile cvp;
 
 	public Node(int layer, NodeType type, int id, int dagID) {
 		this(-1, layer, type, id, dagID);
@@ -80,17 +112,17 @@ public class Node implements Serializable {
 	@Override
 	public String toString() {
 		return "Node " + dagID + "_" + id + ", C:" + WCET;
-//		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
+		// return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET +
+		// ", P:" + partition + ", A:" + affinity;
 	}
-	
+
 	public String getFullName() {
-		return "N " + dagID + "_" + dagInstNo + "_" + id ;
+		return "N " + dagID + "_" + dagInstNo + "_" + id;
 	}
 
 	public String getExeInfo() {
-		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: "
-				+ finishAt + ", duration: " + (finishAt - start) + ", partition: " + partition + ", affinity: "
-				+ affinity;
+		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: " + finishAt + ", duration: "
+				+ (finishAt - start) + ", partition: " + partition + ", affinity: " + affinity;
 	}
 
 	public void printExeInfo(String prefix) {
