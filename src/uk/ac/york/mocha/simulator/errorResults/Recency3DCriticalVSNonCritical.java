@@ -21,7 +21,7 @@ import uk.ac.york.mocha.simulator.simulator.Simualtor.Allocation;
 import uk.ac.york.mocha.simulator.simulator.Simualtor.Hardware;
 import uk.ac.york.mocha.simulator.simulator.Simualtor.SimuType;
 
-public class CriticalVSNonCritical {
+public class Recency3DCriticalVSNonCritical {
 	
 	static DecimalFormat df = new DecimalFormat("#.###");
 

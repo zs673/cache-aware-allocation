@@ -76,8 +76,8 @@ maxUtil = 8;
 
     
 
-
-    h = legend([c(3),c(2),c(1)],"WF+EO","AJLR without deviations","AJLR with deviations",'FontAngle','italic','location','southeast','Orientation','horizontal');
+    h = legend([c(3),c(2),c(1)],"AJLR no error","non-critical node error","critical node error",'FontAngle','italic','location','southeast','Orientation','horizontal');
+%     h = legend([c(3),c(2),c(1)],"WF+EO","AJLR without deviations","AJLR with deviations",'FontAngle','italic','location','southeast','Orientation','horizontal');
     set(h,'FontSize',14);
 
     

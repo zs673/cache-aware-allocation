@@ -28,8 +28,8 @@ xlim_value = 300;
 
 % utilOneDAG_makespan
 
-recency_fault
-% recency_fault_util
+% recency_fault
+recency_fault_util
 
 % recency_fault_pattern
 % 
