@@ -30,9 +30,25 @@ public class CacheVariabilityProfile {
 	
 	public double getVary() {
 		
+		long std = upper_bound - median;
+		if (std == 0)
+			return 0;
+
+		double vary = median + Math.round((double) rng.nextGaussian() * (double) std);
+	
+		vary = vary < 1 ? 1 : vary;
 		
 		
-		
-		return 0;
+		return vary;
 	}
+
+	public static void main(String args[]) {
+		
+		CacheVariabilityProfile cvp = new CacheVariabilityProfile(100, 50, 1000);
+		
+		for(int i=0; i<1000;i++) {
+			
+		}
+	}
+
 }
