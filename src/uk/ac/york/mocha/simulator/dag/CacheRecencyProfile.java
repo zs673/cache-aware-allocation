@@ -24,19 +24,22 @@ public class CacheRecencyProfile {
 	private static final DecimalFormat df = new DecimalFormat("#.###");
 
 	private Random rng;
+	
+	private Node node;
 
-	public CacheRecencyProfile(int procNum, int seed) {
+	public CacheRecencyProfile(Node n, int procNum, int seed) {
 
-		this(RecencyType.TIME_DEFAULT, procNum, seed);
+		this(n, RecencyType.TIME_DEFAULT, procNum, seed);
 	}
 
-	public CacheRecencyProfile(RecencyType type, int procNum, int seed) {
+	public CacheRecencyProfile(Node n, RecencyType type, int procNum, int seed) {
 
 		if (procNum % SystemParameters.Level2CoreNum != 0 || procNum / SystemParameters.Level2CoreNum < 1) {
 			System.err.println("Number of cores must be multiple of " + SystemParameters.Level2CoreNum);
 			System.exit(-1);
 		}
 
+		this.node = n;
 		this.type = type;
 		rng = new Random(seed);
 
