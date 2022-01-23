@@ -31,7 +31,7 @@ public class Recency3DCriticalVSNonCritical {
 
 			@Override
 			public void run() {
-				faultsInRecency3D(true);
+				faultsInRecency3D(1);
 
 			}
 		});
@@ -40,7 +40,7 @@ public class Recency3DCriticalVSNonCritical {
 
 			@Override
 			public void run() {
-				faultsInRecency3D(false);
+				faultsInRecency3D(2);
 
 			}
 		});
@@ -56,7 +56,7 @@ public class Recency3DCriticalVSNonCritical {
 
 	}
 
-	public static void faultsInRecency3D(boolean onlyCritical) {
+	public static void faultsInRecency3D(int onlyCritical) {
 		int intanceNum = 10;
 		int hyperPeriodNum = -1;
 		int seed = 1000;
@@ -191,7 +191,7 @@ public class Recency3DCriticalVSNonCritical {
 //		System.out.println(ys);
 //		System.out.println(zs);
 
-		if (onlyCritical) {
+		if (onlyCritical==1) {
 			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/x0.txt", xs.toString());
 			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/y0.txt", ys.toString());
 			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/z0.txt", zs.toString());
@@ -207,7 +207,7 @@ public class Recency3DCriticalVSNonCritical {
 
 	public static List<Double> RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
-			boolean fault, boolean onlyCritical, ExpName name) {
+			boolean fault, int onlyCritical, ExpName name) {
 
 		List<OneSystemResults> allSys = new ArrayList<>();
 
@@ -288,7 +288,7 @@ public class Recency3DCriticalVSNonCritical {
 	 * This test case will generate two fixed DAG structure.
 	 */
 	public static OneSystemResults oneTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
-			int taskSeed, int tableSeed, boolean onlyCritical) {
+			int taskSeed, int tableSeed, int onlyCritical) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
@@ -341,7 +341,7 @@ public class Recency3DCriticalVSNonCritical {
 	 * This test case will generate two fixed DAG strcuture.
 	 */
 	public static OneSystemResults RecencyFaultTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
-			int cores, int taskSeed, int tableSeed, boolean onlyCritical) {
+			int cores, int taskSeed, int tableSeed, int onlyCritical) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);

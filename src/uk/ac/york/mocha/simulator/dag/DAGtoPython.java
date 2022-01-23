@@ -66,10 +66,10 @@ public class DAGtoPython {
 
 		String core = coreNum + "";
 
-		System.out.println(G);
-		System.out.println(C);
-		System.out.println(P);
-		System.out.println(core);
+//		System.out.println(G);
+//		System.out.println(C);
+//		System.out.println(P);
+//		System.out.println(core);
 
 		long makespan = -1;
 		List<int[]> node_priority = new ArrayList<>();

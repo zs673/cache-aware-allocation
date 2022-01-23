@@ -9,6 +9,7 @@ import org.apache.commons.math3.util.Pair;
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineAndOffline;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
@@ -40,7 +41,7 @@ public class Simualtor {
 	};
 
 	public enum Allocation {
-		BEST_FIT, WORST_FIT, CACHE_AWARE, OFFLINE_CACHE_AWARE, RANDOM, FIRST_FIT, CACHE_AWARE_OUR, WORST_FIT_OUR
+		BEST_FIT, WORST_FIT, CACHE_AWARE, CACHE_AWARE_ROBUST, OFFLINE_CACHE_AWARE, RANDOM, FIRST_FIT, CACHE_AWARE_OUR, WORST_FIT_OUR
 	};
 
 	private SimuType type;
@@ -148,10 +149,10 @@ public class Simualtor {
 	}
 	
 	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
-		return simulate(printSim, false);
+		return simulate(printSim, 0);
 	}
 
-	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim, boolean onlyCritical) {
+	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim, int onlyCritical) {
 		
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
@@ -179,8 +180,12 @@ public class Simualtor {
 		case CACHE_AWARE:
 			allocM = new OnlineCacheAware();
 			break;
+		case CACHE_AWARE_ROBUST:
+			allocM = new OnlineCacheAwareRobust();
+			break;
 		case OFFLINE_CACHE_AWARE:
 			allocM = new OnlineAndOffline();
+			break;
 		case CACHE_AWARE_OUR:
 			Utils.assignPriorityOur(dags);
 			allocM = new OnlineCacheAwareWithOrdering();
@@ -269,7 +274,7 @@ public class Simualtor {
 	/******************************************************************
 	 ********** Choose the next node in the queue to execute **********
 	 ******************************************************************/
-	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethods allocM, boolean cacheAware, boolean onlyCritical) {
+	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethods allocM, boolean cacheAware, int onlyCritical) {
 
 		for (Node n : readyNodes) {
 			if (n.getDagID() == 0 && n.getDagInstNo() == 0 && n.getId() == 5) {
@@ -305,7 +310,7 @@ public class Simualtor {
 
 			n.start = systemTime;
 			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n,
-					n.partition, cacheAware, false, 0);
+					n.partition, cacheAware, 0, false);
 
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();

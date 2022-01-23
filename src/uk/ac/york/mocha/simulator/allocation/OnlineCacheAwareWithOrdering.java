@@ -18,7 +18,7 @@ public class OnlineCacheAwareWithOrdering extends AllocationMethods {
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
 			long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
 			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime,
-			boolean affinity, boolean recency_fault, boolean onlyCritical) {
+			boolean affinity, boolean recency_fault, int onlyCritical) {
 
 		/*
 		 * Entry for debugging a single node
@@ -122,8 +122,8 @@ public class OnlineCacheAwareWithOrdering extends AllocationMethods {
 					 * Option 1: Speed up by ABSOLUTE vaue
 					 */
 					long WCET = n.getWCET();
-					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true,
-							recency_fault, 0).getFirst();
+					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0,
+							recency_fault).getFirst();
 					long speedup = WCET - realET;
 
 					/*
@@ -266,10 +266,10 @@ public class OnlineCacheAwareWithOrdering extends AllocationMethods {
 					for (Node affected : affectedNodes) {
 						long affectedTimeOneNode = table
 								.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, recency_fault, et_n)
+										affected.partition, true, et_n, recency_fault)
 								.getFirst()
 								- table.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, recency_fault, 0).getFirst();
+										affected.partition, true, 0, recency_fault).getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 

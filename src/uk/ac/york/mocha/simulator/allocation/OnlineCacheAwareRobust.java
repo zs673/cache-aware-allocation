@@ -12,7 +12,7 @@ import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineCacheAware extends AllocationMethods {
+public class OnlineCacheAwareRobust extends AllocationMethods {
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
@@ -53,7 +53,6 @@ public class OnlineCacheAware extends AllocationMethods {
 		for (Node n : preEligible) {
 
 			boolean falutsOccur = false;
-
 			if (recency_fault && onlyCritical == 0) {
 				falutsOccur = true;
 			}

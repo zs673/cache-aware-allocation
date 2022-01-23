@@ -14,8 +14,8 @@ public class Node implements Serializable {
 	}
 
 	/*
-	 * Node identifiers: id - node ID; dagID - the ID of its DAG; daginstNo -
-	 * the instance Number of its DAG.
+	 * Node identifiers: id - node ID; dagID - the ID of its DAG; daginstNo - the
+	 * instance Number of its DAG.
 	 */
 	private final int id;
 	private final int dagID;
@@ -71,12 +71,12 @@ public class Node implements Serializable {
 	 */
 	public int offline_partition = -1;
 	public boolean now = false;
-	
+
 	/*
 	 * The CRP of the node
 	 */
-	public CacheRecencyProfile crp;
-	
+//	public CacheRecencyProfile crp;
+
 	/*
 	 * The variability of the node
 	 */
@@ -96,6 +96,9 @@ public class Node implements Serializable {
 
 		this.successors = new ArrayList<>();
 		this.predecessors = new ArrayList<>();
+
+//		this.crp = new CacheRecencyProfile(this, SystemParameters.coreNum, 1000);
+		this.cvp = new CacheVariabilityProfile(this, 0, 1.0 / 3.0, 1000);
 	}
 
 	public Node deepCopy() {
@@ -121,8 +124,9 @@ public class Node implements Serializable {
 	}
 
 	public String getExeInfo() {
-		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: " + finishAt + ", duration: "
-				+ (finishAt - start) + ", partition: " + partition + ", affinity: " + affinity;
+		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: "
+				+ finishAt + ", duration: " + (finishAt - start) + ", partition: " + partition + ", affinity: "
+				+ affinity;
 	}
 
 	public void printExeInfo(String prefix) {

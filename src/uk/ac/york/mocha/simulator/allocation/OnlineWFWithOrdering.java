@@ -14,7 +14,7 @@ public class OnlineWFWithOrdering extends AllocationMethods {
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
 			long[] procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity, boolean recency_fault, boolean onlyCritical) {
+			List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity, boolean recency_fault, int onlyCritical) {
 
 		if (readyNodes.size() == 0 || availableProcs.size() == 0)
 			return;
