@@ -9,12 +9,13 @@ import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class onlineBFD extends AllocationMethods{
+public class onlineBFD extends AllocationMethods {
 
 	@Override
-	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
-			long[] procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity, boolean recency_fault, int onlyCritical) {
+	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
+			List<Integer> availableProcs, long[] procs, List<List<Node>> history_level1, List<List<Node>> history_level2,
+			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity,
+			boolean recency_fault, int onlyCritical) {
 
 		if (readyNodes.size() == 0 || availableProcs.size() == 0)
 			return;
@@ -43,8 +44,7 @@ public class onlineBFD extends AllocationMethods{
 
 			int core = getCoreIndexWithMaxWorkload(freeProc, history_level1);
 			readyNodes.get(i).partition = core;
-			
-			
+
 			freeProc.remove(freeProc.indexOf(core));
 		}
 
@@ -61,7 +61,7 @@ public class onlineBFD extends AllocationMethods{
 
 			accumaltedWorkload.add(accumated);
 		}
-		
+
 		long maxWorkload = Collections.max(accumaltedWorkload);
 		int coreIndex = accumaltedWorkload.indexOf(maxWorkload);
 

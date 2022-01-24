@@ -15,10 +15,10 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 public class OnlineCacheAware extends AllocationMethods {
 
 	@Override
-	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
-			long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime,
-			boolean lcif, boolean recency_fault, int onlyCritical) {
+	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
+			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
+			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean lcif,
+			boolean recency_fault, int onlyCritical) {
 
 		/*
 		 * Entry for debugging a single node
@@ -35,7 +35,8 @@ public class OnlineCacheAware extends AllocationMethods {
 		readyNodes.stream().forEach(c -> c.partition = -1);
 
 		/*
-		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.
+		 * Sort ready nodes list by FPS+WF, take first procNum nodes to
+		 * allocate.
 		 */
 		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
@@ -57,7 +58,7 @@ public class OnlineCacheAware extends AllocationMethods {
 			if (recency_fault && onlyCritical == 0) {
 				falutsOccur = true;
 			}
-			
+
 			if (recency_fault && onlyCritical == 1 && n.isCritical) {
 				falutsOccur = true;
 			}
@@ -75,20 +76,23 @@ public class OnlineCacheAware extends AllocationMethods {
 					 * Option 1: Speed up by ABSOLUTE value
 					 */
 					long WCET = n.getWCET();
-					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0,
-							falutsOccur).getFirst();
+					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, falutsOccur)
+							.getFirst();
 					long speedup = WCET - realET;
 
 					/*
 					 * Option 2: Speed up by RELATIVE value
 					 */
-					// double speedup = ((double) (n.getWCET() - table.computeET(history_level1,
-					// history_level2, history_level3, n, proc, true))) / (double) n.getWCET();
+					// double speedup = ((double) (n.getWCET() -
+					// table.computeET(history_level1,
+					// history_level2, history_level3, n, proc, true))) /
+					// (double) n.getWCET();
 
 					/*
 					 * Option 3: Cache-aware ET
 					 */
-					// long speedup = table.computeET(history_level1, history_level2,
+					// long speedup = table.computeET(history_level1,
+					// history_level2,
 					// history_level3, n, proc, true);
 
 					ETdrop.add(speedup);
@@ -117,9 +121,9 @@ public class OnlineCacheAware extends AllocationMethods {
 			if (k >= preEligible.size())
 				break;
 
-			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory,
-					preEligible, availableP, availableTimeAllProcs, table, currentTime, lcif, history_level1,
-					history_level2, history_level3, recency_fault, onlyCritical);
+			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory, preEligible,
+					availableP, availableTimeAllProcs, table, currentTime, lcif, history_level1, history_level2, history_level3,
+					recency_fault, onlyCritical);
 
 			Node n = preEligible.get(p.getFirst().intValue());
 
@@ -133,11 +137,10 @@ public class OnlineCacheAware extends AllocationMethods {
 
 	}
 
-	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
-			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
-			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, RecencyProfile table, long time,
-			boolean lcif, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			boolean recency_fault, int onlyCritical) {
+	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes, List<Integer> allocProcs,
+			List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory, List<Node> preEligible, List<Integer> procs,
+			long[] availableTimeAllProcs, RecencyProfile table, long time, boolean lcif, List<List<Node>> history_level1,
+			List<List<Node>> history_level2, List<Node> history_level3, boolean recency_fault, int onlyCritical) {
 
 		int row = -1;
 		int col = -1;
@@ -200,7 +203,8 @@ public class OnlineCacheAware extends AllocationMethods {
 					List<Node> nodesInProc = allocHistory.get(procIndex);
 
 					/*
-					 * Get the nodes that can hit level two cache in each free core.
+					 * Get the nodes that can hit level two cache in each free
+					 * core.
 					 */
 					long Nodenum = 0;
 					for (int j = nodesInProc.size() - 1; j >= 0; j--) {
@@ -222,7 +226,7 @@ public class OnlineCacheAware extends AllocationMethods {
 						if (recency_fault && onlyCritical == 0) {
 							falutsOccur = true;
 						}
-						
+
 						if (recency_fault && onlyCritical == 1 && n.isCritical) {
 							falutsOccur = true;
 						}
@@ -232,11 +236,11 @@ public class OnlineCacheAware extends AllocationMethods {
 						}
 
 						long affectedTimeOneNode = table
-								.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, et_n, falutsOccur)
+								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, et_n,
+										falutsOccur)
 								.getFirst()
-								- table.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, 0, falutsOccur).getFirst();
+								- table.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, 0,
+										falutsOccur).getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 
@@ -256,32 +260,32 @@ public class OnlineCacheAware extends AllocationMethods {
 
 			}
 
-//			if (freeProcIndex.size() > 1) {
-//				/*
-//				 * Search in history for same node & DAG allocation
-//				 */
-//				List<Long> NodeHis = new ArrayList<>();
-//
-//				for (int i = 0; i < freeProcIndex.size(); i++)
-//					NodeHis.add((long) 0);
-//
-//				for (int i = 0; i < freeProcIndex.size(); i++) {
-//					int procIndex = freeProcIndex.get(i);
-//
-//					List<Node> nodesInProc = allocHistory.get(procIndex);
-//
-//					long Nodenum = 0;
-//					for (Node nh : nodesInProc)
-//						Nodenum += nh.finishAt - nh.start;
-//
-//					NodeHis.set(i, Nodenum);
-//				}
-//
-//				long minExecutionTime = Collections.min(NodeHis);
-//				int minETIndex = NodeHis.indexOf(minExecutionTime);
-//
-//				col = freeProcIndex.get(minETIndex);
-//			}
+			// if (freeProcIndex.size() > 1) {
+			// /*
+			// * Search in history for same node & DAG allocation
+			// */
+			// List<Long> NodeHis = new ArrayList<>();
+			//
+			// for (int i = 0; i < freeProcIndex.size(); i++)
+			// NodeHis.add((long) 0);
+			//
+			// for (int i = 0; i < freeProcIndex.size(); i++) {
+			// int procIndex = freeProcIndex.get(i);
+			//
+			// List<Node> nodesInProc = allocHistory.get(procIndex);
+			//
+			// long Nodenum = 0;
+			// for (Node nh : nodesInProc)
+			// Nodenum += nh.finishAt - nh.start;
+			//
+			// NodeHis.set(i, Nodenum);
+			// }
+			//
+			// long minExecutionTime = Collections.min(NodeHis);
+			// int minETIndex = NodeHis.indexOf(minExecutionTime);
+			//
+			// col = freeProcIndex.get(minETIndex);
+			// }
 
 		}
 

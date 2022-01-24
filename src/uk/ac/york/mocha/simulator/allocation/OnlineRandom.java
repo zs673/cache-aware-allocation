@@ -11,9 +11,10 @@ import uk.ac.york.mocha.simulator.dag.RecencyProfile;
 public class OnlineRandom extends AllocationMethods {
 
 	@Override
-	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<Integer> availableProcs,
-			long[] procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity, boolean recency_fault, int onlyCritical) {
+	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
+			List<Integer> availableProcs, long[] procs, List<List<Node>> history_level1, List<List<Node>> history_level2,
+			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity,
+			boolean recency_fault, int onlyCritical) {
 
 		if (readyNodes.size() == 0 || availableProcs.size() == 0)
 			return;
@@ -27,7 +28,7 @@ public class OnlineRandom extends AllocationMethods {
 			}
 		}
 
-//		Collections.shuffle(readyNodes);
+		// Collections.shuffle(readyNodes);
 
 		readyNodes.stream().forEach(c -> c.partition = -1);
 

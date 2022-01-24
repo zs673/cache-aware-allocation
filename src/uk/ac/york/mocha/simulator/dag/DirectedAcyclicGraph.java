@@ -541,39 +541,41 @@ public class DirectedAcyclicGraph implements Serializable {
 
 	@Override
 	public String toString() {
-		String out = "************************************************************************************************\n";
-		out += getName() + ": \n";
-		out += "Nodes by layer: \n";
-
-		for (List<Node> nodesPerLayer : this.layeredNodes) {
-			for (Node n : nodesPerLayer) {
-				out += n.toString() + "    ";
-			}
-			out += "\n";
-		}
-		out += "\n";
-
-		out += "Edges by Nodes: \n";
-
-		for (List<Node> nodesPerLayer : this.layeredNodes) {
-			for (Node n : nodesPerLayer) {
-				List<ImmutablePair<Node, Node>> childrenEdge = new ArrayList<>();
-				for (ImmutablePair<Node, Node> edge : edges) {
-					if (edge.left.toString().equals(n.toString()))
-						childrenEdge.add(edge);
-				}
-				out += n.toString() + "-> ";
-				for (ImmutablePair<Node, Node> edge : childrenEdge) {
-					out += edge.right.toString() + "  ";
-				}
-				out += "\n";
-			}
-
-		}
-
-		out += "************************************************************************************************\n";
-
-		return out;
+//		String out = "************************************************************************************************\n";
+//		out += getName() + ": \n";
+//		out += "Nodes by layer: \n";
+//
+//		for (List<Node> nodesPerLayer : this.layeredNodes) {
+//			for (Node n : nodesPerLayer) {
+//				out += n.toString() + "    ";
+//			}
+//			out += "\n";
+//		}
+//		out += "\n";
+//
+//		out += "Edges by Nodes: \n";
+//
+//		for (List<Node> nodesPerLayer : this.layeredNodes) {
+//			for (Node n : nodesPerLayer) {
+//				List<ImmutablePair<Node, Node>> childrenEdge = new ArrayList<>();
+//				for (ImmutablePair<Node, Node> edge : edges) {
+//					if (edge.left.toString().equals(n.toString()))
+//						childrenEdge.add(edge);
+//				}
+//				out += n.toString() + "-> ";
+//				for (ImmutablePair<Node, Node> edge : childrenEdge) {
+//					out += edge.right.toString() + "  ";
+//				}
+//				out += "\n";
+//			}
+//
+//		}
+//
+//		out += "************************************************************************************************\n";
+//
+//		return out;
+		
+		return getName();
 	}
 
 	public String printExeInfo() {

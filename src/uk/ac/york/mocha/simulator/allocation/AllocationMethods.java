@@ -10,9 +10,9 @@ public abstract class AllocationMethods {
 
 //	protected abstract int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2);
 
-	public abstract void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes,
-			List<Integer> availableProcs, long[] procs, List<List<Node>> history_level1,
+	public abstract void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
+			List<Integer> availableCores, long[] coreTimes, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocNodes, RecencyProfile table,
-			long currentTime, boolean lcif, boolean recency_fault, int onlyCritical);
+			long sysTime, boolean lcif, boolean recency_fault, int onlyCritical);
 
 }

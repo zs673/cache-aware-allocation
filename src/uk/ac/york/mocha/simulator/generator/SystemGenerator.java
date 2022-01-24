@@ -263,14 +263,6 @@ public class SystemGenerator {
 
 		generateWCETs(dags);
 
-		// for (DirectedAcyclicGraph d : dags) {
-		// d.findPath(true);
-		// d.findPath(false);
-		// }
-
-		// for (DirectedAcyclicGraph d : dags)
-		// System.out.println(d.toString());
-
 		return dags;
 	}
 
@@ -374,10 +366,6 @@ public class SystemGenerator {
 		}
 		periods.sort((p1, p2) -> Double.compare(p1, p2));
 
-//		long period = periods.get(1);
-//		long pc = (long) Math.ceil((double) period / (double) periodToUitl);
-//		periods.set(0, pc);
-
 		if (print) {
 			System.out.print("task periods & deadline (in us): ");
 			for (int i = 0; i < periods.size(); i++) {
@@ -431,8 +419,7 @@ public class SystemGenerator {
 		 */
 		List<Integer> priorities = new ArrayList<>();
 		for (int i = 0; i < total_tasks; i++) {
-			// priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
-
+			
 			if (i == 0)
 				priorities.add(SystemParameters.MAX_PRIORITY - (i + 1) * 2);
 			else {
@@ -453,14 +440,6 @@ public class SystemGenerator {
 			System.out.println();
 		}
 
-//		System.out.println("period: " + Arrays.toString(periods.toArray()));
-//		System.out.println("util: " + Arrays.toString(utils.toArray()));
-//		System.out.print("workload:");
-//		for(int i=0; i<utils.size();i++) {
-//			System.out.print((long) (utils.get(i) * periods.get(i)) + ", ");
-//		}
-		
-
 		/*
 		 * generate scheduling parameters
 		 */
@@ -473,9 +452,6 @@ public class SystemGenerator {
 
 			schedParams.add(param);
 		}
-
-		// schedParams.sort((p1, p2) -> Long.compare(p1.getWCET(),
-		// p2.getWCET()));
 
 		return schedParams;
 	}
