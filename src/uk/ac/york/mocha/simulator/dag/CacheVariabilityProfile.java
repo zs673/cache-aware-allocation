@@ -14,6 +14,7 @@ public class CacheVariabilityProfile implements Serializable {
 	private double range;
 
 	Random rng;
+	int seed;
 	
 	Node n;
 
@@ -23,6 +24,7 @@ public class CacheVariabilityProfile implements Serializable {
 		this.median = median;
 		this.range = range;
 
+		this.seed = seed;
 		this.rng = new Random(seed);
 	}
 
@@ -32,6 +34,10 @@ public class CacheVariabilityProfile implements Serializable {
 
 	public double getRange() {
 		return range;
+	}
+	
+	public int getSeed() {
+		return seed;
 	}
 
 	public double getVary() {

@@ -10,14 +10,14 @@ import org.apache.commons.math3.util.Pair;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
-import uk.ac.york.mocha.simulator.simulator.Simualtor.Allocation;
-import uk.ac.york.mocha.simulator.simulator.Simualtor.Hardware;
-import uk.ac.york.mocha.simulator.simulator.Simualtor.SimuType;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class EP_multiDAG {

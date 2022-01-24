@@ -30,7 +30,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
  * This is a Multiprocessor Non-preemptive Multi-DAG Simulator
  */
 
-public class Simualtor {
+public class SimualtorNWC {
 
 
 	private SimuType type;
@@ -81,7 +81,7 @@ public class Simualtor {
 	List<List<Node>> history_level2;
 	List<Node> history_level3;
 
-	/* A list containg allocation history, for printing and debugging. */
+	/* A list containing allocation history, for printing and debugging. */
 	List<String[]> allocHistory;
 
 	/* cache performance */
@@ -94,7 +94,7 @@ public class Simualtor {
 
 	/********************* Runtime queues *********************************/
 
-	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
+	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
 			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean lcif, boolean recency_fault) {
 
 		this.type = type;
@@ -136,20 +136,20 @@ public class Simualtor {
 		this.cachePerformance = new long[4];
 		this.recency_fault = recency_fault;
 	}
-	
+
 	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
 		return simulate(printSim, 0);
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim, int onlyCritical) {
-		
+
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
 		 */
 		for (DirectedAcyclicGraph dag : dags) {
-				dag.reset();
+			dag.reset();
 		}
-		
+
 		boolean cacheAware = false;
 		AllocationMethods allocM = null;
 
@@ -199,8 +199,6 @@ public class Simualtor {
 		default:
 			break;
 		}
-
-
 
 		while (sleepingDAGs.size() > 0 || readyDAGs.size() > 0) {
 
@@ -263,14 +261,15 @@ public class Simualtor {
 	/******************************************************************
 	 ********** Choose the next node in the queue to execute **********
 	 ******************************************************************/
-	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethods allocM, boolean cacheAware, int onlyCritical) {
+	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethods allocM, boolean cacheAware,
+			int onlyCritical) {
 
 		for (Node n : readyNodes) {
 			if (n.getDagID() == 0 && n.getDagInstNo() == 0 && n.getId() == 5) {
 				break;
 			}
 		}
-		
+
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */

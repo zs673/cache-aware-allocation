@@ -3,6 +3,22 @@ package uk.ac.york.mocha.simulator.parameters;
 public class SystemParameters {
 
 	/**********************************************************************
+	 ********************** Simualtor Configuration ***********************
+	 **********************************************************************/
+	public enum SimuType {
+		CLOCK_LEVEL, NODE_LEVEL
+	};
+
+	public enum Hardware {
+		PROC_ONLY, PROC_CACHE
+	};
+
+	public enum Allocation {
+		BEST_FIT, WORST_FIT, CACHE_AWARE, CACHE_AWARE_ROBUST, OFFLINE_CACHE_AWARE, RANDOM, FIRST_FIT, CACHE_AWARE_OUR,
+		WORST_FIT_OUR
+	};
+
+	/**********************************************************************
 	 *********************** Experimental Settings ************************
 	 **********************************************************************/
 	public enum ExpName {

@@ -107,6 +107,7 @@ public class DirectedAcyclicGraph implements Serializable {
 			n.partition = -1;
 			n.affinity = -1;
 			n.delayed = -1;
+			n.cvp.rng = new Random(n.cvp.getSeed());
 		}
 
 	}
