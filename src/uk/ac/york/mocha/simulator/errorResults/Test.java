@@ -1,10 +1,7 @@
 package uk.ac.york.mocha.simulator.errorResults;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
@@ -14,8 +11,6 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
-import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
-import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -44,8 +39,6 @@ public class Test {
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
 			ExpName name) {
 
-		List<OneSystemResults> allSys = new ArrayList<>();
-
 		int[] instanceNo = new int[taskNum];
 
 		if (periods != null && hyperperiodNum > 0) {
@@ -73,63 +66,15 @@ public class Test {
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
 					periods == null ? null : periods.get(i), false);
 
-			OneSystemResults res = null;
-
-			res = testOneCaseThreeMethod(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
-
-			allSys.add(res);
+			SimualtorNWC cacheBFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+					Allocation.CACHE_AWARE, RecencyType.TIME_DEFAULT, dags, SystemParameters.coreNum, tableSeed, true,
+					false);
+			cacheBFSim.simulate(true);
 
 			taskSeed++;
 
 		}
 
-		new AllSystemsResults(allSys, instanceNo, SystemParameters.NoS, taskNum, name);
-
 	}
 
-	/**
-	 * This test case will generate two fixed DAG strcuture.
-	 */
-	public static OneSystemResults testOneCaseThreeMethod(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
-			int cores, int taskSeed, int tableSeed) {
-
-		SimualtorNWC cacheBFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim, 0);
-
-		
-
-		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
-
-		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
-
-		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
-
-		/*
-		 * get a number of instances from each DAG based on long[] NoInstances.
-		 */
-		int count = 0;
-		int currentID = -1;
-		for (int i = 0; i < dags.size(); i++) {
-			if (currentID != dags.get(i).id) {
-
-				currentID = dags.get(i).id;
-				count = 0;
-			}
-
-			if (count < NoInstances[dags.get(i).id]) {
-				method0.add(m0.get(i));
-				count++;
-			}
-		}
-
-		allMethods.add(method0);
-
-		List<double[]> cachePerformance = new ArrayList<>();
-		cachePerformance.add(pair0.getSecond());
-
-		OneSystemResults result = new OneSystemResults(allMethods, cachePerformance);
-
-		return result;
-	}
 }

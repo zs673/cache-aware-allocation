@@ -66,6 +66,9 @@ public class SimualtorNWC {
 
 	/* a run queue for EXECUTING nodes */
 	Node[] currentExe;
+	
+	/* ready queue per core */
+	List<List<Node>> readyQ;
 
 	/* the next available time of each processor */
 	long[] allProcs;
@@ -135,6 +138,11 @@ public class SimualtorNWC {
 
 		this.cachePerformance = new long[4];
 		this.recency_fault = recency_fault;
+		
+		for(int i=0; i<procNum; i++) {
+			readyQ.add(new ArrayList<>());
+		}
+		
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
@@ -183,7 +191,6 @@ public class SimualtorNWC {
 			Utils.assignPriorityOur(dags);
 			allocM = new OnlineWFWithOrdering();
 			break;
-
 		default:
 			System.err.println("The simualtion method is NOT supported ! ");
 			System.exit(-1);
@@ -304,12 +311,6 @@ public class SimualtorNWC {
 			int cacheEffects = ETWithCache.getSecond();
 			totalAccess++;
 
-//			if(alloc.equals(Allocation.CACHE_AWARE) && realET != n.expectedET)
-//			{
-//				System.out.println("Simualtor.ExecuteReadyNodes(): realET does not equals to expectedET");
-//				System.exit(-1);
-//			}
-
 			cachePerformance[cacheEffects - 1] = cachePerformance[cacheEffects - 1] + 1;
 
 			/*
@@ -328,10 +329,8 @@ public class SimualtorNWC {
 			i--;
 		}
 
-		if (add) {
-//			List<Node> readys = new ArrayList<>(readyNodes);
+		if (add) 
 			allocHistory.add(oneSched);
-		}
 
 	}
 
