@@ -14,8 +14,25 @@ import org.apache.commons.math3.util.Pair;
 import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class Utils {
+
+	public static List<List<Node>> getAllocHistoryByLevel2Cache(List<List<Node>> allocHis) {
+
+		List<List<Node>> level2 = new ArrayList<>();
+		for (int i = 0; i < allocHis.size() / SystemParameters.Level2CoreNum; i++) {
+			level2.add(new ArrayList<>());
+		}
+
+		for (int i = 0; i < allocHis.size(); i++) {
+			int cluster = i / SystemParameters.Level2CoreNum;
+
+			level2.get(cluster).addAll(allocHis.get(i));
+		}
+		
+		return level2;
+	}
 
 	public static void assignPriorityOur(List<DirectedAcyclicGraph> dags) {
 		for (DirectedAcyclicGraph dag : dags) {
@@ -37,10 +54,6 @@ public class Utils {
 				}
 			}
 		}
-	}
-
-	public static void assignPriorityHe(List<DirectedAcyclicGraph> dags) {
-
 	}
 
 	/*
@@ -82,8 +95,8 @@ public class Utils {
 			int c = -1;
 
 			if (dag1.id != dag2.id) {
-				System.out
-						.println("Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
+				System.out.println(
+						"Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
 				System.exit(-1);
 			}
 
@@ -141,8 +154,8 @@ public class Utils {
 	}
 
 	/*
-	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a
-	 * complete hyperperiod.
+	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a complete
+	 * hyperperiod.
 	 */
 	public static long getHyperPeriod(List<Long> periods) {
 

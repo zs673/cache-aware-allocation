@@ -17,8 +17,7 @@ public class OnlineAndOffline extends AllocationMethods {
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity,
-			boolean recency_fault, int onlyCritical) {
+			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity) {
 
 		/*
 		 * Entry for debugging a single node
@@ -127,7 +126,7 @@ public class OnlineAndOffline extends AllocationMethods {
 					 * Option 1: Speed up by ABSOLUTE vaue
 					 */
 					long WCET = n.getWCET();
-					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, recency_fault)
+					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, false)
 							.getFirst();
 					long speedup = WCET - realET;
 
@@ -173,13 +172,12 @@ public class OnlineAndOffline extends AllocationMethods {
 				break;
 
 			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory, preEligible,
-					availableP, availableTimeAllProcs, table, currentTime, affinity, history_level1, history_level2, history_level3,
-					recency_fault);
+					availableP, availableTimeAllProcs, table, currentTime, affinity, history_level1, history_level2, history_level3);
 
 			Node n = preEligible.get(p.getFirst().intValue());
 
 			n.partition = availableP.get(p.getSecond().intValue());
-			n.expectedET = n.getWCET() - speedUpTable.get(p.getFirst()).get(p.getSecond());
+//			n.expectedET = n.getWCET() - speedUpTable.get(p.getFirst()).get(p.getSecond());
 
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
@@ -191,7 +189,7 @@ public class OnlineAndOffline extends AllocationMethods {
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes, List<Integer> allocProcs,
 			List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory, List<Node> preEligible, List<Integer> procs,
 			long[] availableTimeAllProcs, RecencyProfile table, long time, boolean affinity, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3, boolean recency_fault) {
+			List<List<Node>> history_level2, List<Node> history_level3) {
 
 		int row = -1;
 		int col = -1;
@@ -259,7 +257,7 @@ public class OnlineAndOffline extends AllocationMethods {
 					 */
 					long Nodenum = 0;
 					for (int j = nodesInProc.size() - 1; j >= 0; j--) {
-						Nodenum += nodesInProc.get(j).finishAt - nodesInProc.get(j).start;
+						Nodenum += nodesInProc.get(j).expectedET;
 
 						if (Nodenum >= SystemParameters.v4) {
 							break;
@@ -274,10 +272,10 @@ public class OnlineAndOffline extends AllocationMethods {
 					for (Node affected : affectedNodes) {
 						long affectedTimeOneNode = table
 								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, et_n,
-										recency_fault)
+										false)
 								.getFirst()
 								- table.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, 0,
-										recency_fault).getFirst();
+										false).getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 

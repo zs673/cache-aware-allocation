@@ -113,13 +113,15 @@ public class RecencyProfile {
 				additionalTime);
 
 		if (n != null && error) {
-			double err = n.cvp.getVary();
+			double err = 1.0;
 			
-			if(err < -1) {
+			if(err < -1 || err > 1) {
 				System.out.println("Error Value: " + err);
 				System.exit(-1);
 			}
 
+//			System.out.println(n.getFullName() + "   :   " + err);
+			
 			long ETwithErr = (long) Math.ceil((double) res.getFirst() * (1.0 + err));
 
 			return new Pair<Long, Integer>(ETwithErr, res.getSecond());
@@ -324,10 +326,10 @@ public class RecencyProfile {
 
 		for (int i = nodes.size() - 1; i >= 0; i--) {
 			if (nodes.get(i).getDagID() == n.getDagID() && nodes.get(i).getId() == n.getId()) {
-				time = time + nodes.get(i).finishAt - nodes.get(i).start;
+				time = time + nodes.get(i).expectedET;
 				return time;
 			} else {
-				time = time + nodes.get(i).finishAt - nodes.get(i).start;
+				time = time + nodes.get(i).expectedET;
 				if (time > bound)
 					return time;
 			}

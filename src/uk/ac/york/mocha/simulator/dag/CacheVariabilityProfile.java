@@ -60,7 +60,7 @@ public class CacheVariabilityProfile implements Serializable {
 
 		CacheVariabilityProfile cvp = new CacheVariabilityProfile(null, 0, 1.0/3.0, 1000);
 
-		for (int i = 0; i < 100000; i++) {
+		for (int i = 0; i < 10; i++) {
 			System.out.println(cvp.getVary());
 		}
 	}

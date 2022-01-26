@@ -16,9 +16,9 @@ public class OnlineCacheAware extends AllocationMethods {
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
-			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean lcif,
-			boolean recency_fault, int onlyCritical) {
+			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1,
+			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory,
+			RecencyProfile table, long currentTime, boolean lcif) {
 
 		/*
 		 * Entry for debugging a single node
@@ -35,8 +35,7 @@ public class OnlineCacheAware extends AllocationMethods {
 		readyNodes.stream().forEach(c -> c.partition = -1);
 
 		/*
-		 * Sort ready nodes list by FPS+WF, take first procNum nodes to
-		 * allocate.
+		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.
 		 */
 		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
@@ -52,21 +51,6 @@ public class OnlineCacheAware extends AllocationMethods {
 		List<List<Long>> speedUpTable = new ArrayList<>();
 
 		for (Node n : preEligible) {
-
-			boolean falutsOccur = false;
-
-			if (recency_fault && onlyCritical == 0) {
-				falutsOccur = true;
-			}
-
-			if (recency_fault && onlyCritical == 1 && n.isCritical) {
-				falutsOccur = true;
-			}
-
-			if (recency_fault && onlyCritical == 2 && !n.isCritical) {
-				falutsOccur = true;
-			}
-
 			List<Long> ETdrop = new ArrayList<>();
 
 			for (int i = 0; i < history_level1.size(); i++) {
@@ -76,7 +60,8 @@ public class OnlineCacheAware extends AllocationMethods {
 					 * Option 1: Speed up by ABSOLUTE value
 					 */
 					long WCET = n.getWCET();
-					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, falutsOccur)
+					long realET = table
+							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, false)
 							.getFirst();
 					long speedup = WCET - realET;
 
@@ -121,14 +106,13 @@ public class OnlineCacheAware extends AllocationMethods {
 			if (k >= preEligible.size())
 				break;
 
-			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory, preEligible,
-					availableP, availableTimeAllProcs, table, currentTime, lcif, history_level1, history_level2, history_level3,
-					recency_fault, onlyCritical);
+			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory,
+					preEligible, availableP, availableTimeAllProcs, table, currentTime, lcif, history_level1,
+					history_level2, history_level3);
 
 			Node n = preEligible.get(p.getFirst().intValue());
 
 			n.partition = availableP.get(p.getSecond().intValue());
-			n.expectedET = n.getWCET() - speedUpTable.get(p.getFirst()).get(p.getSecond());
 
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
@@ -136,11 +120,54 @@ public class OnlineCacheAware extends AllocationMethods {
 		}
 
 	}
+	
+//	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfile table,
+//			long[] coreTime, long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1,
+//			List<List<Node>> history_level2, List<Node> history_level3) {
+//
+//		List<List<Long>> speedUpTable = new ArrayList<>();
+//
+//		for (int i = 0; i < readyNodes.size(); i++) {
+//
+//			Node n = readyNodes.get(i);
+//
+//			List<Long> ETdrop = new ArrayList<>();
+//
+//			for (int core = 0; core < cores.size(); core++) {
+//
+//				/*
+//				 * Option 1: Speed up by ABSOLUTE value
+//				 */
+//				long WCET = n.getWCET();
+//				long realET = table
+//						.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, false)
+//						.getFirst();
+//				long speedup = WCET - realET;
+//
+//				long waitforCore = coreTime[core] > systemTime ? coreTime[core] - systemTime : 0;
+//				long waitforReady = localRunqueue.get(core).stream().mapToLong(x -> x.expectedET).sum();
+//
+////				for (int i = 0; i < speedUpTable.size(); i++) {
+////				long speedUp = speedUpTable.get(i).get(n.partition) - n.expectedET;
+////				speedUpTable.get(i).set(n.partition, speedUp);
+////			}
+//
+//				speedup = speedup - waitforCore - waitforReady;
+//
+//				ETdrop.add(speedup);
+//
+//			}
+//
+//			speedUpTable.add(ETdrop);
+//		}
+//
+//		return speedUpTable;
+//	}
 
-	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes, List<Integer> allocProcs,
-			List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory, List<Node> preEligible, List<Integer> procs,
-			long[] availableTimeAllProcs, RecencyProfile table, long time, boolean lcif, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3, boolean recency_fault, int onlyCritical) {
+	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
+			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
+			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, RecencyProfile table, long time,
+			boolean lcif, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
 
 		int row = -1;
 		int col = -1;
@@ -203,12 +230,11 @@ public class OnlineCacheAware extends AllocationMethods {
 					List<Node> nodesInProc = allocHistory.get(procIndex);
 
 					/*
-					 * Get the nodes that can hit level two cache in each free
-					 * core.
+					 * Get the nodes that can hit level two cache in each free core.
 					 */
 					long Nodenum = 0;
 					for (int j = nodesInProc.size() - 1; j >= 0; j--) {
-						Nodenum += nodesInProc.get(j).finishAt - nodesInProc.get(j).start;
+						Nodenum += nodesInProc.get(j).expectedET;
 
 						if (Nodenum >= SystemParameters.v4) {
 							break;
@@ -221,26 +247,12 @@ public class OnlineCacheAware extends AllocationMethods {
 					long affectedTime = 0;
 
 					for (Node affected : affectedNodes) {
-
-						boolean falutsOccur = false;
-						if (recency_fault && onlyCritical == 0) {
-							falutsOccur = true;
-						}
-
-						if (recency_fault && onlyCritical == 1 && n.isCritical) {
-							falutsOccur = true;
-						}
-
-						if (recency_fault && onlyCritical == 2 && !n.isCritical) {
-							falutsOccur = true;
-						}
-
 						long affectedTimeOneNode = table
-								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, et_n,
-										falutsOccur)
+								.computeET(-1, history_level1, history_level2, history_level3, affected,
+										affected.partition, true, et_n, false)
 								.getFirst()
-								- table.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, 0,
-										falutsOccur).getFirst();
+								- table.computeET(-1, history_level1, history_level2, history_level3, affected,
+										affected.partition, true, 0, false).getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 

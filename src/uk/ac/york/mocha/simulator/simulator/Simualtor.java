@@ -93,8 +93,8 @@ public class Simualtor {
 
 	/********************* Runtime queues *********************************/
 
-	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency, List<DirectedAcyclicGraph> dags, int procNum,
-			int recencySeed, boolean lcif, boolean recency_fault) {
+	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
+			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean lcif, boolean recency_fault) {
 
 		this.type = type;
 		this.hardware = hardware;
@@ -199,6 +199,8 @@ public class Simualtor {
 			break;
 		}
 
+		debug_output_begin(printSim);
+
 		while (sleepingDAGs.size() > 0 || readyDAGs.size() > 0) {
 
 			/*
@@ -214,7 +216,7 @@ public class Simualtor {
 			/*
 			 * Execute ready nodes on available processors
 			 */
-			ExecuteReadyNodes(availableProc, allocM, cacheAware, onlyCritical);
+			ExecuteReadyNodes(availableProc, allocM, cacheAware, onlyCritical, printSim);
 
 			/*
 			 * advance to next time unit.
@@ -222,12 +224,7 @@ public class Simualtor {
 			advance();
 		}
 
-		/*
-		 * We summarise and report the simualtion results here
-		 */
-		if (printSim) {
-			reprotSimulationResult();
-		}
+		debug_output_end(printSim);
 
 		/*
 		 * Summarise finish time of each DAG instance
@@ -264,7 +261,8 @@ public class Simualtor {
 	/******************************************************************
 	 ********** Choose the next node in the queue to execute **********
 	 ******************************************************************/
-	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethods allocM, boolean cacheAware, int onlyCritical) {
+	private void ExecuteReadyNodes(List<Integer> availableProc, AllocationMethods allocM, boolean cacheAware,
+			int onlyCritical, boolean printSim) {
 
 		for (Node n : readyNodes) {
 			if (n.getDagID() == 0 && n.getDagInstNo() == 0 && n.getId() == 5) {
@@ -275,9 +273,10 @@ public class Simualtor {
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		allocM.allocate(dags, readyNodes, null, availableProc, allProcs, history_level1, history_level2, history_level3, allocNodes,
-				profile, systemTime, lcif, recency_fault, onlyCritical);
+		allocM.allocate(dags, readyNodes, null, availableProc, allProcs, history_level1, history_level2, history_level3,
+				allocNodes, profile, systemTime, lcif);
 
+		///////////////// Debug Output //////////////////////
 		String[] oneSched = new String[allProcs.length];
 		for (int i = 0; i < oneSched.length; i++) {
 			if (allProcs[i] > systemTime) {
@@ -287,6 +286,7 @@ public class Simualtor {
 			}
 		}
 		boolean add = false;
+		///////////////// Debug Output //////////////////////
 
 		for (int i = 0; i < readyNodes.size(); i++) {
 
@@ -297,14 +297,31 @@ public class Simualtor {
 
 			currentExe[n.partition] = n;
 			allocNodes.get(n.partition).add(n);
-
 			n.start = systemTime;
-			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n, n.partition,
-					cacheAware, 0, false);
+			
+			
+			boolean falutsOccur = false;
+			if (recency_fault && onlyCritical == 0) {
+				falutsOccur = true;
+			}
+
+			if (recency_fault && onlyCritical == 1 && n.isCritical) {
+				falutsOccur = true;
+			}
+
+			if (recency_fault && onlyCritical == 2 && !n.isCritical) {
+				falutsOccur = true;
+			}
+			
+			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n,
+					n.partition, cacheAware, 0, falutsOccur);
 
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();
 			totalAccess++;
+			
+
+			n.expectedET = realET;
 
 			// if(alloc.equals(Allocation.CACHE_AWARE) && realET !=
 			// n.expectedET)
@@ -325,8 +342,11 @@ public class Simualtor {
 
 			allProcs[n.partition] = n.finishAt = systemTime + realET;
 
+			///////////////// Debug Output //////////////////////
+//			oneSched[n.partition] = n.getDagID() + "_" + n.getDagInstNo() + "_" + n.getId() + ":" + n.finishAt;
 			oneSched[n.partition] = n.getDagID() + "_" + n.getId();
 			add = true;
+			///////////////// Debug Output //////////////////////
 
 			readyNodes.remove(n);
 			i--;
@@ -335,6 +355,7 @@ public class Simualtor {
 		if (add) {
 			// List<Node> readys = new ArrayList<>(readyNodes);
 			allocHistory.add(oneSched);
+			debug_print_allocation(printSim, oneSched);
 		}
 
 	}
@@ -344,8 +365,8 @@ public class Simualtor {
 	 *****************************************************************/
 	public void UpdateSystemStatus() {
 		/*
-		 * Check 1) whether any executing node finishes at the current time; 2)
-		 * any ready node can execute now; 3) any DAG has finished execution.
+		 * Check 1) whether any executing node finishes at the current time; 2) any
+		 * ready node can execute now; 3) any DAG has finished execution.
 		 */
 		for (int i = 0; i < currentExe.length; i++) {
 
@@ -463,7 +484,8 @@ public class Simualtor {
 		}
 
 		if (systemTime == Long.MAX_VALUE && (sleepingDAGs.size() > 0 || readyNodes.size() > 0)) {
-			System.out.println("Simualtor.advance(): timing error. The system time is Long Max but there is still waiting nodes/DAGs ! ");
+			System.out.println(
+					"Simualtor.advance(): timing error. The system time is Long Max but there is still waiting nodes/DAGs ! ");
 			System.exit(-1);
 		}
 	}
@@ -478,101 +500,166 @@ public class Simualtor {
 	}
 
 	/******************************************************************
-	 ****************** Summarise and report results ******************
+	 ***************** Debug Info and Results Summary *****************
 	 ******************************************************************/
-	private String reprotSimulationResult() {
-		String res = "Simulation type: " + type.toString() + "    " + "Allocation: " + alloc;
+	private void debug_output_begin(boolean printSim) {
+		if (printSim) {
+			String res = "Simulation type: " + type.toString() + "    " + "Allocation: " + alloc;
 
-		System.out.println("*****************************************************************");
-		System.out.println(res);
-		System.out.println("*****************************************************************");
+			System.out.println("*****************************************************************");
+			System.out.println(res);
+			System.out.println("*****************************************************************");
 
-		res += "\n\n";
+			res += "\n\n";
 
-		// System.out.println(
-		// "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace
-		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-		//
-		// List<List<Long>> finishTimes = new ArrayList<>();
-		//
-		// for (List<Node> nodes : history) {
-		// List<Long> finishPerProc = nodes.stream().map(c ->
-		// c.finishAt).collect(Collectors.toList());
-		// finishTimes.add(finishPerProc);
-		// }
-		//
-		// res += "Execuation Trace: \n\n";
-		//
-		// for (int i = 0; i < history.size(); i++) {
-		//
-		// if (i % 4 == 0) {
-		// res += "Level 2 Cache Group: " + i + "\n";
-		// System.out.println(">>> Level 2 Cache Group: " + i + ":");
-		// }
-		// res += " Processor: " + i + "\n";
-		// System.out.println(">>> Processor: " + i);
-		//
-		// for (Node n : history.get(i)) {
-		// res += " " + n.getExeInfo() + ", \n";
-		// n.printExeInfo(">>> ");
-		// }
-		//
-		// res += "\n";
-		// }
-		// System.out.println(
-		// ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace End
-		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
+			System.out.println(
+					"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Allocation Info <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
-		System.out.println(
-				"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Allocation Info <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-
-		for (int i = 0; i < history_level1.size(); i++) {
-			System.out.printf("%10s    ", "Core:" + i);
-		}
-		System.out.println();
-
-		for (String[] oneSched : allocHistory) {
-
-			for (String s : oneSched) {
-				System.out.printf("%10s    ", s);
+			System.out.printf("%10s    ", "sysTime");
+			for (int i = 0; i < history_level1.size(); i++) {
+				System.out.printf("%15s    ", "Core:" + i);
 			}
 			System.out.println();
+
 		}
-
-		// int maxSize = history.stream().mapToInt(c ->
-		// c.size()).max().getAsInt();
-		// for (int j = 0; j < maxSize; j++) {
-		// for (int i = 0; i < history.size(); i++) {
-		// try {
-		// if (history.get(i).get(j).getDagID() == 0)
-		// System.out.printf("%10s ", history.get(i).get(j).getFullName());
-		// else
-		// System.out.printf("%10s ", history.get(i).get(j).getFullName());
-		// } catch (Exception e) {
-		// System.out.printf("%10s ", "-");
-		// }
-		//
-		// }
-		// System.out.println();
-		// }
-
-		System.out.println(
-				"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Allocation Info <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-
-		System.out.println("--------------------------------------- DAG Execution Summary ---------------------------------------------");
-
-		res += "DAG Execution Summary: \n\n";
-
-		for (DirectedAcyclicGraph dag : dags) {
-			res += "DAG_" + dag.id + "_" + dag.instanceNo + "   finishes at  dag.finishTime. \n";
-			System.out.printf("---  DAG_" + dag.id + "_" + dag.instanceNo + "starts at t=%8d,   finishes at t=%8d,   duration t=%8d. \n",
-					dag.releaseTime, dag.finishTime, (dag.finishTime - dag.releaseTime));
-		}
-
-		System.out.println("--------------------------------------- DAG Execution Summary ---------------------------------------------");
-
-		return res;
 	}
+
+	private void debug_print_allocation(boolean printSim, String[] oneSched) {
+		if (printSim) {
+			System.out.printf("%10s    ", systemTime);
+			for (String s : oneSched) {
+				System.out.printf("%15s    ", s);
+			}
+			System.out.println();
+
+			// System.out.println("System Time: " + systemTime);
+			// System.out.println("Sleeping DAGs: " +
+			// Arrays.toString(sleepingDAGs.toArray()));
+			// System.out.println("Ready DAGs: " +
+			// Arrays.toString(sleepingDAGs.toArray()));
+			// System.out.println("Ready Nodes: " +
+			// Arrays.toString(readyNodes.toArray()));
+			// System.out.println("Running Nodes: " +
+			// Arrays.toString(currentExe));
+		}
+
+	}
+
+	private void debug_output_end(boolean printSim) {
+		if (printSim) {
+			System.out.println(
+					"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Allocation Info <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
+			System.out.println("\n\n\n");
+			System.out.println(
+					"--------------------------------------- DAG Execution Summary ---------------------------------------------");
+
+			for (DirectedAcyclicGraph dag : dags) {
+				System.out.printf(
+						"---  DAG_" + dag.id + "_" + dag.instanceNo
+								+ "    starts at t=%8d,   finishes at t=%8d,   makespan t=%8d. \n",
+						dag.releaseTime, dag.finishTime, (dag.finishTime - dag.releaseTime));
+			}
+
+			System.out.println(
+					"--------------------------------------- DAG Execution Summary ---------------------------------------------");
+		}
+
+	}
+
+//	private String reprotSimulationResult() {
+//		String res = "Simulation type: " + type.toString() + "    " + "Allocation: " + alloc;
+//
+//		System.out.println("*****************************************************************");
+//		System.out.println(res);
+//		System.out.println("*****************************************************************");
+//
+//		res += "\n\n";
+//
+//		// System.out.println(
+//		// "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace
+//		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+//		//
+//		// List<List<Long>> finishTimes = new ArrayList<>();
+//		//
+//		// for (List<Node> nodes : history) {
+//		// List<Long> finishPerProc = nodes.stream().map(c ->
+//		// c.finishAt).collect(Collectors.toList());
+//		// finishTimes.add(finishPerProc);
+//		// }
+//		//
+//		// res += "Execuation Trace: \n\n";
+//		//
+//		// for (int i = 0; i < history.size(); i++) {
+//		//
+//		// if (i % 4 == 0) {
+//		// res += "Level 2 Cache Group: " + i + "\n";
+//		// System.out.println(">>> Level 2 Cache Group: " + i + ":");
+//		// }
+//		// res += " Processor: " + i + "\n";
+//		// System.out.println(">>> Processor: " + i);
+//		//
+//		// for (Node n : history.get(i)) {
+//		// res += " " + n.getExeInfo() + ", \n";
+//		// n.printExeInfo(">>> ");
+//		// }
+//		//
+//		// res += "\n";
+//		// }
+//		// System.out.println(
+//		// ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution Trace End
+//		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
+//
+//		System.out.println(
+//				"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Allocation Info <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+//
+//		for (int i = 0; i < history_level1.size(); i++) {
+//			System.out.printf("%10s    ", "Core:" + i);
+//		}
+//		System.out.println();
+//
+//		for (String[] oneSched : allocHistory) {
+//
+//			for (String s : oneSched) {
+//				System.out.printf("%10s    ", s);
+//			}
+//			System.out.println();
+//		}
+//
+//		// int maxSize = history.stream().mapToInt(c ->
+//		// c.size()).max().getAsInt();
+//		// for (int j = 0; j < maxSize; j++) {
+//		// for (int i = 0; i < history.size(); i++) {
+//		// try {
+//		// if (history.get(i).get(j).getDagID() == 0)
+//		// System.out.printf("%10s ", history.get(i).get(j).getFullName());
+//		// else
+//		// System.out.printf("%10s ", history.get(i).get(j).getFullName());
+//		// } catch (Exception e) {
+//		// System.out.printf("%10s ", "-");
+//		// }
+//		//
+//		// }
+//		// System.out.println();
+//		// }
+//
+//		System.out.println(
+//				"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Allocation Info <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+//
+//		System.out.println("--------------------------------------- DAG Execution Summary ---------------------------------------------");
+//
+//		res += "DAG Execution Summary: \n\n";
+//
+//		for (DirectedAcyclicGraph dag : dags) {
+//			res += "DAG_" + dag.id + "_" + dag.instanceNo + "   finishes at  dag.finishTime. \n";
+//			System.out.printf("---  DAG_" + dag.id + "_" + dag.instanceNo + "    starts at t=%8d,   finishes at t=%8d,   duration t=%8d. \n",
+//					dag.releaseTime, dag.finishTime, (dag.finishTime - dag.releaseTime));
+//		}
+//
+//		System.out.println("--------------------------------------- DAG Execution Summary ---------------------------------------------");
+//
+//		return res;
+//	}
 
 	// public static void main(String args[]) {
 	//

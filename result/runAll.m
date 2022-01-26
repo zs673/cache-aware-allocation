@@ -11,7 +11,6 @@ methods = ["WF+EO";"AJLR"];
 
 systemNo = 1000;
 systemNoLarge = systemNo * 5;
-
 xlim_value = 300;
 
 % recency

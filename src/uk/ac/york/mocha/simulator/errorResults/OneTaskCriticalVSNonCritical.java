@@ -17,6 +17,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
+import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OneTaskCriticalVSNonCritical {
@@ -45,7 +46,6 @@ public class OneTaskCriticalVSNonCritical {
 					true, ExpName.recency_fault_util);
 
 		}
-
 	}
 
 	public static void RunOneGroupThreeMethod(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
@@ -128,15 +128,15 @@ public class OneTaskCriticalVSNonCritical {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim, 0);
 
 		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim, 0);
 
-		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
+		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim, 0);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();

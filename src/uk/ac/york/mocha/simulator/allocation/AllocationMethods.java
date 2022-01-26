@@ -13,6 +13,6 @@ public abstract class AllocationMethods {
 	public abstract void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> availableCores, long[] coreTimes, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocNodes, RecencyProfile table,
-			long sysTime, boolean lcif, boolean recency_fault, int onlyCritical);
+			long sysTime, boolean lcif);
 
 }
