@@ -47,7 +47,7 @@ public class EP1_2 {
 			}
 		});
 
-//		t1.start();
+		t1.start();
 		t2.start();
 
 		try {
