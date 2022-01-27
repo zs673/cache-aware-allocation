@@ -113,7 +113,7 @@ public class RecencyProfile {
 				additionalTime);
 
 		if (n != null && error) {
-			double err = 1.0;
+			double err = n.cvp.getVary();
 			
 			if(err < -1 || err > 1) {
 				System.out.println("Error Value: " + err);

@@ -21,6 +21,7 @@ import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.dag.RecencyProfile;
+import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
@@ -564,27 +565,27 @@ public class SimualtorNWC {
 
 	}
 
-//	public static void main(String args[]) {
-//
-//		for (int i = 0; i < 1; i++) {
-//			SystemParameters.utilPerTask = 0.2;
-//
-//			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, i, true, false);
-//			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(10, -1, null, false);
-//			
-//
+	public static void main(String args[]) {
+
+		for (int i = 0; i < 1; i++) {
+			SystemParameters.utilPerTask = 0.2;
+
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, i, true, false);
+			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(10, -1, null, false);
+			
+
 //			SimualtorNWC cacheBFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 //					Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, SystemParameters.coreNum, i, true,
 //					true);
 //			cacheBFSim.simulate(true, 0);
-//
-//			System.out.println("The " + i + "th systen FINISHED!");
-//
-//			Simualtor cacheBFSim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-//					RecencyType.TIME_DEFAULT, dags, SystemParameters.coreNum, i, true, true);
-//			cacheBFSim1.simulate(true, 0);
-//		}
-//
-//	}
+
+			System.out.println("The " + i + "th systen FINISHED!");
+
+			SimualtorNWC cacheBFSim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.SIMPLE,
+					RecencyType.TIME_DEFAULT, dags, SystemParameters.coreNum, i, true, true);
+			cacheBFSim1.simulate(true, 0);
+		}
+
+	}
 
 }

@@ -128,15 +128,15 @@ public class OneTaskCriticalVSNonCritical {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim, 0);
 
 		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, true);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim, 0);
 
 		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, true);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim, 0);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();

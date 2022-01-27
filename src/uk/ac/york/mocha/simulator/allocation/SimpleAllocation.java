@@ -23,12 +23,21 @@ public class SimpleAllocation extends AllocationMethods {
 		int coreIndex = 0;
 		for (int i = 0; i < readyNodes.size(); i++) {
 			readyNodes.get(i).partition = coreIndex;
-			coreIndex++;
+			
 
+			allocHistory.get(coreIndex).add(readyNodes.get(i));
+			
+			localRunqueue.get(coreIndex).add(readyNodes.get(i));
+			
+			
+//			coreIndex++;
 			if (coreIndex >= availableProcs.size())
 				coreIndex = 0;
+			
+			
 		}
 
+		readyNodes.clear();
 	}
 
 }
