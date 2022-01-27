@@ -3,6 +3,9 @@ package uk.ac.york.mocha.simulator.dag;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class Node implements Serializable {
 
@@ -81,12 +84,13 @@ public class Node implements Serializable {
 	 * The variability of the node
 	 */
 	public CacheVariabilityProfile cvp;
+	Random rng;
 
-	public Node(int layer, NodeType type, int id, int dagID) {
-		this(-1, layer, type, id, dagID);
+	public Node(int layer, NodeType type, int id, int dagID, Random rng) {
+		this(-1, layer, type, id, dagID, rng);
 	}
 
-	public Node(long WCET, int layer, NodeType type, int id, int dagID) {
+	public Node(long WCET, int layer, NodeType type, int id, int dagID, Random rng) {
 		this.WCET = WCET;
 		this.layer = layer;
 		this.type = type;
@@ -99,11 +103,13 @@ public class Node implements Serializable {
 
 		// this.crp = new CacheRecencyProfile(this, SystemParameters.coreNum,
 		// 1000);
-		this.cvp = new CacheVariabilityProfile(this, 0, 1.0 / 3.0, 1000);
+		this.cvp = new CacheVariabilityProfile(this, SystemParameters.err_median,
+				((double) rng.nextInt(SystemParameters.err_range + 1) / (double) 100) / 3.0, rng);
+		this.rng = rng;
 	}
 
 	public Node deepCopy() {
-		Node copy = new Node(this.WCET, this.layer, this.type, this.id, this.dagID);
+		Node copy = new Node(this.WCET, this.layer, this.type, this.id, this.dagID, this.rng);
 		copy.start = start;
 		copy.finish = finish;
 		copy.finishAt = finishAt;

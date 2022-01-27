@@ -13,11 +13,11 @@ systemNo = 1000;
 systemNoLarge = systemNo * 5;
 xlim_value = 300;
 
-% recency
+recency
 
-% recency_boxplot
-% recency_scatter
-% level1_cache_scatter
+recency_boxplot
+recency_scatter
+level1_cache_scatter
 
 % makespan_1
 % makespan_2
@@ -28,7 +28,7 @@ xlim_value = 300;
 % utilOneDAG_makespan
 
 % recency_fault
-recency_fault_util
+% recency_fault_util
 
 % recency_fault_pattern
 % 

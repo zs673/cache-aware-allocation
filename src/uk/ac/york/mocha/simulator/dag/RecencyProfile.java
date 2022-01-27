@@ -120,7 +120,7 @@ public class RecencyProfile {
 				System.exit(-1);
 			}
 
-//			System.out.println(n.getFullName() + "   :   " + err);
+//			System.out.println(n.getFullName() + "   :   err: " + err);
 			
 			long ETwithErr = (long) Math.ceil((double) res.getFirst() * (1.0 + err));
 
@@ -449,7 +449,7 @@ public class RecencyProfile {
 
 		RecencyProfile rp = new RecencyProfile(RecencyType.TIME_DEFAULT, 8, 1000);
 
-		Node n = new Node(1000000, -1, NodeType.NORMAL, -1, -1);
+		Node n = new Node(1000000, -1, NodeType.NORMAL, -1, -1, new Random(1000));
 
 		for (long i = SystemParameters.v1; i < SystemParameters.v4; i += 100) {
 

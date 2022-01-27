@@ -15,7 +15,7 @@ public class SystemParameters {
 
 	public enum Allocation {
 		BEST_FIT, WORST_FIT, CACHE_AWARE, CACHE_AWARE_ROBUST, OFFLINE_CACHE_AWARE, RANDOM, FIRST_FIT, CACHE_AWARE_OUR,
-		WORST_FIT_OUR, SIMPLE
+		WORST_FIT_OUR, SIMPLE, CACHE_AWARE_ACCIDENT
 	};
 
 	/**********************************************************************
@@ -60,6 +60,10 @@ public class SystemParameters {
 	public static final int fork_min = 4;
 	public static final int fan_in = 3;
 
+	/* Error Range */
+	public static double err_median = 0.5;
+	public static int err_range = 100;
+	
 	/* Recency fault rate */
 	public static int fault_rate = 5;
 	public static int fault_range = 10;

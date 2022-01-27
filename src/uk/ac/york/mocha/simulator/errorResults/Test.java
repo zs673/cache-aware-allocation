@@ -11,7 +11,6 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
-import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 
 public class Test {
@@ -39,25 +38,32 @@ public class Test {
 
 	}
 
-	public static void RunOneGroupThreeMethod(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
-			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
-			ExpName name) {
+	public static void RunOneGroupThreeMethod(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil, List<List<Double>> util,
+			int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC, ExpName name) {
 
-		taskSeed = 1000;
+		for (int i = 0; i < 10000; i++) {
 
-		SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil, null, taskSeed,
-				randomC, SystemParameters.printGen);
-		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum, null, false);
+			taskSeed = 1000;
 
-		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, 8, tableSeed, false, true);
-		cacheWFSim.simulate(true, 0);
-		
-		System.out.println("\n\n**********************************************************\n\n");
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil, null, taskSeed, randomC,
+					SystemParameters.printGen);
+			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum, null, false);
 
-		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, 8, tableSeed, false, true);
-		cacheCASim.simulate(true, 0);
+			// Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL,
+			// Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+			// RecencyType.TIME_DEFAULT, dags, 8, tableSeed, false, true);
+			// cacheWFSim.simulate(true, 0);
+
+			System.out.println("\n\n**********************************************************\n\n");
+
+			SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
+					RecencyType.TIME_DEFAULT, dags, 8, tableSeed, false, true);
+			cacheCASim.simulate(true, 0);
+
+			taskSeed++;
+
+		}
+
 	}
 
 }

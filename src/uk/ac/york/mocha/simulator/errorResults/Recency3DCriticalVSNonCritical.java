@@ -19,6 +19,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
+import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class Recency3DCriticalVSNonCritical {
@@ -31,7 +32,7 @@ public class Recency3DCriticalVSNonCritical {
 
 			@Override
 			public void run() {
-				faultsInRecency3D(1);
+				faultsInRecency3D(0);
 
 			}
 		});
@@ -40,7 +41,7 @@ public class Recency3DCriticalVSNonCritical {
 
 			@Override
 			public void run() {
-				faultsInRecency3D(2);
+				faultsInRecency3D(0);
 
 			}
 		});
@@ -290,11 +291,11 @@ public class Recency3DCriticalVSNonCritical {
 	public static OneSystemResults oneTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
 			int taskSeed, int tableSeed, int onlyCritical) {
 
-		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim, onlyCritical);
 
-		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim, onlyCritical);
 
@@ -343,11 +344,11 @@ public class Recency3DCriticalVSNonCritical {
 	public static OneSystemResults RecencyFaultTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
 			int cores, int taskSeed, int tableSeed, int onlyCritical) {
 
-		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim, onlyCritical);
 
-		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ACCIDENT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim, onlyCritical);
 

@@ -9,6 +9,7 @@ import org.apache.commons.math3.util.Pair;
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineAndOffline;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareAccident;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareWithOrdering;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
@@ -181,6 +182,10 @@ public class Simualtor {
 		case WORST_FIT_OUR:
 			Utils.assignPriorityOur(dags);
 			allocM = new OnlineWFWithOrdering();
+			break;
+		case CACHE_AWARE_ACCIDENT:
+			
+			allocM = new OnlineCacheAwareAccident();
 			break;
 
 		default:

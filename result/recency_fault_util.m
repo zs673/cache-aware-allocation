@@ -54,6 +54,9 @@ maxUtil = 8;
          hold on
 
     end
+    
+    set(findobj(gca,'type','line'),'linew',1.5)
+    set(gca,'linew',1.5)
      
     xlim([0 16]);
     ylim([0 1]);
@@ -76,7 +79,7 @@ maxUtil = 8;
 
     
 
-    h = legend([c(3),c(2),c(1)],"AJLR no error","non-critical node error","critical node error",'FontAngle','italic','location','southeast','Orientation','horizontal');
+    h = legend([c(3),c(2),c(1)],"AJLR no error","AJLR with error","AJLRE with error",'FontAngle','italic','location','southeast','Orientation','horizontal');
 %     h = legend([c(3),c(2),c(1)],"WF+EO","AJLR without deviations","AJLR with deviations",'FontAngle','italic','location','southeast','Orientation','horizontal');
     set(h,'FontSize',14);
 
