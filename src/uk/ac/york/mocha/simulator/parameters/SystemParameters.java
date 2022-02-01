@@ -61,7 +61,7 @@ public class SystemParameters {
 	public static final int fan_in = 3;
 
 	/* Error Range */
-	public static double err_median = 0.5;
+	public static double err_median = 0.0;
 	public static int err_range = 100;
 	
 	/* Recency fault rate */

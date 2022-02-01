@@ -23,39 +23,41 @@ import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class EP1_2 {
+public class Test_EP_1_2 {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static void main(String args[]) {
+		
+		changeTaskNumRunner(1);
+		
+//		runOneDAG();
 
-		Thread t1 = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				changeTaskNumRunner(4);
-
-			}
-		});
-
-		Thread t2 = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				runOneDAG();
-
-			}
-		});
-
-		t1.start();
-		t2.start();
-
-		try {
-			t1.join();
-			t2.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		Thread t1 = new Thread(new Runnable() {
+//
+//			@Override
+//			public void run() {
+//			}
+//		});
+//
+//		Thread t2 = new Thread(new Runnable() {
+//
+//			@Override
+//			public void run() {
+//				
+//
+//			}
+//		});
+//
+//		t1.start();
+//		t2.start();
+//
+//		try {
+//			t1.join();
+//			t2.join();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 
 	}
 
@@ -102,7 +104,7 @@ public class EP1_2 {
 			threads.add(new Thread(new Runnable() {
 				@Override
 				public void run() {
-					RunOneGroup(num, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS,
+					RunOneGroup(num, intanceNum, hyperPeriodNum, true, null, seed, seed, null, 1,
 							true, ExpName.taskNum);
 				}
 			}));
@@ -211,20 +213,21 @@ public class EP1_2 {
 	 */
 	public static OneSystemResults testOneCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
 			int taskSeed, int tableSeed) {
-
 		
+		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(true);
+		
+
+		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(true);
 
 //		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
 //				RecencyType.TIME, dags, cores, tableSeed, false, false);
 //		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
-		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 		
-		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
 //		List<DirectedAcyclicGraph> m1 = pair1.getFirst();

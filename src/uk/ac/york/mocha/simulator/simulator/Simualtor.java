@@ -184,7 +184,7 @@ public class Simualtor {
 			allocM = new OnlineWFWithOrdering();
 			break;
 		case CACHE_AWARE_ACCIDENT:
-			
+
 			allocM = new OnlineCacheAwareAccident();
 			break;
 
@@ -303,8 +303,7 @@ public class Simualtor {
 			currentExe[n.partition] = n;
 			allocNodes.get(n.partition).add(n);
 			n.start = systemTime;
-			
-			
+
 			boolean falutsOccur = false;
 			if (recency_fault && onlyCritical == 0) {
 				falutsOccur = true;
@@ -317,14 +316,13 @@ public class Simualtor {
 			if (recency_fault && onlyCritical == 2 && !n.isCritical) {
 				falutsOccur = true;
 			}
-			
+
 			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n,
 					n.partition, cacheAware, 0, falutsOccur);
 
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();
 			totalAccess++;
-			
 
 			n.expectedET = realET;
 

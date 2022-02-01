@@ -39,10 +39,11 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		List<Node> level3 = allocHistory.stream().flatMap(List::stream).collect(Collectors.toList());
 
 		
-		List<List<Long>> speedUpTable = computeSpeedUp(readyNodes, cores, table, coreTime, systemTime,
-				localRunqueue, level1, level2, level3);
+
 		
 		while (readyNodes.size() != allocNodes.size()) {
+			List<List<Long>> speedUpTable = computeSpeedUp(readyNodes, cores, table, coreTime, systemTime,
+					localRunqueue, level1, level2, level3);
 			
 			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, readyNodes, cores, coreTime,
 					table, systemTime, lcif, level1, level2, level3);
