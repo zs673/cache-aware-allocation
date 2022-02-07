@@ -13,6 +13,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
+import uk.ac.york.mocha.simulator.simulator.Utils;
 
 /* Number, Type, Effect */
 
@@ -26,59 +27,146 @@ public class TestFaultsImpact {
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static enum faultType {
-		all_nodes, all_critical, all_non_critical, high_et, high_in_degree, high_out_degree, high_in_out_degree,
-		critical_high_et_in_out_degree
+		all_nodes, all_critical, all_non_critical, high_et, high_path, critical_high_et_path, high_in_degree, high_out_degree, high_in_out_degree
 	}
+
+	static int nos = 1000;
+	static int[] allCores = { 4, 8 };
+	static int seed = 1000;
+	static boolean print = false;
+	static double[] allPercent = { 0.1, 0.2, 0.3, 0.4, 0.5 };
+	static double[] allEffect = { 0.1, 0.2, 0.3, 0.4, 0.5 };
+	static int[] allInstanceNum = { 1, 3, 5, 10 };
 
 	public static void main(String args[]) {
-		faults();
+		faults_cores();
+		faults_percent();
+		faults_effect();
+		faults_instanceNum();
 	}
 
-	public static void faults() {
+	public static void faults_cores() {
+		for (int i = 0; i < allCores.length; i++) {
+			faults(allCores[i], allPercent[allPercent.length - 1], allEffect[allEffect.length - 1], allInstanceNum[0]);
+		}
+	}
 
-		int cores = 8;
-		int seed = 1000;
-		boolean print = true;
+	public static void faults_percent() {
+		for (int i = 0; i < allPercent.length; i++) {
+			faults(allCores[allCores.length - 1], allPercent[i], allEffect[allEffect.length - 1], allInstanceNum[0]);
+		}
+	}
 
-		SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true,
-				SystemParameters.printGen);
-		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
+	public static void faults_effect() {
+		for (int i = 0; i < allEffect.length; i++) {
+			faults(allCores[allCores.length - 1], allPercent[allPercent.length - 1], allEffect[i], allInstanceNum[0]);
+		}
+	}
 
-		if (print) {
+	public static void faults_instanceNum() {
+		for (int i = 0; i < allInstanceNum.length; i++) {
+			faults(allCores[allCores.length - 1], allPercent[allPercent.length - 1], allEffect[allEffect.length - 1], allInstanceNum[i]);
+		}
+	}
 
-			List<Node> longestPath = dags.get(0).longestPath;
-			String out = "longest path: ";
-			for (int i = 0; i < longestPath.size(); i++) {
-				out += longestPath.get(i).getShortName();
+	public static void faults(int cores, double percent, double effect, int instanceNum) {
 
-				if (i != longestPath.size() - 1)
-					out += "  ->  ";
+		List<List<Long>> res = new ArrayList<>();
+		for (int i = 0; i < nos; i++) {
+			System.out.println("No. of system: " + i);
+
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true, SystemParameters.printGen);
+			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(instanceNum, -1, null, false);
+
+			// for (int i = 0; i < dags.get(0).allpaths.size(); i++) {
+			// for (Node n : dags.get(0).allpaths.get(i)) {
+			// System.out.print(n.getShortName() + " ");
+			// }
+			// System.out.println();
+			// }
+
+			if (print) {
+				// System.out.println(dags.get(0).toString());
+
+				List<Node> longestPath = dags.get(0).longestPath;
+				String out = "longest path: ";
+				for (int k = 0; k < longestPath.size(); k++) {
+					out += longestPath.get(k).getShortName();
+
+					if (k != longestPath.size() - 1)
+						out += "  ->  ";
+				}
+				System.out.println(out);
 			}
-			System.out.println(out);
+
+			List<Long> results = new ArrayList<>();
+
+			results.addAll(run(dags, cores, seed, faultType.all_nodes, percent, effect, print));
+			// if(print)
+			// System.out.println();
+			results.addAll(run(dags, cores, seed, faultType.all_critical, percent, effect, print));
+			// if(print)
+			// System.out.println();
+			results.addAll(run(dags, cores, seed, faultType.high_path, percent, effect, print));
+			// if(print)
+			// System.out.println();
+			results.addAll(run(dags, cores, seed, faultType.high_et, percent, effect, print));
+			// if(print)
+			// System.out.println();
+			results.addAll(run(dags, cores, seed, faultType.critical_high_et_path, percent, effect, print));
+			// if(print)
+			// System.out.println();
+
+			res.add(results);
+			seed++;
 		}
 
-		run(dags, cores, seed, faultType.high_in_out_degree, print);
+		String out = "";
+		for (List<Long> ll : res) {
+			for (int k = 0; k < ll.size(); k++) {
+				System.out.print(ll.get(k) + " ");
+				out += ll.get(k);
+				if (k != ll.size() - 1)
+					out += " ";
+			}
+			System.out.println();
+			out += "\n";
+		}
 
+		String folderAndFile = "result/" + "faults" + "/out" + "_" + cores + "_" + percent + "_" + effect + "_" + instanceNum + ".txt";
+		Utils.writeResult(folderAndFile, out);
 	}
 
-	public static void run(List<DirectedAcyclicGraph> dags, int cores, int seed, faultType type, boolean print) {
-		System.out.println(
-				"\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		setUpSpecificFaults(dags, type, 0.2, 0.5, true, true);
-		oneRun(dags, cores, seed, print);
-		System.out.println(
-				"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n");
+	public static List<Long> run(List<DirectedAcyclicGraph> dags, int cores, int seed, faultType type, double percent, double effect,
+			boolean print) {
 
-		System.out.println(
-				"\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		setUpSpecificFaults(dags, type, 0.2, 0.5, false, true);
-		oneRun(dags, cores, seed, print);
-		System.out.println(
-				"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
+		List<Long> makespans = new ArrayList<>();
+
+		if (print)
+			System.out.println("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " + type.toString()
+					+ "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+		setUpSpecificFaults(dags, type, percent, effect, true, print);
+		long makespan_opposite = oneRun(dags, cores, seed, print);
+		makespans.add(makespan_opposite);
+		if (print)
+			System.out.println(
+					"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+
+		if (print)
+			System.out.println("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " + type.toString()
+					+ "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+		setUpSpecificFaults(dags, type, percent, effect, false, print);
+		long makespan = oneRun(dags, cores, seed, print);
+		makespans.add(makespan);
+		if (print)
+			System.out.println(
+					"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
+
+		return makespans;
 	}
 
-	public static List<List<Node>> setUpSpecificFaults(List<DirectedAcyclicGraph> dags, faultType type, double percent,
-			double faultEfect, boolean opposite, boolean print) {
+	public static List<List<Node>> setUpSpecificFaults(List<DirectedAcyclicGraph> dags, faultType type, double percent, double faultEfect,
+			boolean opposite, boolean print) {
 
 		List<List<Node>> faultNodesinDAGs = new ArrayList<>();
 
@@ -126,6 +214,15 @@ public class TestFaultsImpact {
 				}
 				break;
 
+			case high_path:
+				allNodes.sort((c1, c2) -> compareNodebyPath(dags, c1, c2));
+				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
+
+				for (int i = 0; i < faultNodeNum; i++) {
+					faultNodes.add(allNodes.get(i));
+				}
+				break;
+
 			case high_out_degree:
 				allNodes.sort((c1, c2) -> compareNodebyOutDegree(c1, c2));
 
@@ -156,6 +253,30 @@ public class TestFaultsImpact {
 				}
 				break;
 
+			case critical_high_et_path:
+				allNodes.sort((c1, c2) -> compareNodebyPath(dags, c1, c2));
+				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
+
+				for (int i = 0; i < faultNodeNum; i++) {
+					faultNodes.add(allNodes.get(i));
+				}
+
+				allNodes.sort((c1, c2) -> compareNodebyET(c1, c2));
+				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
+
+				for (int i = 0; i < faultNodeNum; i++) {
+					if (!faultNodes.contains(allNodes.get(i)))
+						faultNodes.add(allNodes.get(i));
+				}
+
+				for (Node n : critical) {
+					if (!faultNodes.contains(n)) {
+						faultNodes.add(n);
+					}
+				}
+
+				break;
+
 			default:
 				break;
 			}
@@ -167,7 +288,8 @@ public class TestFaultsImpact {
 				for (Node n : faultNodes) {
 					n.hasFaults = true;
 					n.cvp.median = 0;
-					n.cvp.range = faultEfect; // ((double) rng.nextInt(effect + 1) / (double) 100) / 3.0;
+					n.cvp.range = faultEfect; // ((double) rng.nextInt(effect +
+												// 1) / (double) 100) / 3.0;
 					if (print)
 						System.out.println(n.toString() + ": " + n.cvp.median + ", " + n.cvp.range);
 				}
@@ -179,7 +301,8 @@ public class TestFaultsImpact {
 				for (Node n : allNodes) {
 					n.hasFaults = true;
 					n.cvp.median = 0;
-					n.cvp.range = faultEfect; // ((double) rng.nextInt(effect + 1) / (double) 100) / 3.0;
+					n.cvp.range = faultEfect; // ((double) rng.nextInt(effect +
+												// 1) / (double) 100) / 3.0;
 					if (print)
 						System.out.println(n.toString() + ": " + n.cvp.median + ", " + n.cvp.range);
 				}
@@ -193,12 +316,36 @@ public class TestFaultsImpact {
 	}
 
 	public static long oneRun(List<DirectedAcyclicGraph> dags, int cores, int seed, boolean print) {
-		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
+				RecencyType.TIME_DEFAULT, dags, cores, seed, true);
 		no_fault.simulate(print);
-		System.out.println(dags.get(0).finishTime);
 
-		return dags.get(0).finishTime;
+		if (print)
+			System.out.println(dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime);
+
+		return dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime;
+	}
+
+	public static int compareNodebyPath(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+
+		return -Long.compare(c1.pathNum, c2.pathNum);
+
+		// DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(),
+		// c1.getDagInstNo());
+		//
+		// int count1 = 0;
+		// int count2 = 0;
+		//
+		// for (int i = 0; i < dag1.allpaths.size(); i++) {
+		// if (dag1.allpaths.get(i).contains(c1)) {
+		// count1++;
+		// }
+		// if (dag1.allpaths.get(i).contains(c2)) {
+		// count2++;
+		// }
+		// }
+		//
+		// return -Integer.compare(count1, count2);
 	}
 
 	public static int compareNodebyET(Node c1, Node c2) {
@@ -214,8 +361,7 @@ public class TestFaultsImpact {
 	}
 
 	public static int compareNodebyInAndOutDegree(Node c1, Node c2) {
-		return -Integer.compare(c1.getParent().size() + c1.getChildren().size(),
-				c2.getParent().size() + c2.getChildren().size());
+		return -Integer.compare(c1.getParent().size() + c1.getChildren().size(), c2.getParent().size() + c2.getChildren().size());
 	}
 
 }

@@ -1,0 +1,3 @@
+data = readmatrix('faults/out.txt');
+
+boxpl

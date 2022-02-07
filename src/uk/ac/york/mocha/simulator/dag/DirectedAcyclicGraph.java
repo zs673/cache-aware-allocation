@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -69,8 +70,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	 */
 	public boolean hard = false;
 
-	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, Random rng,
-			boolean hard) {
+	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, Random rng, boolean hard) {
 
 		this.id = id;
 		this.name = "DAG " + id;
@@ -115,8 +115,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/*****************************************************************
-	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This method
-	 * can only be invoked once! ***********
+	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This
+	 * method can only be invoked once! ***********
 	 *****************************************************************/
 	public List<DirectedAcyclicGraph> getInstances(long instanceNum) {
 
@@ -151,8 +151,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/******************************************************************
-	 ******************** Generate DAG structure ********************** This method does not depend on
-	 * external library! *********
+	 ******************** Generate DAG structure ********************** This method does not depend
+	 * on external library! *********
 	 ******************************************************************/
 	public void constructDAG() {
 		if (layeredNodes.size() > 0) {
@@ -195,8 +195,7 @@ public class DirectedAcyclicGraph implements Serializable {
 			/*
 			 * generate nodes for this layer
 			 */
-			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
-					+ dag_param.parallelism_min;
+			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
 			// int nodeNum = rng.nextInt(dag_param.getParallelism()) + 1;
 			// System.out.println(nodeNum);
 			List<Node> nodePerLayer = new ArrayList<>();
@@ -289,6 +288,7 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		for (ImmutablePair<Node, Node> e : edges)
 			this.graph.addEdge(e.left, e.right);
+
 	}
 
 	public void constructNFJDAG(int fanInNum) {
@@ -321,8 +321,7 @@ public class DirectedAcyclicGraph implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
-						+ dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
@@ -410,6 +409,8 @@ public class DirectedAcyclicGraph implements Serializable {
 
 	int[] visited; // used to mark a node as visited
 
+	public List<List<Node>> allpaths = new ArrayList<>();
+
 	public void findPath(boolean longest) {
 		visited = new int[flatNodes.size()];
 
@@ -453,6 +454,17 @@ public class DirectedAcyclicGraph implements Serializable {
 			for (Node n : longestPath)
 				n.isCritical = true;
 		}
+
+		for (Node n : flatNodes) {
+			int count = 0;
+			for (int i = 0; i < allpaths.size(); i++) {
+				if (allpaths.get(i).contains(n))
+					count++;
+			}
+			n.pathNum = count;
+		}
+		
+		
 	}
 
 	private void dsf(Node current, boolean longest) {
@@ -461,27 +473,32 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		if (current.getId() == sink.getId()) {
 
-//			 System.out.println("Path: " +
-//			 Arrays.toString(Arrays.copyOfRange(path, 0, length)));
+//			System.out.println("Path: " + Arrays.toString(Arrays.copyOfRange(path, 0, length)));
+
+			List<Node> onepath = new ArrayList<>();
+			for (int i = 0; i < length; i++) {
+				onepath.add(flatNodes.get(path[i]));
+			}
+			allpaths.add(onepath);
 
 			if ((longest && distance > bestDistance) || (!longest && distance < bestDistance)) {
+				// System.out.println("previous longest path: " +
+				// Arrays.toString(bestPath) + " length: " + bestDistance);
 
-//				 System.out.println("previous longest path: " +
-//				 Arrays.toString(bestPath) + " length: " + bestDistance);
-
-				for(int i=0; i<bestPath.length;i++)
+				for (int i = 0; i < bestPath.length; i++)
 					bestPath[i] = -1;
-				 
+
 				for (int i = 0; i < length; i++)
 					bestPath[i] = path[i];
 
 				bestLength = length;
 				bestDistance = distance;
 
-//				 System.out.println("previous longest path: " +
-//				 Arrays.toString(bestPath) + " length: " + bestDistance);
-				
+				// System.out.println("previous longest path: " +
+				// Arrays.toString(bestPath) + " length: " + bestDistance);
+
 			}
+
 		} else {
 			List<Node> succ = current.getChildren();
 
@@ -569,7 +586,7 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		for (List<Node> nodesPerLayer : this.layeredNodes) {
 			for (Node n : nodesPerLayer) {
-				out += n.toString() + "; ";
+				out += n.getShortName() + "; ";
 			}
 			out += "\n";
 		}
@@ -584,9 +601,9 @@ public class DirectedAcyclicGraph implements Serializable {
 					if (edge.left.toString().equals(n.toString()))
 						childrenEdge.add(edge);
 				}
-				
+
 				childrenEdge.sort((c1, c2) -> Utils.compareNodeByID(null, c1.right, c2.right));
-				
+
 				out += n.getShortName() + " -> ";
 				for (ImmutablePair<Node, Node> edge : childrenEdge) {
 					out += edge.right.getShortName() + ", ";
@@ -608,7 +625,7 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		return out;
 
-//		return getName();
+		// return getName();
 	}
 
 	public String printExeInfo() {
@@ -629,58 +646,64 @@ public class DirectedAcyclicGraph implements Serializable {
 		return out;
 	}
 
-//	public static void main(String args[]) {
-//
-//		for (int i = 0; i < 999999; i++) {
-//			System.out.println("********************* " + i + " *********************");
-//			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 8, false, true, null, i, true,
-//					SystemParameters.printGen);
-//			gen.generatedDAGInstancesInOneHP(1, -1, null, false);
-//
-//		}
-//
-//		// for (int i = 0; i < dags.size(); i++) {
-//		// System.out.println("*****************************************************");
-//		// System.out.println("********************** DAG " + i + "
-//		// **********************");
-//		// System.out.println("*****************************************************");
-//		//
-//		// DirectedAcyclicGraph dag = dags.get(i);
-//		// System.out.println(dag.toString());
-//		//
-//		//
-//		// System.out.println("\n\nDONE\n\n\n\n");
-//		// }
-//
-//		// for (int i = 0; i < 1; i++) {
-//		// int minLayer = 50;
-//		// int maxLayer = 80;
-//		// int parallelism = rng.nextInt(10)+2;
-//		// double connectProb = 0.5;
-//		//
-//		// SchedulingParameters sched_param = new SchedulingParameters(10, 100,
-//		// 100, 50000, 1, 0);
-//		// StructuralParameters dag_param = new StructuralParameters(maxLayer,
-//		// minLayer, parallelism, 1, connectProb,
-//		// rng);
-//		// DirectedAcyclicGraph dag = new DirectedAcyclicGraph(sched_param,
-//		// dag_param, 0, rng.nextInt(), false);
-//		//
-//		// System.out.println(dag.toString());
-//		//
-//		// System.out.println("\n\n------------------------------------------------------\n\n");
-//		//
-//		// List<DirectedAcyclicGraph> instances = dag.getInstances(10);
-//		//
-//		// for (DirectedAcyclicGraph d : instances)
-//		// System.out.println(d.instanceNo + " " + d.startTime);
-//		//
-//		// System.out.println("\n\n------------------------------------------------------\n\n");
-//		// System.out.println("Finding longest path...");
-//		// dag.findPath(true);
-//		// }
-//		//
-//		// System.out.println("finished");
-//
-//	}
+	// public static void main(String args[]) {
+	//
+	// for (int i = 0; i < 999999; i++) {
+	// System.out.println("********************* " + i + "
+	// *********************");
+	// SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 8,
+	// false, true, null, i, true,
+	// SystemParameters.printGen);
+	// gen.generatedDAGInstancesInOneHP(1, -1, null, false);
+	//
+	// }
+	//
+	// // for (int i = 0; i < dags.size(); i++) {
+	// //
+	// System.out.println("*****************************************************");
+	// // System.out.println("********************** DAG " + i + "
+	// // **********************");
+	// //
+	// System.out.println("*****************************************************");
+	// //
+	// // DirectedAcyclicGraph dag = dags.get(i);
+	// // System.out.println(dag.toString());
+	// //
+	// //
+	// // System.out.println("\n\nDONE\n\n\n\n");
+	// // }
+	//
+	// // for (int i = 0; i < 1; i++) {
+	// // int minLayer = 50;
+	// // int maxLayer = 80;
+	// // int parallelism = rng.nextInt(10)+2;
+	// // double connectProb = 0.5;
+	// //
+	// // SchedulingParameters sched_param = new SchedulingParameters(10, 100,
+	// // 100, 50000, 1, 0);
+	// // StructuralParameters dag_param = new StructuralParameters(maxLayer,
+	// // minLayer, parallelism, 1, connectProb,
+	// // rng);
+	// // DirectedAcyclicGraph dag = new DirectedAcyclicGraph(sched_param,
+	// // dag_param, 0, rng.nextInt(), false);
+	// //
+	// // System.out.println(dag.toString());
+	// //
+	// //
+	// System.out.println("\n\n------------------------------------------------------\n\n");
+	// //
+	// // List<DirectedAcyclicGraph> instances = dag.getInstances(10);
+	// //
+	// // for (DirectedAcyclicGraph d : instances)
+	// // System.out.println(d.instanceNo + " " + d.startTime);
+	// //
+	// //
+	// System.out.println("\n\n------------------------------------------------------\n\n");
+	// // System.out.println("Finding longest path...");
+	// // dag.findPath(true);
+	// // }
+	// //
+	// // System.out.println("finished");
+	//
+	// }
 }

@@ -79,6 +79,8 @@ public class Node implements Serializable {
 	 */
 	public int offline_partition = -1;
 	public boolean now = false;
+	
+	public int pathNum = 0;
 
 	/*
 	 * The CRP of the node
@@ -128,7 +130,7 @@ public class Node implements Serializable {
 	public String toString() {
 //		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + " P:" + partition;
 		return "Node " + dagID + "_" + id + ", C:" + WCET + ", in: " + predecessors.size() + ", out: "
-				+ successors.size() + ", in+out: " + predecessors.size() + successors.size();
+				+ successors.size() + ", in+out: " + predecessors.size() + successors.size() + ", pathNum: " + pathNum;
 //		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
 	}
 
