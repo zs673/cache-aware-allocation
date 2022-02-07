@@ -41,7 +41,7 @@ public class Recency3DCriticalVSNonCritical {
 
 			@Override
 			public void run() {
-				faultsInRecency3D(0);
+				faultsInRecency3D(1);
 
 			}
 		});
@@ -85,7 +85,7 @@ public class Recency3DCriticalVSNonCritical {
 				SystemParameters.fault_range = j * 2;
 
 				List<Double> r = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
-						true, onlyCritical, ExpName.recency_fault);
+						true, ExpName.recency_fault);
 
 //				List<Double> r1 = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
 //						false, onlyCritical, ExpName.recency_fault);
@@ -208,7 +208,7 @@ public class Recency3DCriticalVSNonCritical {
 
 	public static List<Double> RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
-			boolean fault, int onlyCritical, ExpName name) {
+			boolean fault, ExpName name) {
 
 		List<OneSystemResults> allSys = new ArrayList<>();
 
@@ -242,11 +242,9 @@ public class Recency3DCriticalVSNonCritical {
 			OneSystemResults res = null;
 
 			if (fault)
-				res = RecencyFaultTestCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed,
-						onlyCritical);
+				res = RecencyFaultTestCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
 			else
-				res = oneTestCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed,
-						onlyCritical);
+				res = oneTestCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
 
 			allSys.add(res);
 
@@ -289,15 +287,15 @@ public class Recency3DCriticalVSNonCritical {
 	 * This test case will generate two fixed DAG structure.
 	 */
 	public static OneSystemResults oneTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
-			int taskSeed, int tableSeed, int onlyCritical) {
+			int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim, onlyCritical);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim, onlyCritical);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
 		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
@@ -342,15 +340,15 @@ public class Recency3DCriticalVSNonCritical {
 	 * This test case will generate two fixed DAG strcuture.
 	 */
 	public static OneSystemResults RecencyFaultTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
-			int cores, int taskSeed, int tableSeed, int onlyCritical) {
+			int cores, int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim, onlyCritical);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ACCIDENT,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim, onlyCritical);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
 		List<DirectedAcyclicGraph> m2 = pair2.getFirst();

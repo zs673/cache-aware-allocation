@@ -10,8 +10,8 @@ public class CacheVariabilityProfile implements Serializable {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
-	private double median;
-	private double range;
+	public double median;
+	public double range;
 
 	Random rng;
 	// int seed;

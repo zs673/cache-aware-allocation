@@ -38,9 +38,6 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		List<List<Node>> level2 = Utils.getAllocHistoryByLevel2Cache(allocHistory);
 		List<Node> level3 = allocHistory.stream().flatMap(List::stream).collect(Collectors.toList());
 
-		
-
-		
 		while (readyNodes.size() != allocNodes.size()) {
 			List<List<Long>> speedUpTable = computeSpeedUp(readyNodes, cores, table, coreTime, systemTime,
 					localRunqueue, level1, level2, level3);

@@ -83,7 +83,6 @@ public class SimualtorNWC {
 	long[] cachePerformance;
 	int totalAccess = 0;
 
-	boolean recency_fault = false;
 
 	/* a list recording all allocated nodes on each processor */
 	List<List<Node>> allocHistory;
@@ -100,8 +99,8 @@ public class SimualtorNWC {
 
 	/********************* Runtime queues *********************************/
 
-	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency, List<DirectedAcyclicGraph> dags,
-			int procNum, int recencySeed, boolean lcif, boolean recency_fault) {
+	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
+			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean lcif) {
 
 		this.type = type;
 		this.hardware = hardware;
@@ -152,15 +151,10 @@ public class SimualtorNWC {
 		}
 
 		this.cachePerformance = new long[4];
-		this.recency_fault = recency_fault;
 
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
-		return simulate(printSim, 0);
-	}
-
-	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim, int onlyCritical) {
 
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
@@ -232,7 +226,7 @@ public class SimualtorNWC {
 			/*
 			 * Execute ready nodes on available processors
 			 */
-			allocateAndExecute(allocM, cacheAware, onlyCritical, printSim);
+			allocateAndExecute(allocM, cacheAware, printSim);
 
 			/*
 			 * advance to next time unit.
@@ -286,8 +280,8 @@ public class SimualtorNWC {
 	public void UpdateSystemStatus() {
 
 		/*
-		 * Check 1) whether any executing node finishes at the current time; 2)
-		 * any ready node can execute now; 3) any DAG has finished execution.
+		 * Check 1) whether any executing node finishes at the current time; 2) any
+		 * ready node can execute now; 3) any DAG has finished execution.
 		 */
 		for (int i = 0; i < currentExe.length; i++) {
 
@@ -355,12 +349,13 @@ public class SimualtorNWC {
 	/******************************************************************
 	 ********** Choose the next node in the queue to execute **********
 	 ******************************************************************/
-	private void allocateAndExecute(AllocationMethods allocM, boolean cacheAware, int onlyCritical, boolean printSim) {
+	private void allocateAndExecute(AllocationMethods allocM, boolean cacheAware, boolean printSim) {
 
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, null, null, null, allocHistory, profile, systemTime, lcif);
+		allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, null, null, null, allocHistory, profile,
+				systemTime, lcif);
 
 		///////////////// Debug Output //////////////////////
 		String[] oneSched = new String[coreTime.length];
@@ -388,21 +383,8 @@ public class SimualtorNWC {
 
 				currentExe[i] = n;
 
-				boolean falutsOccur = false;
-				if (recency_fault && onlyCritical == 0) {
-					falutsOccur = true;
-				}
-
-				if (recency_fault && onlyCritical == 1 && n.isCritical) {
-					falutsOccur = true;
-				}
-
-				if (recency_fault && onlyCritical == 2 && !n.isCritical) {
-					falutsOccur = true;
-				}
-
-				Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n, n.partition,
-						cacheAware, 0, falutsOccur);
+				Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3,
+						n, n.partition, cacheAware, 0, n.hasFaults);
 
 				long realET = ETWithCache.getFirst();
 
@@ -492,7 +474,8 @@ public class SimualtorNWC {
 		}
 
 		if (systemTime == Long.MAX_VALUE && (sleepingDAGs.size() > 0 || readyNodes.size() > 0)) {
-			System.out.println("Simualtor.advance(): timing error. The system time is Long Max but there is still waiting nodes/DAGs ! ");
+			System.out.println(
+					"Simualtor.advance(): timing error. The system time is Long Max but there is still waiting nodes/DAGs ! ");
 			System.exit(-1);
 		}
 	}
@@ -548,18 +531,19 @@ public class SimualtorNWC {
 			System.out.println(
 					"\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Allocation Info <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
-			System.out.println("\n\n\n");
-			System.out
-					.println("--------------------------------------- DAG Execution Summary ---------------------------------------------");
+			System.out.println();
+			System.out.println(
+					"--------------------------------------- DAG Execution Summary ---------------------------------------------");
 
 			for (DirectedAcyclicGraph dag : dags) {
 				System.out.printf(
-						"---  DAG_" + dag.id + "_" + dag.instanceNo + "    starts at t=%8d,   finishes at t=%8d,   makespan t=%8d. \n",
+						"---  DAG_" + dag.id + "_" + dag.instanceNo
+								+ "    starts at t=%8d,   finishes at t=%8d,   makespan t=%8d. \n",
 						dag.releaseTime, dag.finishTime, (dag.finishTime - dag.releaseTime));
 			}
 
-			System.out
-					.println("--------------------------------------- DAG Execution Summary ---------------------------------------------");
+			System.out.println(
+					"--------------------------------------- DAG Execution Summary ---------------------------------------------");
 		}
 
 	}
@@ -582,8 +566,8 @@ public class SimualtorNWC {
 			// System.out.println("The " + i + "th systen FINISHED!");
 			//
 			SimualtorNWC cacheBFSim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.SIMPLE,
-					RecencyType.TIME_DEFAULT, dags, SystemParameters.coreNum, i, true, true);
-			cacheBFSim1.simulate(true, 0);
+					RecencyType.TIME_DEFAULT, dags, SystemParameters.coreNum, i, true);
+			cacheBFSim1.simulate(true);
 		}
 
 	}

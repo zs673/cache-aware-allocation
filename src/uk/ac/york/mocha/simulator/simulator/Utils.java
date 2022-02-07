@@ -75,11 +75,17 @@ public class Utils {
 			if (c != 0)
 				return c;
 			else {
-				return Integer.compare(c1.getDagInstNo(), c1.getDagInstNo());
+				return Integer.compare(c1.getDagInstNo(), c2.getDagInstNo());
 			}
 
 		}
 
+	}
+	
+
+	public static int compareNodeByID(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+		
+		return Integer.compare(c1.getId(), c2.getId());
 	}
 
 	public static int compareNodeWithPriority(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
@@ -227,5 +233,6 @@ public class Utils {
 		writer.println(result);
 		writer.close();
 	}
+
 
 }

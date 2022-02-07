@@ -215,7 +215,7 @@ public class Test_EP_1_2 {
 			int taskSeed, int tableSeed) {
 		
 		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(true);
 		
 

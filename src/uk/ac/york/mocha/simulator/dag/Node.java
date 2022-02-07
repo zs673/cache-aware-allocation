@@ -17,8 +17,8 @@ public class Node implements Serializable {
 	}
 
 	/*
-	 * Node identifiers: id - node ID; dagID - the ID of its DAG; daginstNo -
-	 * the instance Number of its DAG.
+	 * Node identifiers: id - node ID; dagID - the ID of its DAG; daginstNo - the
+	 * instance Number of its DAG.
 	 */
 	private final int id;
 	private final int dagID;
@@ -57,7 +57,12 @@ public class Node implements Serializable {
 	public boolean isCritical = false;
 
 	/*
-	 * Simualtion parameters
+	 * Does the node has faults in execution time?
+	 */
+	public boolean hasFaults = false;
+
+	/*
+	 * Simulation parameters
 	 */
 	public long start = -1;
 	public boolean finish = false;
@@ -121,19 +126,24 @@ public class Node implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + " P:" + partition;
-		// return "Node " + dagID + "_" + id + ", C:" + WCET;
-		// return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET +
-		// ", P:" + partition + ", A:" + affinity;
+//		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + " P:" + partition;
+		return "Node " + dagID + "_" + id + ", C:" + WCET + ", in: " + predecessors.size() + ", out: "
+				+ successors.size() + ", in+out: " + predecessors.size() + successors.size();
+//		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
 	}
 
 	public String getFullName() {
 		return "N " + dagID + "_" + dagInstNo + "_" + id;
 	}
 
+	public String getShortName() {
+		return "N_" + id;
+	}
+
 	public String getExeInfo() {
-		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: " + finishAt + ", duration: "
-				+ (finishAt - start) + ", partition: " + partition + ", affinity: " + affinity;
+		return "Node " + dagID + "-" + dagInstNo + "_" + id + ": " + WCET + ", starts: " + start + ", finish: "
+				+ finishAt + ", duration: " + (finishAt - start) + ", partition: " + partition + ", affinity: "
+				+ affinity;
 	}
 
 	public void printExeInfo(String prefix) {

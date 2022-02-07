@@ -107,43 +107,43 @@ public class OnlineCacheAwareAccident extends AllocationMethods {
 
 	}
 	
-	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfile table,
-			long[] coreTime, long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3) {
-
-		List<List<Long>> speedUpTable = new ArrayList<>();
-
-		for (int i = 0; i < readyNodes.size(); i++) {
-
-			Node n = readyNodes.get(i);
-
-			List<Long> ETdrop = new ArrayList<>();
-
-			for (int core = 0; core < cores.size(); core++) {
-
-				/*
-				 * Option 1: Speed up by ABSOLUTE value
-				 */
-				long WCET = n.getWCET();
-				long realET = table
-						.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, false)
-						.getFirst();
-				long speedup = WCET - realET;
-
-				long waitforCore = coreTime[core] > systemTime ? coreTime[core] - systemTime : 0;
-				long waitforReady = localRunqueue.get(core).stream().mapToLong(x -> x.expectedET).sum();
-
-				speedup = speedup - waitforCore - waitforReady;
-
-				ETdrop.add(speedup);
-
-			}
-
-			speedUpTable.add(ETdrop);
-		}
-
-		return speedUpTable;
-	}
+//	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfile table,
+//			long[] coreTime, long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1,
+//			List<List<Node>> history_level2, List<Node> history_level3) {
+//
+//		List<List<Long>> speedUpTable = new ArrayList<>();
+//
+//		for (int i = 0; i < readyNodes.size(); i++) {
+//
+//			Node n = readyNodes.get(i);
+//
+//			List<Long> ETdrop = new ArrayList<>();
+//
+//			for (int core = 0; core < cores.size(); core++) {
+//
+//				/*
+//				 * Option 1: Speed up by ABSOLUTE value
+//				 */
+//				long WCET = n.getWCET();
+//				long realET = table
+//						.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, false)
+//						.getFirst();
+//				long speedup = WCET - realET;
+//
+//				long waitforCore = coreTime[core] > systemTime ? coreTime[core] - systemTime : 0;
+//				long waitforReady = localRunqueue.get(core).stream().mapToLong(x -> x.expectedET).sum();
+//
+//				speedup = speedup - waitforCore - waitforReady;
+//
+//				ETdrop.add(speedup);
+//
+//			}
+//
+//			speedUpTable.add(ETdrop);
+//		}
+//
+//		return speedUpTable;
+//	}
 
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,

@@ -48,7 +48,7 @@ public class SystemParameters {
 	/* parameters for generic DAGs */
 	public static final double connectProb = 0.5;
 	public static final int minLayer = 5;
-	public static final int maxLayer = 8;
+	public static final int maxLayer = 10;
 	public static int minParal = 2;
 	public static int maxParal = 10;
 
