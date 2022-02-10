@@ -27,22 +27,61 @@ public class TestFaultsImpact {
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static enum faultType {
-		all_nodes, all_critical, all_non_critical, high_et, high_path, critical_high_et_path, high_in_degree, high_out_degree, high_in_out_degree
+		all_nodes, all_critical, all_non_critical, high_et, high_path, critical_high_et_path, high_in_degree,
+		high_out_degree, high_in_out_degree
 	}
 
 	static int nos = 1000;
 	static int[] allCores = { 4, 8 };
-	static int seed = 1000;
 	static boolean print = false;
 	static double[] allPercent = { 0.1, 0.2, 0.3, 0.4, 0.5 };
 	static double[] allEffect = { 0.1, 0.2, 0.3, 0.4, 0.5 };
 	static int[] allInstanceNum = { 1, 3, 5, 10 };
 
 	public static void main(String args[]) {
-		faults_cores();
-		faults_percent();
-		faults_effect();
-		faults_instanceNum();
+		List<Thread> t = new ArrayList<>();
+
+		t.add(new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				faults_cores();
+
+			}
+		}));
+		t.add(new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				faults_percent();
+
+			}
+		}));
+		t.add(new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				faults_effect();
+
+			}
+		}));
+		t.add(new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				faults_instanceNum();
+			}
+		}));
+
+		for (Thread r : t)
+			r.start();
+
+		for (Thread r : t)
+			try {
+				r.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 	}
 
 	public static void faults_cores() {
@@ -53,30 +92,34 @@ public class TestFaultsImpact {
 
 	public static void faults_percent() {
 		for (int i = 0; i < allPercent.length; i++) {
-			faults(allCores[allCores.length - 1], allPercent[i], allEffect[allEffect.length - 1], allInstanceNum[0]);
+			faults(allCores[0], allPercent[i], allEffect[allEffect.length - 1], allInstanceNum[0]);
 		}
 	}
 
 	public static void faults_effect() {
 		for (int i = 0; i < allEffect.length; i++) {
-			faults(allCores[allCores.length - 1], allPercent[allPercent.length - 1], allEffect[i], allInstanceNum[0]);
+			faults(allCores[0], allPercent[allPercent.length - 1], allEffect[i], allInstanceNum[0]);
 		}
 	}
 
 	public static void faults_instanceNum() {
 		for (int i = 0; i < allInstanceNum.length; i++) {
-			faults(allCores[allCores.length - 1], allPercent[allPercent.length - 1], allEffect[allEffect.length - 1], allInstanceNum[i]);
+			faults(allCores[0], allPercent[allPercent.length - 1], allEffect[allEffect.length - 1], allInstanceNum[i]);
 		}
 	}
 
 	public static void faults(int cores, double percent, double effect, int instanceNum) {
+		int seed = 1000;
 
 		List<List<Long>> res = new ArrayList<>();
 		for (int i = 0; i < nos; i++) {
 			System.out.println("No. of system: " + i);
 
-			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true, SystemParameters.printGen);
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true,
+					SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(instanceNum, -1, null, false);
+
+//			System.out.println("No. node: " + dags.get(0).getFlatNodes().size());
 
 			// for (int i = 0; i < dags.get(0).allpaths.size(); i++) {
 			// for (Node n : dags.get(0).allpaths.get(i)) {
@@ -133,12 +176,13 @@ public class TestFaultsImpact {
 			out += "\n";
 		}
 
-		String folderAndFile = "result/" + "faults" + "/out" + "_" + cores + "_" + percent + "_" + effect + "_" + instanceNum + ".txt";
+		String folderAndFile = "result/" + "faults" + "/out" + "_" + cores + "_" + percent + "_" + effect + "_"
+				+ instanceNum + ".txt";
 		Utils.writeResult(folderAndFile, out);
 	}
 
-	public static List<Long> run(List<DirectedAcyclicGraph> dags, int cores, int seed, faultType type, double percent, double effect,
-			boolean print) {
+	public static List<Long> run(List<DirectedAcyclicGraph> dags, int cores, int seed, faultType type, double percent,
+			double effect, boolean print) {
 
 		List<Long> makespans = new ArrayList<>();
 
@@ -165,8 +209,8 @@ public class TestFaultsImpact {
 		return makespans;
 	}
 
-	public static List<List<Node>> setUpSpecificFaults(List<DirectedAcyclicGraph> dags, faultType type, double percent, double faultEfect,
-			boolean opposite, boolean print) {
+	public static List<List<Node>> setUpSpecificFaults(List<DirectedAcyclicGraph> dags, faultType type, double percent,
+			double faultEfect, boolean opposite, boolean print) {
 
 		List<List<Node>> faultNodesinDAGs = new ArrayList<>();
 
@@ -254,25 +298,26 @@ public class TestFaultsImpact {
 				break;
 
 			case critical_high_et_path:
-				allNodes.sort((c1, c2) -> compareNodebyPath(dags, c1, c2));
-				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
-
-				for (int i = 0; i < faultNodeNum; i++) {
-					faultNodes.add(allNodes.get(i));
+				for (Node n : critical) {
+					if (!faultNodes.contains(n)) {
+						faultNodes.add(n);
+					}
 				}
 
-				allNodes.sort((c1, c2) -> compareNodebyET(c1, c2));
-				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
+				allNodes.sort((c1, c2) -> compareNodebyPath(dags, c1, c2));
+				faultNodeNum = (int) Math.ceil(percent / 2.0 * (double) allNodes.size());
 
 				for (int i = 0; i < faultNodeNum; i++) {
 					if (!faultNodes.contains(allNodes.get(i)))
 						faultNodes.add(allNodes.get(i));
 				}
 
-				for (Node n : critical) {
-					if (!faultNodes.contains(n)) {
-						faultNodes.add(n);
-					}
+				allNodes.sort((c1, c2) -> compareNodebyET(c1, c2));
+				faultNodeNum = (int) Math.ceil(percent / 2.0 * (double) allNodes.size());
+
+				for (int i = 0; i < faultNodeNum; i++) {
+					if (!faultNodes.contains(allNodes.get(i)))
+						faultNodes.add(allNodes.get(i));
 				}
 
 				break;
@@ -309,15 +354,15 @@ public class TestFaultsImpact {
 
 				faultNodesinDAGs.add(allNodes);
 			}
-
+//			System.out.println("Fault nodes: " +faultNodes.size());
 		}
 
 		return faultNodesinDAGs;
 	}
 
 	public static long oneRun(List<DirectedAcyclicGraph> dags, int cores, int seed, boolean print) {
-		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
-				RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
 		no_fault.simulate(print);
 
 		if (print)
@@ -361,7 +406,8 @@ public class TestFaultsImpact {
 	}
 
 	public static int compareNodebyInAndOutDegree(Node c1, Node c2) {
-		return -Integer.compare(c1.getParent().size() + c1.getChildren().size(), c2.getParent().size() + c2.getChildren().size());
+		return -Integer.compare(c1.getParent().size() + c1.getChildren().size(),
+				c2.getParent().size() + c2.getChildren().size());
 	}
 
 }
