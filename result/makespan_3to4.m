@@ -145,4 +145,5 @@ for task = 3 : 4
     
     
     saveas(gcf,strcat('figs/','ep_',metric,num2str(task),'.eps'), 'epsc');
+    saveas(gcf,strcat('figs/','ep_',metric,num2str(task),'.png'));
 end

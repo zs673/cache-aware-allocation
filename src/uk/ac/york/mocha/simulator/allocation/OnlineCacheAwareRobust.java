@@ -44,12 +44,12 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		List<Integer> allocNodes = new ArrayList<>();
 
 
-		List<List<Node>> level1 = new ArrayList<>();
-		for(List<Node> l : allocHistory)
-			level1.add(new ArrayList<>(l));
-		
-		List<List<Node>> level2 = Utils.getAllocHistoryByLevel2Cache(allocHistory);
-		List<Node> level3 = allocHistory.stream().flatMap(List::stream).collect(Collectors.toList());
+//		List<List<Node>> level1 = new ArrayList<>();
+//		for(List<Node> l : allocHistory)
+//			level1.add(new ArrayList<>(l));
+//		
+//		List<List<Node>> level2 = Utils.getAllocHistoryByLevel2Cache(allocHistory);
+//		List<Node> level3 = allocHistory.stream().flatMap(List::stream).collect(Collectors.toList());
 		/**************************************************************************************************
 		 **************************************************************************************************
 		 **************************************************************************************************/
@@ -71,14 +71,15 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 
 			localRunqueue.get(n.partition).add(n);
 
-			level1.get(n.partition).add(n);
-			int clusterID = n.partition / SystemParameters.Level2CoreNum;
-			level2.get(clusterID).add(n);
-			level3.add(n);
+//			level1.get(n.partition).add(n);
+//			int clusterID = n.partition / SystemParameters.Level2CoreNum;
+//			level2.get(clusterID).add(n);
+//			level3.add(n);
 
 		}
 
 		readyNodes.clear();
+		
 	}
 
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
