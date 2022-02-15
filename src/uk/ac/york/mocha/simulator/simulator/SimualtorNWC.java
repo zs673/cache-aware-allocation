@@ -7,16 +7,9 @@ import java.util.List;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
-import uk.ac.york.mocha.simulator.allocation.OnlineAndOffline;
-import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust;
-import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareWithOrdering;
-import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
-import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
-import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
-import uk.ac.york.mocha.simulator.allocation.OnlineWFWithOrdering;
 import uk.ac.york.mocha.simulator.allocation.SimpleAllocation;
-import uk.ac.york.mocha.simulator.allocation.onlineBFD;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
@@ -82,7 +75,6 @@ public class SimualtorNWC {
 	/* cache performance */
 	long[] cachePerformance;
 	int totalAccess = 0;
-
 
 	/* a list recording all allocated nodes on each processor */
 	List<List<Node>> allocHistory;
@@ -170,37 +162,40 @@ public class SimualtorNWC {
 		case SIMPLE:
 			allocM = new SimpleAllocation();
 			break;
-		case RANDOM:
-			allocM = new OnlineRandom();
-			break;
-		case BEST_FIT:
-			allocM = new onlineBFD();
-			break;
-		case WORST_FIT:
-			allocM = new OnlineWFD();
-			break;
-		case FIRST_FIT:
-			allocM = new OnlineFFD();
-			break;
-		case CACHE_AWARE:
-			allocM = new OnlineCacheAware();
+//		case RANDOM:
+//			allocM = new OnlineRandom();
+//			break;
+//		case BEST_FIT:
+//			allocM = new onlineBFD();
+//			break;
+//		case WORST_FIT:
+//			allocM = new OnlineWFD();
+//			break;
+//		case FIRST_FIT:
+//			allocM = new OnlineFFD();
+//			break;
+//		case CACHE_AWARE:
+//			allocM = new OnlineCacheAware();
+//			break;
+		case CACHE_AWARE_NEW:
+			allocM = new OnlineCacheAwareNewSimu();
 			break;
 		case CACHE_AWARE_ROBUST:
 			allocM = new OnlineCacheAwareRobust();
 			break;
-		case OFFLINE_CACHE_AWARE:
-			allocM = new OnlineAndOffline();
-			break;
-		case CACHE_AWARE_OUR:
-			Utils.assignPriorityOur(dags);
-			allocM = new OnlineCacheAwareWithOrdering();
-			break;
-		case WORST_FIT_OUR:
-			Utils.assignPriorityOur(dags);
-			allocM = new OnlineWFWithOrdering();
-			break;
+//		case OFFLINE_CACHE_AWARE:
+//			allocM = new OnlineAndOffline();
+//			break;
+//		case CACHE_AWARE_OUR:
+//			Utils.assignPriorityOur(dags);
+//			allocM = new OnlineCacheAwareWithOrdering();
+//			break;
+//		case WORST_FIT_OUR:
+//			Utils.assignPriorityOur(dags);
+//			allocM = new OnlineWFWithOrdering();
+//			break;
 		default:
-			System.err.println("The simualtion method is NOT supported ! ");
+			System.err.println("The simualtion method is NOT supported! ");
 			System.exit(-1);
 			return null;
 		}
@@ -351,11 +346,28 @@ public class SimualtorNWC {
 	 ******************************************************************/
 	private void allocateAndExecute(AllocationMethods allocM, boolean cacheAware, boolean printSim) {
 
+//		System.out.println();
+
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, null, null, null, allocHistory, profile,
-				systemTime, lcif);
+		if (alloc.toString().equals(Allocation.CACHE_AWARE_NEW.toString())) {
+
+			for (List<Node> l : localRunQueue) {
+				if (l.size() > 0) {
+					System.err.println(
+							"For the standard cache-aware method there should't be any nodes in the local run queue");
+					System.exit(-1);
+
+				}
+			}
+
+			allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
+					history_level3, allocHistory, profile, systemTime, lcif);
+
+		} else
+			allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, null, null, null, allocHistory, profile,
+					systemTime, lcif);
 
 		///////////////// Debug Output //////////////////////
 		String[] oneSched = new String[coreTime.length];

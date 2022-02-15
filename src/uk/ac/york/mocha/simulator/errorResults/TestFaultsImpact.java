@@ -27,13 +27,13 @@ public class TestFaultsImpact {
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static enum faultType {
-		all_nodes, all_critical, all_non_critical, high_et, high_path, critical_high_et_path, high_in_degree,
-		high_out_degree, high_in_out_degree
+		all_nodes, all_critical, all_non_critical, high_et, high_pathNum, high_pathET, critical_high_et_pathNum,
+		high_in_degree, high_out_degree, high_in_out_degree
 	}
 
 	static int nos = 1000;
 	static int[] allCores = { 4, 8 };
-	static boolean print = false;
+	static boolean print = true;
 	static double[] allPercent = { 0.1, 0.2, 0.3, 0.4, 0.5 };
 	static double[] allEffect = { 0.1, 0.2, 0.3, 0.4, 0.5 };
 	static int[] allInstanceNum = { 1, 3, 5, 10 };
@@ -74,7 +74,7 @@ public class TestFaultsImpact {
 		}));
 
 		for (Thread r : t)
-			r.start();
+			r.run();
 
 		for (Thread r : t)
 			try {
@@ -115,8 +115,7 @@ public class TestFaultsImpact {
 		for (int i = 0; i < nos; i++) {
 			System.out.println("No. of system: " + i);
 
-			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true,
-					SystemParameters.printGen);
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true, print);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(instanceNum, -1, null, false);
 
 //			System.out.println("No. node: " + dags.get(0).getFlatNodes().size());
@@ -150,13 +149,16 @@ public class TestFaultsImpact {
 			results.addAll(run(dags, cores, seed, faultType.all_critical, percent, effect, print));
 			// if(print)
 			// System.out.println();
-			results.addAll(run(dags, cores, seed, faultType.high_path, percent, effect, print));
-			// if(print)
-			// System.out.println();
 			results.addAll(run(dags, cores, seed, faultType.high_et, percent, effect, print));
 			// if(print)
 			// System.out.println();
-			results.addAll(run(dags, cores, seed, faultType.critical_high_et_path, percent, effect, print));
+			results.addAll(run(dags, cores, seed, faultType.high_pathET, percent, effect, print));
+			// if(print)
+			// System.out.println();
+			results.addAll(run(dags, cores, seed, faultType.high_pathNum, percent, effect, print));
+			// if(print)
+			// System.out.println();
+			results.addAll(run(dags, cores, seed, faultType.critical_high_et_pathNum, percent, effect, print));
 			// if(print)
 			// System.out.println();
 
@@ -258,7 +260,16 @@ public class TestFaultsImpact {
 				}
 				break;
 
-			case high_path:
+			case high_pathNum:
+				allNodes.sort((c1, c2) -> compareNodebyPath(dags, c1, c2));
+				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
+
+				for (int i = 0; i < faultNodeNum; i++) {
+					faultNodes.add(allNodes.get(i));
+				}
+				break;
+
+			case high_pathET:
 				allNodes.sort((c1, c2) -> compareNodebyPath(dags, c1, c2));
 				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
 
@@ -297,7 +308,7 @@ public class TestFaultsImpact {
 				}
 				break;
 
-			case critical_high_et_path:
+			case critical_high_et_pathNum:
 				for (Node n : critical) {
 					if (!faultNodes.contains(n)) {
 						faultNodes.add(n);
@@ -319,7 +330,6 @@ public class TestFaultsImpact {
 					if (!faultNodes.contains(allNodes.get(i)))
 						faultNodes.add(allNodes.get(i));
 				}
-
 				break;
 
 			default:

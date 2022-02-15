@@ -55,8 +55,8 @@ maxUtil = 8;
 
     end
     
-    set(findobj(gca,'type','line'),'linew',1.5)
-    set(gca,'linew',1.5)
+%     set(findobj(gca,'type','line'),'linew',1.5)
+%     set(gca,'linew',1.5)
      
     xlim([0 16]);
     ylim([0 1]);

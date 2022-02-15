@@ -305,17 +305,17 @@ public class Simualtor {
 			n.start = systemTime;
 
 			boolean falutsOccur = false;
-			if (recency_fault && onlyCritical == 0) {
-				falutsOccur = true;
-			}
-
-			if (recency_fault && onlyCritical == 1 && n.isCritical) {
-				falutsOccur = true;
-			}
-
-			if (recency_fault && onlyCritical == 2 && !n.isCritical) {
-				falutsOccur = true;
-			}
+//			if (recency_fault && onlyCritical == 0) {
+//				falutsOccur = true;
+//			}
+//
+//			if (recency_fault && onlyCritical == 1 && n.isCritical) {
+//				falutsOccur = true;
+//			}
+//
+//			if (recency_fault && onlyCritical == 2 && !n.isCritical) {
+//				falutsOccur = true;
+//			}
 
 			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n,
 					n.partition, cacheAware, 0, falutsOccur);

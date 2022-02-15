@@ -15,7 +15,7 @@ public class SystemParameters {
 
 	public enum Allocation {
 		BEST_FIT, WORST_FIT, CACHE_AWARE, CACHE_AWARE_ROBUST, OFFLINE_CACHE_AWARE, RANDOM, FIRST_FIT, CACHE_AWARE_OUR,
-		WORST_FIT_OUR, SIMPLE, CACHE_AWARE_ACCIDENT
+		WORST_FIT_OUR, SIMPLE, CACHE_AWARE_NEW, CACHE_AWARE_ACCIDENT
 	};
 
 	/**********************************************************************
