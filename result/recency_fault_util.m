@@ -7,10 +7,13 @@ maxUtil = 8;
     
     
     for util = 1:5
-       if(util == 5)
+        read = util + 0;
+       if(read == 5)
            data = readmatrix(strcat('recency_fault_util/',metric ,'1', '_4.0', '.txt'));
+       elseif(read == 10)
+           data = readmatrix(strcat('recency_fault_util/',metric ,'1', '_8.0', '.txt'));
        else
-           data = readmatrix(strcat('recency_fault_util/',metric ,'1', '_',num2str(util*0.8), '.txt'));
+           data = readmatrix(strcat('recency_fault_util/',metric ,'1', '_',num2str(read*0.8), '.txt'));
        end
        
        

@@ -348,32 +348,33 @@ public class SimualtorNWC {
 
 //		System.out.println();
 
+//		if (alloc.toString().equals(Allocation.CACHE_AWARE_NEW.toString())) {
+//
+//			for (List<Node> l : localRunQueue) {
+//				if (l.size() > 0) {
+//					System.err.println(
+//							"For the standard cache-aware method there should't be any nodes in the local run queue");
+//					System.exit(-1);
+//
+//				}
+//			}
+//
+//			allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
+//					history_level3, allocHistory, profile, systemTime, lcif);
+//
+//		} else
+
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		if (alloc.toString().equals(Allocation.CACHE_AWARE_NEW.toString())) {
-
-			for (List<Node> l : localRunQueue) {
-				if (l.size() > 0) {
-					System.err.println(
-							"For the standard cache-aware method there should't be any nodes in the local run queue");
-					System.exit(-1);
-
-				}
-			}
-
-			allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
-					history_level3, allocHistory, profile, systemTime, lcif);
-
-		} else
-			allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, null, null, null, allocHistory, profile,
-					systemTime, lcif);
+		allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
+				history_level3, allocHistory, profile, systemTime, lcif);
 
 		///////////////// Debug Output //////////////////////
 		String[] oneSched = new String[coreTime.length];
 		for (int i = 0; i < oneSched.length; i++) {
 			if (coreTime[i] > systemTime) {
-				oneSched[i] = "*";
+				oneSched[i] = "***";
 			} else {
 				oneSched[i] = "-";
 			}
@@ -395,6 +396,11 @@ public class SimualtorNWC {
 
 				currentExe[i] = n;
 
+				/*
+				 * This computation reflects the 'REAL' execution time. Another call to
+				 * computeET is inside each cache-aware allocation method, which reflects the
+				 * value we got from the MODEL.
+				 */
 				Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3,
 						n, n.partition, cacheAware, 0, n.hasFaults);
 
@@ -417,6 +423,7 @@ public class SimualtorNWC {
 				}
 
 				/* add the node to history for each cache level */
+				allocHistory.get(n.partition).add(n);
 				history_level1.get(n.partition).add(n);
 				int clusterID = n.partition / SystemParameters.Level2CoreNum;
 				history_level2.get(clusterID).add(n);

@@ -26,94 +26,59 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 
 		readyNodes.stream().forEach(c -> c.partition = -1);
 
-		/*
-		 * Sort ready nodes list by FPS+WF
-		 */
+		/**************************************************************************************************
+		 * Initialize the dispatcher
+		 *************************************************************************************************/
+		/* Sort ready nodes list by DAG priority and then node WCET */
 		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+
+		for (List<Node> l : localRunqueue) {
+			readyNodes.addAll(l);
+			l.clear();
+		}
+
+		for (Node n : readyNodes)
+			n.expectedETPerCore = new long[cores.size()];
 
 		List<Integer> allocProcs = new ArrayList<>();
 		List<Integer> allocNodes = new ArrayList<>();
 
-		List<List<Node>> level1 = allocHistory;
+
+		List<List<Node>> level1 = new ArrayList<>();
+		for(List<Node> l : allocHistory)
+			level1.add(new ArrayList<>(l));
+		
 		List<List<Node>> level2 = Utils.getAllocHistoryByLevel2Cache(allocHistory);
 		List<Node> level3 = allocHistory.stream().flatMap(List::stream).collect(Collectors.toList());
+		/**************************************************************************************************
+		 **************************************************************************************************
+		 **************************************************************************************************/
 
 		while (readyNodes.size() != allocNodes.size()) {
 			List<List<Long>> speedUpTable = computeSpeedUp(readyNodes, cores, table, coreTime, systemTime,
-					localRunqueue, level1, level2, level3);
-			
+					localRunqueue, history_level1, history_level2, history_level3);
+
 			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, readyNodes, cores, coreTime,
-					table, systemTime, lcif, level1, level2, level3);
+					table, systemTime, lcif, history_level1, history_level2, history_level3);
 
 			Node n = readyNodes.get(p.getFirst().intValue());
 
 			n.partition = cores.get(p.getSecond().intValue());
-			n.expectedET = n.getWCET() - speedUpTable.get(p.getFirst()).get(p.getSecond());
+			n.expectedET = n.expectedETPerCore[n.partition];
 
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
 
 			localRunqueue.get(n.partition).add(n);
 
-			allocHistory.get(n.partition).add(n);
+			level1.get(n.partition).add(n);
 			int clusterID = n.partition / SystemParameters.Level2CoreNum;
 			level2.get(clusterID).add(n);
 			level3.add(n);
 
 		}
 
-//		List<Node> readyQueueCopy = new ArrayList<>(readyNodes);
-//		readyNodes.clear();
-//
-//		for (int i = 0; i < allocNodes.size(); i++) {
-//			Node n = readyQueueCopy.get(allocNodes.get(i));
-//			readyNodes.add(n);
-//		}
-
 		readyNodes.clear();
-	}
-
-	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfile table,
-			long[] coreTime, long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3) {
-
-		List<List<Long>> speedUpTable = new ArrayList<>();
-
-		for (int i = 0; i < readyNodes.size(); i++) {
-
-			Node n = readyNodes.get(i);
-
-			List<Long> ETdrop = new ArrayList<>();
-
-			for (int core = 0; core < cores.size(); core++) {
-
-				/*
-				 * Option 1: Speed up by ABSOLUTE value
-				 */
-				long WCET = n.getWCET();
-				long realET = table
-						.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, false)
-						.getFirst();
-				long speedup = WCET - realET;
-
-				long waitforCore = coreTime[core] > systemTime ? coreTime[core] - systemTime : 0;
-				long waitforReady = localRunqueue.get(core).stream().mapToLong(x -> x.expectedET).sum();
-
-//				for (int i = 0; i < speedUpTable.size(); i++) {
-//				long speedUp = speedUpTable.get(i).get(n.partition) - n.expectedET;
-//				speedUpTable.get(i).set(n.partition, speedUp);
-//			}
-
-				speedup = speedup - waitforCore - waitforReady;
-
-				ETdrop.add(speedup);
-
-			}
-
-			speedUpTable.add(ETdrop);
-		}
-
-		return speedUpTable;
 	}
 
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
@@ -174,7 +139,7 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 
 				for (int i = 0; i < freeProcIndex.size(); i++) {
 					int procIndex = freeProcIndex.get(i);
-					long et_n = n.getWCET() - speedUpTable.get(row).get(procIndex);
+					long et_n = n.expectedETPerCore[procIndex];
 
 					List<Node> nodesInProc = history_level1.get(procIndex);
 
@@ -230,6 +195,45 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		}
 
 		return new Pair<Integer, Integer>(row, col);
+	}
+
+	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfile table,
+			long[] coreTime, long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1,
+			List<List<Node>> history_level2, List<Node> history_level3) {
+
+		List<List<Long>> speedUpTable = new ArrayList<>();
+
+		for (int i = 0; i < readyNodes.size(); i++) {
+
+			Node n = readyNodes.get(i);
+
+			List<Long> ETdrop = new ArrayList<>();
+
+			for (int core = 0; core < cores.size(); core++) {
+
+				/*
+				 * Option 1: Speed up by ABSOLUTE value
+				 */
+				long WCET = n.getWCET();
+				long estimatedET = table
+						.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, false)
+						.getFirst();
+				long speedup = WCET - estimatedET;
+				n.expectedETPerCore[core] = estimatedET;
+
+				long waitforCore = coreTime[core] > systemTime ? coreTime[core] - systemTime : 0;
+				long waitforReady = localRunqueue.get(core).stream().mapToLong(x -> x.expectedET).sum();
+
+				speedup = speedup - waitforCore - waitforReady;
+
+				ETdrop.add(speedup);
+
+			}
+
+			speedUpTable.add(ETdrop);
+		}
+
+		return speedUpTable;
 	}
 
 }

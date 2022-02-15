@@ -22,7 +22,7 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 
 		List<Integer> availableCores = new ArrayList<>();
 		for (int i = 0; i < cores.size(); i++) {
-			if (localRunqueue.get(i).size() == 0 && availableTimeAllProcs[i]<=currentTime)
+			if (localRunqueue.get(i).size() == 0 && availableTimeAllProcs[i] <= currentTime)
 				availableCores.add(i);
 		}
 
@@ -54,28 +54,13 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 				int proc = i;
 				if (availableP.contains(proc)) {
 					/*
-					 * Option 1: Speed up by ABSOLUTE value
+					 * Speed up by ABSOLUTE value
 					 */
 					long WCET = n.getWCET();
 					long realET = table
 							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, false)
 							.getFirst();
 					long speedup = WCET - realET;
-
-					/*
-					 * Option 2: Speed up by RELATIVE value
-					 */
-					// double speedup = ((double) (n.getWCET() -
-					// table.computeET(history_level1,
-					// history_level2, history_level3, n, proc, true))) /
-					// (double) n.getWCET();
-
-					/*
-					 * Option 3: Cache-aware ET
-					 */
-					// long speedup = table.computeET(history_level1,
-					// history_level2,
-					// history_level3, n, proc, true);
 
 					ETdrop.add(speedup);
 				}
@@ -235,33 +220,6 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 
 			}
 
-			// if (freeProcIndex.size() > 1) {
-			// /*
-			// * Search in history for same node & DAG allocation
-			// */
-			// List<Long> NodeHis = new ArrayList<>();
-			//
-			// for (int i = 0; i < freeProcIndex.size(); i++)
-			// NodeHis.add((long) 0);
-			//
-			// for (int i = 0; i < freeProcIndex.size(); i++) {
-			// int procIndex = freeProcIndex.get(i);
-			//
-			// List<Node> nodesInProc = allocHistory.get(procIndex);
-			//
-			// long Nodenum = 0;
-			// for (Node nh : nodesInProc)
-			// Nodenum += nh.finishAt - nh.start;
-			//
-			// NodeHis.set(i, Nodenum);
-			// }
-			//
-			// long minExecutionTime = Collections.min(NodeHis);
-			// int minETIndex = NodeHis.indexOf(minExecutionTime);
-			//
-			// col = freeProcIndex.get(minETIndex);
-			// }
-
 		}
 
 		if (row == -1 || col == -1) {
@@ -274,105 +232,3 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 	}
 
 }
-
-/****************************************************************************************************************************
- ******************************************************* OLD VERSIONS *******************************************************
- ****************************************************************************************************************************/
-
-/******************************************************************************
- * v0.2 ***********************************************************************
- * 
- * @Override public void getEligibileNode(List<DirectedAcyclicGraph> dags,
- *           List<Node> readyNodes, List<Integer> availableProcs,
- *           List<List<Node>> history, Recency table) {
- *
- *           if (readyNodes.size() == 0 || availableProcs.size() == 0) return;
- *
- *           readyNodes.stream().forEach(c -> c.partition = -1);
- *
- *           readyNodes.sort((c1, c2) -> compareNode(dags, c1, c2));
- *
- *           List<Node> preEligible = new ArrayList<>();
- *
- *           for (Node n : readyNodes) { if (n.getDagID() == 1 &&
- *           n.getDagInstNo() == 2 && n.getId() == 5) {
- *           System.out.println("check"); break; } }
- *
- *           for (int i = 0; i < availableProcs.size(); i++) { if (i >=
- *           readyNodes.size()) break; preEligible.add(readyNodes.get(i)); }
- *
- *           List<Integer> availableP = new ArrayList<>(availableProcs);
- *
- *           for (Node n : preEligible) { List<Long> ETdrop = new ArrayList<>();
- *
- *           for (int i = 0; i < availableP.size(); i++) { int proc =
- *           availableP.get(i);
- *
- *           ETdrop.add(n.getWCET() - table.computeET(history, n, proc, true));
- *           }
- *
- *           int procIndex = getIndexOfMaximum(ETdrop); n.partition =
- *           availableP.get(procIndex); availableP.remove(procIndex); } }
- *
- *           private int getIndexOfMaximum(List<Long> l) { int index = -1; long
- *           max = Long.MIN_VALUE;
- *
- *
- *           for (int i = 0; i < l.size(); i++) { if (max < l.get(i)) { max =
- *           l.get(i); index = i; } }
- *
- *           if (index == -1) System.out.println();
- *
- *           return index; }
- *
- ***********************************************************************************/
-
-/******************************************************************************
- * v0.1 ***********************************************************************
- * 
- * @Override public void getEligibileNode(List<DirectedAcyclicGraph> dags,
- *           List<Node> readyNodes, List<Integer> availableProcs,
- *           List<List<Node>> history, Recency table) {
- * 
- *           if (readyNodes.size() == 0) return;
- * 
- *           readyNodes.stream().forEach(c -> c.partition = -1);
- * 
- * 
- *           sort ready nodes list by FPS+WF, take first procNum nodes to
- *           execute.
- * 
- *           readyNodes.sort((c1, c2) -> compareNode(dags, c1, c2));
- * 
- *           if (availableProcs.size() == 1 || readyNodes.size() == 1) {
- *           readyNodes.get(0).partition = availableProcs.get(0); }
- * 
- *           List<Node> preEligible = new ArrayList<>();
- * 
- *           for (int i = 0; i < availableProcs.size(); i++) { if (i >=
- *           readyNodes.size()) break; preEligible.add(readyNodes.get(i)); }
- * 
- *           List<Node> eligibile = new ArrayList<>();
- * 
- *           for (int i = 0; i < availableProcs.size(); i++) { if
- *           (preEligible.size() == 0) break;
- * 
- *           int proc = availableProcs.get(i);
- * 
- *           List<Long> ETdrop = preEligible.stream().map(n -> (n.getWCET() -
- *           table.computeET(history, n, proc, true)))
- *           .collect(Collectors.toList());
- * 
- *           int maxIndex = getIndexOfMaximum(ETdrop);
- * 
- *           preEligible.get(maxIndex).partition = availableProcs.get(i);
- * 
- *           eligibile.add(preEligible.get(maxIndex));
- *           preEligible.remove(maxIndex);
- * 
- * 
- *           }
- * 
- * 
- *           }
- ***********************************************************************************/

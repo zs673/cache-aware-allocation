@@ -96,6 +96,8 @@ public class Node implements Serializable {
 	public List<List<Node>> allPaths = new ArrayList<>();
 	public List<Long> allPathLength = new ArrayList<>();
 	
+	public long[] expectedETPerCore;
+	 
 	public Node(int layer, NodeType type, int id, int dagID, Random rng) {
 		this(-1, layer, type, id, dagID, rng);
 	}
