@@ -6,6 +6,7 @@ import java.io.EOFException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -69,8 +70,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	 */
 	public boolean hard = false;
 
-	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, Random rng,
-			boolean hard) {
+	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, Random rng, boolean hard) {
 
 		this.id = id;
 		this.name = "DAG " + id;
@@ -118,8 +118,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/*****************************************************************
-	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This method
-	 * can only be invoked once! ***********
+	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This
+	 * method can only be invoked once! ***********
 	 *****************************************************************/
 	public List<DirectedAcyclicGraph> getInstances(long instanceNum) {
 
@@ -154,8 +154,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/******************************************************************
-	 ******************** Generate DAG structure ********************** This method does not depend on
-	 * external library! *********
+	 ******************** Generate DAG structure ********************** This method does not depend
+	 * on external library! *********
 	 ******************************************************************/
 	public void constructDAG() {
 		if (layeredNodes.size() > 0) {
@@ -198,8 +198,7 @@ public class DirectedAcyclicGraph implements Serializable {
 			/*
 			 * generate nodes for this layer
 			 */
-			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
-					+ dag_param.parallelism_min;
+			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
 			// int nodeNum = rng.nextInt(dag_param.getParallelism()) + 1;
 			// System.out.println(nodeNum);
 			List<Node> nodePerLayer = new ArrayList<>();
@@ -325,8 +324,7 @@ public class DirectedAcyclicGraph implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
-						+ dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
@@ -487,7 +485,8 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		if (current.getId() == sink.getId()) {
 
-//			System.out.println("Path: " + Arrays.toString(Arrays.copyOfRange(path, 0, length)));
+			// System.out.println("Path: " +
+			// Arrays.toString(Arrays.copyOfRange(path, 0, length)));
 
 			List<Node> onepath = new ArrayList<>();
 			for (int i = 0; i < length; i++) {
@@ -529,6 +528,35 @@ public class DirectedAcyclicGraph implements Serializable {
 
 		visited[current.getId()] = 0;
 		length--;
+	}
+
+	DecimalFormat df = new DecimalFormat("#.###");
+
+	public double[] getDelayAndETinAvg() {
+		double[] res = new double[2];
+		long delay = 0;
+		long et = 0;
+
+		for (Node n : flatNodes) {
+			delay += n.start - n.release;
+			et += n.finishAt - n.start;
+		}
+
+		res[0] = Double.parseDouble(df.format((double) delay / (double) flatNodes.size()));
+		res[1] = Double.parseDouble(df.format((double) et / (double) flatNodes.size()));
+
+		return res;
+	}
+
+	public List<List<Long>> getAllDelayAndETs() {
+
+		List<Long> delays = flatNodes.stream().map(n -> (n.start - n.release)).collect(Collectors.toList());
+		List<Long> ets = flatNodes.stream().map(n -> (n.finishAt - n.start)).collect(Collectors.toList());
+
+		List<List<Long>> res = new ArrayList<>();
+		res.add(delays);
+		res.add(ets);
+		return res;
 	}
 
 	public Node getSource() {
