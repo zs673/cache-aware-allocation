@@ -102,8 +102,11 @@ public class DirectedAcyclicGraph implements Serializable {
 		this.allocNodes.clear();
 
 		for (Node n : flatNodes) {
+			n.release = -1;
 			n.start = -1;
 			n.finish = false;
+			n.isDelayed = false;
+
 			n.finishAt = -1;
 			n.partition = -1;
 			n.affinity = -1;
@@ -473,6 +476,7 @@ public class DirectedAcyclicGraph implements Serializable {
 					n.allPathLength.add(p.stream().mapToLong(n1 -> n1.getWCET()).sum());
 				}
 			}
+			n.pathET = n.allPathLength.stream().mapToLong(c -> c).max().getAsLong();
 		}
 
 	}

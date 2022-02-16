@@ -32,7 +32,7 @@ for core = cores
 
     xticks = 1 : noColumn;
 
-    row1 = {'none' 'all nodes' 'non-critical' 'critical' 'low path number' 'high path number' 'low ET' 'high ET' 'less sensitive' 'more sensitive'};
+    row1 = {'none' 'all nodes' 'low pathET' 'high pathET' 'low pathNum' 'high pathNum' 'low ET' 'high ET' 'less sensitive' 'more sensitive'};
 
 
     set(gca,'xtick',xticks );
@@ -47,6 +47,32 @@ for core = cores
 end
 
 coreNum = 4;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure('Position', [100, 100, 1200, 350]);
+count =1;
+for percent = percents
+    data = readmatrix(strcat('faults/out_',num2str(coreNum),'_',num2str(percent),'_',num2str(0.5),'_',num2str(1),'.txt'));
+    
+    boxplot(data(:,3), 'position', 1+2*(count-1), 'widths', 0.65, 'symbol','.','color','b');
+    hold on;
+    boxplot(data(:,4), 'position', 2*(count), 'widths', 0.65, 'symbol','.', 'color','r');
+    hold on;
+    
+    count= count + 1;
+end
+
+xticks = 1.5 : 2 : 10;
+
+row1 = {'10%' '20%' '30%' '40%' '50%'};
+
+
+set(gca,'xtick',xticks );
+set(gca,'xticklabel',row1,'fontsize',14);
+
+ylabel('makespan','FontSize', 14)
+xlabel('percentage of nodes - pathET','FontSize', 14)
+saveas(gcf,strcat('faults/out_percentage_pathET.png'));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure('Position', [100, 100, 1200, 350]);
 count =1;

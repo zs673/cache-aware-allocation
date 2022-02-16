@@ -89,6 +89,8 @@ public class SimualtorNWC {
 
 	DecimalFormat df = new DecimalFormat("#.###");
 
+	public long noCalls = 0;
+
 	/********************* Runtime queues *********************************/
 
 	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
@@ -237,11 +239,13 @@ public class SimualtorNWC {
 			result.add(d.deepCopy());
 		}
 
-		double[] cachePerf = new double[cachePerformance.length];
+		double[] cachePerf = new double[cachePerformance.length + 1];
 		for (int i = 0; i < cachePerformance.length; i++) {
 			double d = (double) cachePerformance[i] / (double) totalAccess;
 			cachePerf[i] = Double.parseDouble(df.format(d));
 		}
+
+		cachePerf[cachePerformance.length] = noCalls;
 
 		return new Pair<>(result, cachePerf);
 
@@ -301,8 +305,10 @@ public class SimualtorNWC {
 							isReady = false;
 					}
 
-					if (isReady)
+					if (isReady) {
+						child.release = systemTime;
 						readyNodes.add(child);
+					}
 				}
 
 				/*
@@ -324,6 +330,7 @@ public class SimualtorNWC {
 
 				sleepingDAGs.remove(dag);
 				readyDAGs.add(dag);
+				dag.getSource().release = systemTime;
 				readyNodes.add(dag.getSource());
 				i--;
 			}
@@ -346,29 +353,40 @@ public class SimualtorNWC {
 	 ******************************************************************/
 	private void allocateAndExecute(AllocationMethods allocM, boolean cacheAware, boolean printSim) {
 
-//		System.out.println();
-
-//		if (alloc.toString().equals(Allocation.CACHE_AWARE_NEW.toString())) {
-//
-//			for (List<Node> l : localRunQueue) {
-//				if (l.size() > 0) {
-//					System.err.println(
-//							"For the standard cache-aware method there should't be any nodes in the local run queue");
-//					System.exit(-1);
-//
-//				}
-//			}
-//
-//			allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
-//					history_level3, allocHistory, profile, systemTime, lcif);
-//
-//		} else
-
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
-				history_level3, allocHistory, profile, systemTime, lcif);
+		if (alloc.toString().equals(Allocation.CACHE_AWARE_NEW.toString())) {
+
+			for (List<Node> l : localRunQueue) {
+				if (l.size() > 0) {
+					System.err.println(
+							"For the standard cache-aware method there should't be any nodes in the local run queue");
+					System.exit(-1);
+				}
+			}
+
+			List<Integer> availableCores = new ArrayList<>();
+			for (int i = 0; i < cores.size(); i++) {
+				if (localRunQueue.get(i).size() == 0 && coreTime[i] <= systemTime)
+					availableCores.add(i);
+			}
+
+			if (readyNodes.size() == 0 || availableCores.size() == 0) {
+			} else {
+				noCalls++;
+				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
+						history_level3, allocHistory, profile, systemTime, lcif);
+			}
+
+		} else {
+			if (readyNodes.size() == 0) {
+			} else {
+				noCalls++;
+				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
+						history_level3, allocHistory, profile, systemTime, lcif);
+			}
+		}
 
 		///////////////// Debug Output //////////////////////
 		String[] oneSched = new String[coreTime.length];

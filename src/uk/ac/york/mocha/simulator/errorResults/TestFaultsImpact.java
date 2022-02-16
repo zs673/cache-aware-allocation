@@ -27,7 +27,7 @@ public class TestFaultsImpact {
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static enum faultType {
-		all_nodes, all_critical, all_non_critical, high_et, high_pathNum, high_pathET, critical_high_et_pathNum,
+		all_nodes, all_critical, all_non_critical, high_et, high_pathNum, high_pathET, sensivitiy,
 		high_in_degree, high_out_degree, high_in_out_degree
 	}
 
@@ -57,21 +57,21 @@ public class TestFaultsImpact {
 
 			}
 		}));
-		t.add(new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				faults_effect();
-
-			}
-		}));
-		t.add(new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				faults_instanceNum();
-			}
-		}));
+//		t.add(new Thread(new Runnable() {
+//
+//			@Override
+//			public void run() {
+//				faults_effect();
+//
+//			}
+//		}));
+//		t.add(new Thread(new Runnable() {
+//
+//			@Override
+//			public void run() {
+//				faults_instanceNum();
+//			}
+//		}));
 
 		for (Thread r : t)
 			r.run();
@@ -146,19 +146,16 @@ public class TestFaultsImpact {
 			results.addAll(run(dags, cores, seed, faultType.all_nodes, percent, effect, print));
 			// if(print)
 			// System.out.println();
-			results.addAll(run(dags, cores, seed, faultType.all_critical, percent, effect, print));
+			results.addAll(run(dags, cores, seed, faultType.high_pathET, percent, effect, print));
 			// if(print)
 			// System.out.println();
 			results.addAll(run(dags, cores, seed, faultType.high_et, percent, effect, print));
 			// if(print)
 			// System.out.println();
-			results.addAll(run(dags, cores, seed, faultType.high_pathET, percent, effect, print));
-			// if(print)
-			// System.out.println();
 			results.addAll(run(dags, cores, seed, faultType.high_pathNum, percent, effect, print));
 			// if(print)
 			// System.out.println();
-			results.addAll(run(dags, cores, seed, faultType.critical_high_et_pathNum, percent, effect, print));
+			results.addAll(run(dags, cores, seed, faultType.sensivitiy, percent, effect, print));
 			// if(print)
 			// System.out.println();
 
@@ -244,12 +241,12 @@ public class TestFaultsImpact {
 			case all_nodes:
 				faultNodes = new ArrayList<>(allNodes);
 				break;
-			case all_critical:
-				faultNodes = new ArrayList<>(critical);
-				break;
-			case all_non_critical:
-				faultNodes = new ArrayList<>(non_critical);
-				break;
+//			case all_critical:
+//				faultNodes = new ArrayList<>(critical);
+//				break;
+//			case all_non_critical:
+//				faultNodes = new ArrayList<>(non_critical);
+//				break;
 
 			case high_et:
 				allNodes.sort((c1, c2) -> compareNodebyET(c1, c2));
@@ -270,53 +267,56 @@ public class TestFaultsImpact {
 				break;
 
 			case high_pathET:
+				allNodes.sort((c1, c2) -> compareNodebyPathET(dags, c1, c2));
+				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
+
+				for (int i = 0; i < faultNodeNum; i++) {
+					faultNodes.add(allNodes.get(i));
+				}
+				break;
+
+//			case high_out_degree:
+//				allNodes.sort((c1, c2) -> compareNodebyOutDegree(c1, c2));
+//
+//				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
+//
+//				for (int i = 0; i < faultNodeNum; i++) {
+//					faultNodes.add(allNodes.get(i));
+//				}
+//				break;
+//
+//			case high_in_degree:
+//				allNodes.sort((c1, c2) -> compareNodebyInDegree(c1, c2));
+//
+//				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
+//
+//				for (int i = 0; i < faultNodeNum; i++) {
+//					faultNodes.add(allNodes.get(i));
+//				}
+//				break;
+//
+//			case high_in_out_degree:
+//				allNodes.sort((c1, c2) -> compareNodebyInAndOutDegree(c1, c2));
+//
+//				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
+//
+//				for (int i = 0; i < faultNodeNum; i++) {
+//					faultNodes.add(allNodes.get(i));
+//				}
+//				break;
+
+			case sensivitiy:
+				allNodes.sort((c1, c2) -> compareNodebyPathET(dags, c1, c2));
+				faultNodeNum = (int) Math.ceil(percent / 3.0 * (double) allNodes.size());
+
+				for (int i = 0; i < faultNodeNum; i++) {
+					if (!faultNodes.contains(allNodes.get(i)))
+						faultNodes.add(allNodes.get(i));
+				}
+				
+
 				allNodes.sort((c1, c2) -> compareNodebyPath(dags, c1, c2));
-				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
-
-				for (int i = 0; i < faultNodeNum; i++) {
-					faultNodes.add(allNodes.get(i));
-				}
-				break;
-
-			case high_out_degree:
-				allNodes.sort((c1, c2) -> compareNodebyOutDegree(c1, c2));
-
-				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
-
-				for (int i = 0; i < faultNodeNum; i++) {
-					faultNodes.add(allNodes.get(i));
-				}
-				break;
-
-			case high_in_degree:
-				allNodes.sort((c1, c2) -> compareNodebyInDegree(c1, c2));
-
-				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
-
-				for (int i = 0; i < faultNodeNum; i++) {
-					faultNodes.add(allNodes.get(i));
-				}
-				break;
-
-			case high_in_out_degree:
-				allNodes.sort((c1, c2) -> compareNodebyInAndOutDegree(c1, c2));
-
-				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
-
-				for (int i = 0; i < faultNodeNum; i++) {
-					faultNodes.add(allNodes.get(i));
-				}
-				break;
-
-			case critical_high_et_pathNum:
-				for (Node n : critical) {
-					if (!faultNodes.contains(n)) {
-						faultNodes.add(n);
-					}
-				}
-
-				allNodes.sort((c1, c2) -> compareNodebyPath(dags, c1, c2));
-				faultNodeNum = (int) Math.ceil(percent / 2.0 * (double) allNodes.size());
+				faultNodeNum = (int) Math.ceil(percent / 3.0 * (double) allNodes.size());
 
 				for (int i = 0; i < faultNodeNum; i++) {
 					if (!faultNodes.contains(allNodes.get(i)))
@@ -324,7 +324,7 @@ public class TestFaultsImpact {
 				}
 
 				allNodes.sort((c1, c2) -> compareNodebyET(c1, c2));
-				faultNodeNum = (int) Math.ceil(percent / 2.0 * (double) allNodes.size());
+				faultNodeNum = (int) Math.ceil(percent / 3.0 * (double) allNodes.size());
 
 				for (int i = 0; i < faultNodeNum; i++) {
 					if (!faultNodes.contains(allNodes.get(i)))
@@ -381,6 +381,29 @@ public class TestFaultsImpact {
 		return dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime;
 	}
 
+	public static int compareNodebyPathET(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+
+		return -Long.compare(c1.pathET, c2.pathET);
+
+		// DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(),
+		// c1.getDagInstNo());
+		//
+		// int count1 = 0;
+		// int count2 = 0;
+		//
+		// for (int i = 0; i < dag1.allpaths.size(); i++) {
+		// if (dag1.allpaths.get(i).contains(c1)) {
+		// count1++;
+		// }
+		// if (dag1.allpaths.get(i).contains(c2)) {
+		// count2++;
+		// }
+		// }
+		//
+		// return -Integer.compare(count1, count2);
+	}
+
+	
 	public static int compareNodebyPath(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
 
 		return -Long.compare(c1.pathNum, c2.pathNum);

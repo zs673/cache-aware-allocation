@@ -29,7 +29,7 @@ public class SystemParameters {
 
 	public static int NoS = 1000;
 	public static final boolean printSim = false;
-	public static final boolean printGen = false;
+	public static final boolean printGen = true;
 
 	/**********************************************************************
 	 ************************** Number of cores ***************************

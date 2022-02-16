@@ -20,15 +20,13 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory,
 			RecencyProfile table, long currentTime, boolean lcif) {
 
+
 		List<Integer> availableCores = new ArrayList<>();
 		for (int i = 0; i < cores.size(); i++) {
 			if (localRunqueue.get(i).size() == 0 && availableTimeAllProcs[i] <= currentTime)
 				availableCores.add(i);
 		}
-
-		if (readyNodes.size() == 0 || availableCores.size() == 0)
-			return;
-
+		
 		readyNodes.stream().forEach(c -> c.partition = -1);
 
 		/*

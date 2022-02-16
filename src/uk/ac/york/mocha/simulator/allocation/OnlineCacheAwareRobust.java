@@ -3,7 +3,6 @@ package uk.ac.york.mocha.simulator.allocation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -21,7 +20,7 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long systemTime,
 			boolean lcif) {
 
-		if (readyNodes.size() == 0 || cores.size() == 0)
+		if (readyNodes.size() == 0)
 			return;
 
 		readyNodes.stream().forEach(c -> c.partition = -1);
@@ -32,17 +31,16 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		/* Sort ready nodes list by DAG priority and then node WCET */
 		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
-		for (List<Node> l : localRunqueue) {
-			readyNodes.addAll(l);
-			l.clear();
-		}
+//		for (List<Node> l : localRunqueue) {
+//			readyNodes.addAll(l);
+//			l.clear();
+//		}
 
 		for (Node n : readyNodes)
 			n.expectedETPerCore = new long[cores.size()];
 
 		List<Integer> allocProcs = new ArrayList<>();
 		List<Integer> allocNodes = new ArrayList<>();
-
 
 //		List<List<Node>> level1 = new ArrayList<>();
 //		for(List<Node> l : allocHistory)
@@ -79,7 +77,7 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		}
 
 		readyNodes.clear();
-		
+
 	}
 
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,

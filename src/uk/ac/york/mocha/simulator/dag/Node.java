@@ -46,6 +46,11 @@ public class Node implements Serializable {
 	private List<Node> successors;
 	private List<Node> predecessors;
 
+	public List<List<Node>> allPaths = new ArrayList<>();
+	public List<Long> allPathLength = new ArrayList<>();
+	public int pathNum = 0;
+	public long pathET;
+
 	/*
 	 * The priority of the node
 	 */
@@ -64,40 +69,25 @@ public class Node implements Serializable {
 	/*
 	 * Simulation parameters
 	 */
+	public long release = -1;
 	public long start = -1;
-	public boolean finish = false;
 	public long finishAt = -1;
+	public boolean finish = false;
 
 	public int partition = -1;
 	public int affinity = -1;
 
 	public int delayed = -1;
 	public long expectedET = -1;
-
-	/*
-	 * Offline parameters
-	 */
-	public int offline_partition = -1;
-	public boolean now = false;
-	
-	public int pathNum = 0;
-
-	/*
-	 * The CRP of the node
-	 */
-	// public CacheRecencyProfile crp;
-
+	public long[] expectedETPerCore;
+	public boolean isDelayed = false;
 	/*
 	 * The variability of the node
 	 */
 	public CacheVariabilityProfile cvp;
+
 	Random rng;
 
-	public List<List<Node>> allPaths = new ArrayList<>();
-	public List<Long> allPathLength = new ArrayList<>();
-	
-	public long[] expectedETPerCore;
-	 
 	public Node(int layer, NodeType type, int id, int dagID, Random rng) {
 		this(-1, layer, type, id, dagID, rng);
 	}
@@ -118,17 +108,6 @@ public class Node implements Serializable {
 		this.cvp = new CacheVariabilityProfile(this, SystemParameters.err_median,
 				((double) rng.nextInt(SystemParameters.err_range + 1) / (double) 100) / 3.0, rng);
 		this.rng = rng;
-	}
-
-	public Node deepCopy() {
-		Node copy = new Node(this.WCET, this.layer, this.type, this.id, this.dagID, this.rng);
-		copy.start = start;
-		copy.finish = finish;
-		copy.finishAt = finishAt;
-		copy.partition = partition;
-		copy.affinity = affinity;
-		copy.delayed = delayed;
-		return copy;
 	}
 
 	@Override
@@ -209,5 +188,17 @@ public class Node implements Serializable {
 	public void setDagInstNo(int dagInstNo) {
 		this.dagInstNo = dagInstNo;
 	}
+
+//	public Node deepCopy() {
+//	Node copy = new Node(this.WCET, this.layer, this.type, this.id, this.dagID, this.rng);
+//	copy.release = release;
+//	copy.start = start;
+//	copy.finish = finish;
+//	copy.finishAt = finishAt;
+//	copy.partition = partition;
+//	copy.affinity = affinity;
+//	copy.delayed = delayed;
+//	return copy;
+//}
 
 }

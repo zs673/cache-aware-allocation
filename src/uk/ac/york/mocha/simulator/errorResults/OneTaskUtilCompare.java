@@ -94,7 +94,7 @@ public class OneTaskUtilCompare {
 	}
 
 	/**
-	 * This test case will generate two fixed DAG strcuture.
+	 * This test case will generate two fixed DAG structure.
 	 */
 	public static OneSystemResults testOneCaseThreeMethod(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
 			int cores, int taskSeed, int tableSeed) {

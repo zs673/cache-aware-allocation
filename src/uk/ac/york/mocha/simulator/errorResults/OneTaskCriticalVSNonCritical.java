@@ -40,7 +40,6 @@ public class OneTaskCriticalVSNonCritical {
 		SystemParameters.fault_range = SystemParameters.fault_median * 2;
 
 		for (int i = 8; i <= 80; i = i + 8) {
-
 			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
 
 			RunOneGroupThreeMethod(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, 1000, true,
