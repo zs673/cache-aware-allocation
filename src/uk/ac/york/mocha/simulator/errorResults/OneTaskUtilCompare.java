@@ -49,6 +49,11 @@ public class OneTaskUtilCompare {
 		String out = "";
 		String out1 = "";
 
+		SystemParameters.utilPerTask = Double.parseDouble(df.format((double) 8 / (double) 10));
+
+		SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, 1000, true, SystemParameters.printGen);
+		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperPeriodNum, null, false);
+
 		for (int i = 8; i <= 40; i = i + 8) {
 			avg_data1 = new ArrayList<>();
 			avg_data2 = new ArrayList<>();
@@ -61,8 +66,6 @@ public class OneTaskUtilCompare {
 
 			noCall1 = new ArrayList<>();
 			noCall2 = new ArrayList<>();
-
-			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
 
 			RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, 1000, true, ExpName.util_compare);
 
@@ -181,7 +184,7 @@ public class OneTaskUtilCompare {
 		noCall1.add(cacheWFSim.noCalls);
 		noCall2.add(cacheCASim.noCalls);
 
-		if(not < 100) {
+		if (not < 100) {
 			List<Long> d1_delay = new ArrayList<>();
 			List<Long> d1_et = new ArrayList<>();
 			for (DirectedAcyclicGraph d : m1) {
@@ -200,7 +203,6 @@ public class OneTaskUtilCompare {
 			d2_delays.addAll(d2_delay);
 			d2_ets.addAll(d2_et);
 		}
-
 
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.

@@ -18,7 +18,7 @@ for util = 1:5
    rowsNum = size(data,1);
    
     for c = 1:2
-        boxplot(nonzeros(data(:,c)), 'position',count, 'widths', 0.65, 'symbol','-', 'color', colors(c,:));
+        boxplot((data(:,c)), 'position',count, 'widths', 0.65, 'symbol','.', 'color', colors(c,:));
         hold on
         count = count + 1;
     end   
@@ -26,7 +26,8 @@ for util = 1:5
 end
 
 xlim([0 11]);
-ylim([-100 12000])
+ylim([-10 20000])
+% axis 'auto y'
 xticks = 1.5 : 2 : 11;
 xticklables = ["10","20","30","40","50" ];
 
@@ -45,7 +46,7 @@ c = findobj(gca,'Tag','Box');
 
 
 
- h = legend([c(2),c(1)],"AJLR v1.0","AJLR v2.0",'FontAngle','italic','location','northeast','Orientation','horizontal');
+ h = legend([c(2),c(1)],"AJLR v1.0","AJLR v2.0",'FontAngle','italic','location','northwest','Orientation','horizontal');
 % h = legend([c(3),c(2),c(1)],"AJLR no error","AJLR with error","AJLRE with error",'FontAngle','italic','location','southeast','Orientation','horizontal');
 %     h = legend([c(3),c(2),c(1)],"WF+EO","AJLR without deviations","AJLR with deviations",'FontAngle','italic','location','southeast','Orientation','horizontal');
 set(h,'FontSize',14);
@@ -78,7 +79,7 @@ for util = 1:5
    rowsNum = size(data,1);
    
     for c = 3:4
-        boxplot(nonzeros(data(:,c)), 'position',count, 'widths', 0.65, 'symbol','-', 'color', colors((c-2),:));
+        boxplot((data(:,c)), 'position',count, 'widths', 0.65, 'symbol','.', 'color', colors((c-2),:));
         hold on
         count = count + 1;
     end   
@@ -86,7 +87,8 @@ for util = 1:5
 end
 
 xlim([0 11]);
-ylim([-100 12000])
+ylim([-100 30000])
+% axis 'auto y'
 xticks = 1.5 : 2 : 11;
 xticklables = ["10","20","30","40","50" ];
 
@@ -105,7 +107,7 @@ c = findobj(gca,'Tag','Box');
 
 
 
- h = legend([c(2),c(1)],"AJLR v1.0","AJLR v2.0",'FontAngle','italic','location','northeast','Orientation','horizontal');
+ h = legend([c(2),c(1)],"AJLR v1.0","AJLR v2.0",'FontAngle','italic','location','northwest','Orientation','horizontal');
 % h = legend([c(3),c(2),c(1)],"AJLR no error","AJLR with error","AJLRE with error",'FontAngle','italic','location','southeast','Orientation','horizontal');
 %     h = legend([c(3),c(2),c(1)],"WF+EO","AJLR without deviations","AJLR with deviations",'FontAngle','italic','location','southeast','Orientation','horizontal');
 set(h,'FontSize',14);

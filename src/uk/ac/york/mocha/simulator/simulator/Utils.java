@@ -30,7 +30,7 @@ public class Utils {
 
 			level2.get(cluster).addAll(allocHis.get(i));
 		}
-		
+
 		return level2;
 	}
 
@@ -57,6 +57,23 @@ public class Utils {
 	}
 
 	/*
+	 * Order nodes by 1) its DAG priority and 2) DAG instance number.
+	 */
+	public static int compareDAG(List<DirectedAcyclicGraph> dags, int id1, int inst1, int id2, int inst2) {
+
+		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, id1, inst1);
+		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, id2, inst2);
+
+		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
+			return -1;
+		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
+			return 1;
+		} else {
+			return Long.compare(inst1, inst2);
+		}
+	}
+
+	/*
 	 * Order nodes by 1) its DAG priority and 2) its WCET.
 	 */
 	public static int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
@@ -70,21 +87,27 @@ public class Utils {
 			return 1;
 		} else {
 
-			int c = -Long.compare(c1.getWCET(), c2.getWCET());
+			int ins = Long.compare(c1.getDagInstNo(), c2.getDagInstNo());
 
-			if (c != 0)
-				return c;
-			else {
-				return Integer.compare(c1.getDagInstNo(), c2.getDagInstNo());
-			}
+			if (ins != 0)
+				return ins;
+			else
+				return -Long.compare(c1.getWCET(), c2.getWCET());
+
+			// int c = -Long.compare(c1.getWCET(), c2.getWCET());
+			//
+			// if (c != 0)
+			// return c;
+			// else {
+			// return Integer.compare(c1.getDagInstNo(), c2.getDagInstNo());
+			// }
 
 		}
 
 	}
-	
 
 	public static int compareNodeByID(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
-		
+
 		return Integer.compare(c1.getId(), c2.getId());
 	}
 
@@ -101,8 +124,8 @@ public class Utils {
 			int c = -1;
 
 			if (dag1.id != dag2.id) {
-				System.out.println(
-						"Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
+				System.out
+						.println("Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
 				System.exit(-1);
 			}
 
@@ -160,8 +183,8 @@ public class Utils {
 	}
 
 	/*
-	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a complete
-	 * hyperperiod.
+	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a
+	 * complete hyperperiod.
 	 */
 	public static long getHyperPeriod(List<Long> periods) {
 
@@ -233,6 +256,5 @@ public class Utils {
 		writer.println(result);
 		writer.close();
 	}
-
 
 }

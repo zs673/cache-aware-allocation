@@ -35,3 +35,4 @@ xlim_value = 300;
 % online_and_offline_taskNum
 
 recency_util_compare
+recency_util_compare_detail
