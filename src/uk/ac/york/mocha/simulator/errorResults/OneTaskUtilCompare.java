@@ -75,10 +75,10 @@ public class OneTaskUtilCompare {
 			double call1 = noCall1.stream().mapToDouble(d -> d).average().getAsDouble();
 			double call2 = noCall2.stream().mapToDouble(d -> d).average().getAsDouble();
 
-			out += d1_delay + "," + d2_delay + ";" + d1_et + "," + d2_et + ";" + call1 + "," + call2 + "\n";
+			out += d1_delay + "," + d2_delay + "," + d1_et + "," + d2_et + ";" + call1 + "," + call2 + "\n";
 
 			for (int k = 0; k < d1_delays.size(); k++) {
-				out1 += d1_delays.get(k) + "," + d2_delays.get(k) + ";" + d1_ets.get(k) + "," + d2_ets.get(k) + "\n";
+				out1 += d1_delays.get(k) + "," + d2_delays.get(k) + "," + d1_ets.get(k) + "," + d2_ets.get(k) + "\n";
 				if (k % 1000 == 0)
 					System.out.println(k + " / " + d1_delays.size());
 			}
@@ -186,7 +186,7 @@ public class OneTaskUtilCompare {
 			List<Long> d1_et = new ArrayList<>();
 			for (DirectedAcyclicGraph d : m1) {
 				d1_delay.addAll(d.getAllDelayAndETs().get(0));
-				d1_et.addAll(d.getAllDelayAndETs().get(0));
+				d1_et.addAll(d.getAllDelayAndETs().get(1));
 			}
 			d1_delays.addAll(d1_delay);
 			d1_ets.addAll(d1_et);
@@ -195,7 +195,7 @@ public class OneTaskUtilCompare {
 			List<Long> d2_et = new ArrayList<>();
 			for (DirectedAcyclicGraph d : m2) {
 				d2_delay.addAll(d.getAllDelayAndETs().get(0));
-				d2_et.addAll(d.getAllDelayAndETs().get(0));
+				d2_et.addAll(d.getAllDelayAndETs().get(1));
 			}
 			d2_delays.addAll(d2_delay);
 			d2_ets.addAll(d2_et);
