@@ -15,7 +15,7 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 public class AllSystemsResults {
 
 	public enum ResultType {
-		makespan, util, finish
+		makespan, util, finish,makespan_abs
 	}
 
 	int taskNum;

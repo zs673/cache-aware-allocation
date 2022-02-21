@@ -36,22 +36,42 @@ public class CacheVariabilityProfile implements Serializable {
 		return range;
 	}
 
-	// public int getSeed() {
-	// return seed;
-	// }
+	public double getVary(int cacheLevel) {
 
-	public double getVary() {
+//		double ran = (double) rng.nextInt(100) / (double) 100; // rng.nextGaussian();
+//		double vary = median + (ran * range);
+//
+//		double out = Double.parseDouble(df.format(vary));
+//
+//		if (out >= 1)
+//			out = 1;
+//
+//		if (out <= -1)
+//			out = -1;
 
-		double ran = (double) rng.nextInt(100) / (double) 100; // rng.nextGaussian();
-		double vary = median + (ran * range);
+		double ran = -1;
+		double out = -1;
 
-		double out = Double.parseDouble(df.format(vary));
-
-		if (out >= 1)
-			out = 1;
-
-		if (out <= -1)
-			out = -1;
+		switch (cacheLevel) {
+		case 1:
+			ran = (double) rng.nextInt(10 + 1) / (double) 100; // rng.nextGaussian();
+			out = Double.parseDouble(df.format(ran));
+			break;
+		case 2:
+			ran = (double) rng.nextInt(20 + 1) / (double) 100; // rng.nextGaussian();
+			out = Double.parseDouble(df.format(ran)) + 0.1;
+			break;
+		case 3:
+			ran = (double) rng.nextInt(30 + 1) / (double) 100; // rng.nextGaussian();
+			out = Double.parseDouble(df.format(ran)) + 0.2;
+			break;
+		case 4:
+			ran = (double) rng.nextInt(10 + 1) / (double) 100; // rng.nextGaussian();
+			out = Double.parseDouble(df.format(ran));
+			break;
+		default:
+			break;
+		}
 
 		return out;
 	}
@@ -61,7 +81,7 @@ public class CacheVariabilityProfile implements Serializable {
 		CacheVariabilityProfile cvp = new CacheVariabilityProfile(null, 0, 1.0 / 3.0, new Random(1000));
 
 		for (int i = 0; i < 10; i++) {
-			System.out.println(cvp.getVary());
+			System.out.println(cvp.getVary(0));
 		}
 	}
 

@@ -110,7 +110,7 @@ public class OneSystemResults {
 		StringBuilder builder = new StringBuilder();
 
 		/*
-		 * Add noralmised durations to duration buffer.
+		 * Add normalized durations to duration buffer.
 		 */
 		for (List<Double> l : results) {
 			l.stream().forEach(c -> {

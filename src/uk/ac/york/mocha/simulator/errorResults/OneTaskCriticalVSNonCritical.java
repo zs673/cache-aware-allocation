@@ -103,6 +103,10 @@ public class OneTaskCriticalVSNonCritical {
 			int cores, int taskSeed, int tableSeed) {
 
 		boolean lcif = true;
+		
+		for (DirectedAcyclicGraph d : dags)
+			for (Node n : d.getFlatNodes())
+				n.hasFaults = false;
 
 		SimualtorNWC cacheBFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
@@ -110,7 +114,7 @@ public class OneTaskCriticalVSNonCritical {
 
 		for (DirectedAcyclicGraph d : dags)
 			for (Node n : d.getFlatNodes())
-				n.hasFaults = false;
+				n.hasFaults = true;
 
 		SimualtorNWC cacheWFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
@@ -118,7 +122,7 @@ public class OneTaskCriticalVSNonCritical {
 
 		for (DirectedAcyclicGraph d : dags)
 			for (Node n : d.getFlatNodes())
-				n.hasFaults = false;
+				n.hasFaults = true;
 
 		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);

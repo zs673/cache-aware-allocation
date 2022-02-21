@@ -14,37 +14,38 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineCacheAwareRobust extends AllocationMethods {
 
-	@Override
-	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue, List<Integer> cores,
-			long[] coreTime, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			List<List<Node>> allocHistory, RecencyProfile table, long systemTime, boolean lcif) {
+//	@Override
+//	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue, List<Integer> cores,
+//			long[] coreTime, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
+//			List<List<Node>> allocHistory, RecencyProfile table, long systemTime, boolean lcif) {
+//
+//		List<Integer> availableCores = new ArrayList<>();
+//		for (int i = 0; i < cores.size(); i++) {
+//			if (localRunqueue.get(i).size() == 0 && coreTime[i] <= systemTime)
+//				availableCores.add(i);
+//		}
+//
+//		List<String> dagID = new ArrayList<>();
+//		for (Node n : readyNodes) {
+//			if (!dagID.contains(n.getDagID() + "_" + n.getDagInstNo()))
+//				dagID.add(n.getDagID() + "_" + n.getDagInstNo());
+//		}
+//
+//		dagID.sort((c1, c2) -> Utils.compareDAG(dags, Integer.parseInt(c1.split("_")[0]), Integer.parseInt(c1.split("_")[1]),
+//				Integer.parseInt(c2.split("_")[0]), Integer.parseInt(c2.split("_")[1])));
+//
+//		List<List<Node>> nodesByDAG = new ArrayList<>();
+//		for (int i = 0; i < dagID.size(); i++) {
+//			nodesByDAG.add(new ArrayList<>());
+//		}
+//
+//		/// **** ///
+//	}
 
-		List<Integer> availableCores = new ArrayList<>();
-		for (int i = 0; i < cores.size(); i++) {
-			if (localRunqueue.get(i).size() == 0 && coreTime[i] <= systemTime)
-				availableCores.add(i);
-		}
-
-		List<String> dagID = new ArrayList<>();
-		for (Node n : readyNodes) {
-			if (!dagID.contains(n.getDagID() + "_" + n.getDagInstNo()))
-				dagID.add(n.getDagID() + "_" + n.getDagInstNo());
-		}
-
-		dagID.sort((c1, c2) -> Utils.compareDAG(dags, Integer.parseInt(c1.split("_")[0]), Integer.parseInt(c1.split("_")[1]),
-				Integer.parseInt(c2.split("_")[0]), Integer.parseInt(c2.split("_")[1])));
-
-		List<List<Node>> nodesByDAG = new ArrayList<>();
-		for (int i = 0; i < dagID.size(); i++) {
-			nodesByDAG.add(new ArrayList<>());
-		}
-
-		/// **** ///
-	}
-
-	public void allocateOneDAG(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue, List<Integer> cores,
-			long[] coreTime, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			List<List<Node>> allocHistory, RecencyProfile table, long systemTime, boolean lcif) {
+	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
+			List<Integer> cores, long[] coreTime, List<List<Node>> history_level1, List<List<Node>> history_level2,
+			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfile table, long systemTime,
+			boolean lcif) {
 
 		if (readyNodes.size() == 0)
 			return;
@@ -52,7 +53,7 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		readyNodes.stream().forEach(c -> c.partition = -1);
 
 		/**************************************************************************************************
-		 * Initialize the dispatcher
+		 ************************************ Initialize the dispatcher ***********************************
 		 *************************************************************************************************/
 		/* Sort ready nodes list by DAG priority and then node WCET */
 		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
@@ -81,11 +82,11 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		 **************************************************************************************************/
 
 		while (readyNodes.size() != allocNodes.size()) {
-			List<List<Long>> speedUpTable = computeSpeedUp(readyNodes, cores, table, coreTime, systemTime, localRunqueue, history_level1,
-					history_level2, history_level3);
+			List<List<Long>> speedUpTable = computeSpeedUp(readyNodes, cores, table, coreTime, systemTime,
+					localRunqueue, history_level1, history_level2, history_level3);
 
-			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, readyNodes, cores, coreTime, table, systemTime,
-					lcif, history_level1, history_level2, history_level3);
+			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, readyNodes, cores, coreTime,
+					table, systemTime, lcif, history_level1, history_level2, history_level3);
 
 			Node n = readyNodes.get(p.getFirst().intValue());
 
@@ -108,9 +109,10 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 
 	}
 
-	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes, List<Integer> allocProcs,
-			List<Node> readyNodes, List<Integer> cores, long[] coreTime, RecencyProfile table, long systemTime, boolean lcif,
-			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
+	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
+			List<Integer> allocProcs, List<Node> readyNodes, List<Integer> cores, long[] coreTime, RecencyProfile table,
+			long systemTime, boolean lcif, List<List<Node>> history_level1, List<List<Node>> history_level2,
+			List<Node> history_level3) {
 
 		int row = -1;
 		int col = -1;
@@ -170,8 +172,7 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 					List<Node> nodesInProc = history_level1.get(procIndex);
 
 					/*
-					 * Get the nodes that can hit level two cache in each free
-					 * core.
+					 * Get the nodes that can hit level two cache in each free core.
 					 */
 					long Nodenum = 0;
 					for (int j = nodesInProc.size() - 1; j >= 0; j--) {
@@ -190,11 +191,11 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 					for (Node affected : affectedNodes) {
 
 						long affectedTimeOneNode = table
-								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, et_n,
-										false)
+								.computeET(-1, history_level1, history_level2, history_level3, affected,
+										affected.partition, true, et_n, false)
 								.getFirst()
-								- table.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, 0,
-										false).getFirst();
+								- table.computeET(-1, history_level1, history_level2, history_level3, affected,
+										affected.partition, true, 0, false).getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 
@@ -224,9 +225,9 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		return new Pair<Integer, Integer>(row, col);
 	}
 
-	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfile table, long[] coreTime,
-			long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3) {
+	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfile table,
+			long[] coreTime, long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1,
+			List<List<Node>> history_level2, List<Node> history_level3) {
 
 		List<List<Long>> speedUpTable = new ArrayList<>();
 
@@ -242,7 +243,9 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 				 * Option 1: Speed up by ABSOLUTE value
 				 */
 				long WCET = n.getWCET();
-				long estimatedET = table.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, false).getFirst();
+				long estimatedET = table
+						.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, false)
+						.getFirst();
 				long speedup = WCET - estimatedET;
 				n.expectedETPerCore[core] = estimatedET;
 

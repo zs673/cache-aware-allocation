@@ -37,7 +37,7 @@ public class Node implements Serializable {
 	/*
 	 * The worst-case execution time of the node
 	 */
-	private long WCET;
+	public long WCET;
 	// private long WCETinRange;
 
 	/*
@@ -103,11 +103,14 @@ public class Node implements Serializable {
 		this.successors = new ArrayList<>();
 		this.predecessors = new ArrayList<>();
 
+		this.rng = new Random(1000);
+
 		// this.crp = new CacheRecencyProfile(this, SystemParameters.coreNum,
 		// 1000);
+
 		this.cvp = new CacheVariabilityProfile(this, SystemParameters.err_median,
-				((double) rng.nextInt(SystemParameters.err_range + 1) / (double) 100) / 3.0, rng);
-		this.rng = rng;
+				((double) this.rng.nextInt(SystemParameters.err_range + 1) / (double) 100) / 3.0, new Random(1000));
+
 	}
 
 	@Override

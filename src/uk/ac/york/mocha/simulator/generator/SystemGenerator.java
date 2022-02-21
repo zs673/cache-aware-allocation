@@ -305,6 +305,47 @@ public class SystemGenerator {
 		if (print)
 			System.out.println("-----------------------------------------------------------------------------");
 	}
+	
+	public static void generateWCETs(List<DirectedAcyclicGraph> dags, Random rng, boolean randomC, boolean print) {
+
+		if (print) {
+			System.out.println("Assigned and generated WCET (in us):");
+			System.out.println("-----------------------------------------------------------------------------");
+		}
+
+		for (DirectedAcyclicGraph d : dags) {
+
+			long totalWCET = d.getSchedParameters().getWCET();
+			List<Node> node = d.getFlatNodes();
+
+			long[] c = new long[d.getNodeNum()];
+			long sumC = 0;
+			long sum = 0;
+
+			for (int i = 0; i < c.length; i++) {
+				c[i] = randomC ? rng.nextInt(100) : 100;
+				sumC += c[i];
+			}
+
+			double ratio = (double) sumC / (double) totalWCET;
+
+			for (int i = 0; i < c.length; i++) {
+				long cNode = (long) Math.ceil((double) c[i] / ratio);
+				sum += cNode;
+				if (cNode == 0)
+					cNode = 1;
+				node.get(i).setWCET(cNode);
+			}
+
+			d.getSchedParameters().setWCET(sum);
+			if (print)
+				System.out.printf("|    DAG_%2d   |   Assigned WCET: %10d   |   Actual WCET: %10d   |\n", d.id, totalWCET, sum);
+
+		}
+
+		if (print)
+			System.out.println("-----------------------------------------------------------------------------");
+	}
 
 	/*
 	 * generate scheduling parameters for DAGs

@@ -24,7 +24,7 @@ public class RecencyProfile {
 
 	private static final DecimalFormat df = new DecimalFormat("#.###");
 
-	private Random rng;
+//	private Random rng;
 
 	public RecencyProfile(int procNum, int seed) {
 
@@ -39,7 +39,7 @@ public class RecencyProfile {
 		}
 
 		this.type = type;
-		rng = new Random(seed);
+//		rng = new Random(seed);
 
 		this.cacheHierarchy = new ArrayList<>();
 
@@ -53,58 +53,58 @@ public class RecencyProfile {
 			this.cacheHierarchy.add(procPerLevel2);
 		}
 
-		if (this.type == RecencyType.ORDER)
-			createRecencyTableByOrder(seed);
+//		if (this.type == RecencyType.ORDER)
+//			createRecencyTableByOrder(seed);
 	}
 
-	private void createRecencyTableByOrder(int seed) {
-		recencyTable = new ArrayList<>(); // new
-											// double[cacheLevel][recencyDepth1];
-
-		for (int i = 0; i < SystemParameters.cacheLevel; i++) {
-			List<Double> oneLevel = new ArrayList<>();
-			for (int j = 0; j < SystemParameters.recencyDepth[i]; j++) {
-
-				if (i == 0 && j == 0) {
-					double factor = seed == -1 ? 0.3
-							: ((double) (rng
-									.nextInt(SystemParameters.costFactorMAX[i] - SystemParameters.costFactorMIN[i])
-									+ SystemParameters.costFactorMIN[i])) / (double) 100;
-					double formatFactor = Double.parseDouble(df.format(factor));
-					oneLevel.add(formatFactor);
-				} else {
-					double factor = -1;
-					switch (i) {
-					case 0:
-						factor = oneLevel.get(j - 1) + 0.01;
-						break;
-					case 1:
-						if (j == 0)
-							factor = recencyTable.get(i - 1).get(recencyTable.get(i - 1).size() - 1) + 0.05;
-						else
-							factor = oneLevel.get(j - 1) + 0.01;
-						break;
-					case 2:
-						if (j == 0)
-							factor = recencyTable.get(i - 1).get(recencyTable.get(i - 1).size() - 1) + 0.1;
-						else
-							factor = oneLevel.get(j - 1) + 0.01;
-						break;
-
-					default:
-						break;
-					}
-
-					factor = factor > 1.0 ? 1.0 : factor;
-					double formatFactor = Double.parseDouble(df.format(factor));
-					oneLevel.add(formatFactor);
-				}
-			}
-			recencyTable.add(oneLevel);
-		}
-
-		recencyTable.get(SystemParameters.cacheLevel - 1).set(SystemParameters.recencyDepth[2] - 1, 1.0);
-	}
+//	private void createRecencyTableByOrder(int seed) {
+//		recencyTable = new ArrayList<>(); // new
+//											// double[cacheLevel][recencyDepth1];
+//
+//		for (int i = 0; i < SystemParameters.cacheLevel; i++) {
+//			List<Double> oneLevel = new ArrayList<>();
+//			for (int j = 0; j < SystemParameters.recencyDepth[i]; j++) {
+//
+//				if (i == 0 && j == 0) {
+//					double factor = seed == -1 ? 0.3
+//							: ((double) (rng
+//									.nextInt(SystemParameters.costFactorMAX[i] - SystemParameters.costFactorMIN[i])
+//									+ SystemParameters.costFactorMIN[i])) / (double) 100;
+//					double formatFactor = Double.parseDouble(df.format(factor));
+//					oneLevel.add(formatFactor);
+//				} else {
+//					double factor = -1;
+//					switch (i) {
+//					case 0:
+//						factor = oneLevel.get(j - 1) + 0.01;
+//						break;
+//					case 1:
+//						if (j == 0)
+//							factor = recencyTable.get(i - 1).get(recencyTable.get(i - 1).size() - 1) + 0.05;
+//						else
+//							factor = oneLevel.get(j - 1) + 0.01;
+//						break;
+//					case 2:
+//						if (j == 0)
+//							factor = recencyTable.get(i - 1).get(recencyTable.get(i - 1).size() - 1) + 0.1;
+//						else
+//							factor = oneLevel.get(j - 1) + 0.01;
+//						break;
+//
+//					default:
+//						break;
+//					}
+//
+//					factor = factor > 1.0 ? 1.0 : factor;
+//					double formatFactor = Double.parseDouble(df.format(factor));
+//					oneLevel.add(formatFactor);
+//				}
+//			}
+//			recencyTable.add(oneLevel);
+//		}
+//
+//		recencyTable.get(SystemParameters.cacheLevel - 1).set(SystemParameters.recencyDepth[2] - 1, 1.0);
+//	}
 
 	public Pair<Long, Integer> computeET(long time, List<List<Node>> history_level1, List<List<Node>> history_level2,
 			List<Node> history_level3, Node n, int proc, boolean cacheAware, long additionalTime, boolean error) {
@@ -113,15 +113,16 @@ public class RecencyProfile {
 				additionalTime);
 
 		if (n != null && error) {
-			double err = n.cvp.getRange();
-			
-			if(err < -1 || err > 1) {
+			double err = n.cvp.getVary(res.getSecond());
+//			double err = n.cvp.getMedian();
+
+			if (err < -1 || err > 1) {
 				System.out.println("Error Value: " + err);
 				System.exit(-1);
 			}
 
 //			System.out.println(n.getFullName() + "   :   err: " + err);
-			
+
 			long ETwithErr = (long) Math.ceil((double) res.getFirst() * (1.0 + err));
 
 			return new Pair<Long, Integer>(ETwithErr, res.getSecond());

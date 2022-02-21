@@ -124,8 +124,8 @@ public class Utils {
 			int c = -1;
 
 			if (dag1.id != dag2.id) {
-				System.out
-						.println("Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
+				System.out.println(
+						"Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
 				System.exit(-1);
 			}
 
@@ -183,8 +183,8 @@ public class Utils {
 	}
 
 	/*
-	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a
-	 * complete hyperperiod.
+	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a complete
+	 * hyperperiod.
 	 */
 	public static long getHyperPeriod(List<Long> periods) {
 
@@ -241,7 +241,30 @@ public class Utils {
 		return dp;
 	}
 
+	public static void writeResult(String path, String file, String result) {
+
+		File theDir = new File(path);
+		if (!theDir.exists()) {
+			theDir.mkdirs();
+		}
+		
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter(new FileWriter(new File(path + "/" + file), false));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		writer.println(result);
+		writer.close();
+	}
+
 	public static void writeResult(String filename, String result) {
+
 		PrintWriter writer = null;
 		try {
 			writer = new PrintWriter(new FileWriter(new File(filename), false));

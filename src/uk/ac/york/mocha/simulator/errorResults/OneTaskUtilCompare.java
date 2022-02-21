@@ -3,6 +3,7 @@ package uk.ac.york.mocha.simulator.errorResults;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -49,12 +50,32 @@ public class OneTaskUtilCompare {
 		String out = "";
 		String out1 = "";
 
-		SystemParameters.utilPerTask = Double.parseDouble(df.format((double) 8 / (double) 10));
+		SystemParameters.utilPerTask = Double.parseDouble(df.format((double) 40 / (double) 10));
 
-		SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, 1000, true, SystemParameters.printGen);
-		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperPeriodNum, null, false);
+		List<List<DirectedAcyclicGraph>> allDags = new ArrayList<>();
 
+		for (int i = 0; i < 1000; i++) {
+			SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, 1000 + i, true,
+					SystemParameters.printGen);
+			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperPeriodNum, null, false);
+			allDags.add(dags);
+		}
+
+//		int count = 1;
 		for (int i = 8; i <= 40; i = i + 8) {
+
+			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
+
+//			for (List<DirectedAcyclicGraph> dl : allDags) {
+//				for (DirectedAcyclicGraph d : dl) {
+////					d.getSchedParameters().setPeriod(d.getSchedParameters().getPeriod() * count);
+//					for (Node n : d.getFlatNodes()) {
+//						n.WCET = count * (long) Math.ceil((double) n.WCET / (double) 5);
+//					}
+//				}
+//			}
+//			count++;
+
 			avg_data1 = new ArrayList<>();
 			avg_data2 = new ArrayList<>();
 
@@ -67,7 +88,8 @@ public class OneTaskUtilCompare {
 			noCall1 = new ArrayList<>();
 			noCall2 = new ArrayList<>();
 
-			RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, 1000, true, ExpName.util_compare);
+			RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, 1000, true, ExpName.util_compare,
+					allDags);
 
 			double d1_delay = avg_data1.stream().mapToDouble(d -> d[0]).average().getAsDouble();
 			double d1_et = avg_data1.stream().mapToDouble(d -> d[1]).average().getAsDouble();
@@ -86,14 +108,16 @@ public class OneTaskUtilCompare {
 					System.out.println(k + " / " + d1_delays.size());
 			}
 
-			Utils.writeResult("result/" + ExpName.util_compare.toString() + "/sum_detail_" + SystemParameters.utilPerTask + ".txt", out1);
+			Utils.writeResult("result/" + ExpName.util_compare.toString() + "/sum_detail_"
+					+ SystemParameters.utilPerTask + ".txt", out1);
 		}
 
 		Utils.writeResult("result/" + ExpName.util_compare.toString() + "/sum.txt", out);
 	}
 
-	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil, List<List<Double>> util,
-			int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC, ExpName name) {
+	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
+			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
+			ExpName name, List<List<DirectedAcyclicGraph>> allDags) {
 
 		List<OneSystemResults> allSys = new ArrayList<>();
 
@@ -115,13 +139,24 @@ public class OneTaskUtilCompare {
 
 		taskSeed = 1000;
 		for (int i = 0; i < NoS; i++) {
-			System.out.println("\n\n****************************************************************************************************");
-			System.out.println("Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
+			System.out.println(
+					"\n\n****************************************************************************************************");
+			System.out.println(
+					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
 
-			SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil, util == null ? null : util.get(i), taskSeed,
-					randomC, SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false);
+//			SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil,
+//					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
+//			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+//					periods == null ? null : periods.get(i), false);
+
+			List<DirectedAcyclicGraph> dags = allDags.get(i);
+
+			for (DirectedAcyclicGraph d : dags) {
+				d.getSchedParameters().setWCET((long) Math
+						.ceil((double) d.getSchedParameters().getPeriod() * (double) SystemParameters.utilPerTask));
+
+				SystemGenerator.generateWCETs(dags, new Random(1000), true, false);
+			}
 
 			OneSystemResults res = null;
 
@@ -140,25 +175,25 @@ public class OneTaskUtilCompare {
 	/**
 	 * This test case will generate two fixed DAG structure.
 	 */
-	public static OneSystemResults testOneCaseThreeMethod(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
-			int taskSeed, int tableSeed, int not) {
+	public static OneSystemResults testOneCaseThreeMethod(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
+			int cores, int taskSeed, int tableSeed, int not) {
 
 		boolean lcif = true;
 
 		for (DirectedAcyclicGraph d : dags)
 			for (Node n : d.getFlatNodes())
-				n.hasFaults = false;
+				n.hasFaults = true;
 
-		SimualtorNWC cacheWFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+		SimualtorNWC cacheWFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
 		for (DirectedAcyclicGraph d : dags)
 			for (Node n : d.getFlatNodes())
-				n.hasFaults = false;
+				n.hasFaults = true;
 
-		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		// List<DirectedAcyclicGraph> m0 = pair0.getFirst();

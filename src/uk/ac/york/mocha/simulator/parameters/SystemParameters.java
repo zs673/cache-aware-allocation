@@ -24,12 +24,12 @@ public class SystemParameters {
 	 **********************************************************************/
 	public enum ExpName {
 		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, offline_multi, methods, periods,
-		tasks, sysUtil, sysUtilOneDAG, util_compare
+		tasks, sysUtil, sysUtilOneDAG, util_compare, util_compare_three
 	}
 
 	public static int NoS = 1000;
 	public static final boolean printSim = false;
-	public static final boolean printGen = true;
+	public static final boolean printGen = false;
 
 	/**********************************************************************
 	 ************************** Number of cores ***************************
@@ -62,7 +62,7 @@ public class SystemParameters {
 	public static final int fan_in = 3;
 
 	/* Error Range */
-	public static double err_median = 0.0;
+	public static double err_median = 0.3;
 	public static int err_range = 100;
 
 	/* Recency fault rate */

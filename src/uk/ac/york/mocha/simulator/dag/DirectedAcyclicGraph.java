@@ -20,7 +20,6 @@ import org.jgrapht.graph.DefaultEdge;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
-import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class DirectedAcyclicGraph implements Serializable {
 
@@ -112,7 +111,9 @@ public class DirectedAcyclicGraph implements Serializable {
 			n.affinity = -1;
 			n.delayed = -1;
 			n.expectedET = -1;
-			n.cvp.rng = rng;
+			n.rng = rng;
+			n.cvp.rng = n.rng;
+			
 		}
 
 	}
@@ -622,48 +623,49 @@ public class DirectedAcyclicGraph implements Serializable {
 
 	@Override
 	public String toString() {
-		String out = "************************************************************************************************\n";
-		out += getName() + ": \n";
-		out += "Nodes by layer: \n";
-
-		for (List<Node> nodesPerLayer : this.layeredNodes) {
-			for (Node n : nodesPerLayer) {
-				out += n.getShortName() + "; ";
-			}
-			out += "\n";
-		}
-		out += "\n";
-
-		out += "Edges by Nodes: \n";
-
-		for (List<Node> nodesPerLayer : this.layeredNodes) {
-			for (Node n : nodesPerLayer) {
-				List<ImmutablePair<Node, Node>> childrenEdge = new ArrayList<>();
-				for (ImmutablePair<Node, Node> edge : edges) {
-					if (edge.left.toString().equals(n.toString()))
-						childrenEdge.add(edge);
-				}
-
-				childrenEdge.sort((c1, c2) -> Utils.compareNodeByID(null, c1.right, c2.right));
-
-				out += n.getShortName() + " -> ";
-				for (ImmutablePair<Node, Node> edge : childrenEdge) {
-					out += edge.right.getShortName() + ", ";
-				}
-				out += "\n";
-			}
-
-		}
-
-		out += "\nlongest path:\n";
-		for (int i = 0; i < longestPath.size(); i++) {
-			out += longestPath.get(i).getShortName();
-
-			if (i != longestPath.size() - 1)
-				out += "  ->  ";
-		}
-
-		out += "\n************************************************************************************************\n";
+//		String out = "************************************************************************************************\n";
+		String out = getName() + ", makespan: " + (finishTime - startTime) + ": \n";
+		
+//		out += "Nodes by layer: \n";
+//
+//		for (List<Node> nodesPerLayer : this.layeredNodes) {
+//			for (Node n : nodesPerLayer) {
+//				out += n.getShortName() + "; ";
+//			}
+//			out += "\n";
+//		}
+//		out += "\n";
+//
+//		out += "Edges by Nodes: \n";
+//
+//		for (List<Node> nodesPerLayer : this.layeredNodes) {
+//			for (Node n : nodesPerLayer) {
+//				List<ImmutablePair<Node, Node>> childrenEdge = new ArrayList<>();
+//				for (ImmutablePair<Node, Node> edge : edges) {
+//					if (edge.left.toString().equals(n.toString()))
+//						childrenEdge.add(edge);
+//				}
+//
+//				childrenEdge.sort((c1, c2) -> Utils.compareNodeByID(null, c1.right, c2.right));
+//
+//				out += n.getShortName() + " -> ";
+//				for (ImmutablePair<Node, Node> edge : childrenEdge) {
+//					out += edge.right.getShortName() + ", ";
+//				}
+//				out += "\n";
+//			}
+//
+//		}
+//
+//		out += "\nlongest path:\n";
+//		for (int i = 0; i < longestPath.size(); i++) {
+//			out += longestPath.get(i).getShortName();
+//
+//			if (i != longestPath.size() - 1)
+//				out += "  ->  ";
+//		}
+//
+//		out += "\n************************************************************************************************\n";
 
 		return out;
 
