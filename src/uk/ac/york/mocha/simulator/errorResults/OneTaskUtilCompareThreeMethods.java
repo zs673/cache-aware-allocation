@@ -25,7 +25,7 @@ public class OneTaskUtilCompareThreeMethods {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 	static int cores = 8;
-	static int nos = 5;
+	static int nos = 1000;
 
 	static List<double[]> avg_data1 = new ArrayList<>();
 	static List<double[]> avg_data2 = new ArrayList<>();

@@ -66,7 +66,7 @@ public class CacheVariabilityProfile implements Serializable {
 			out = Double.parseDouble(df.format(ran)) + 0.2;
 			break;
 		case 4:
-			ran = (double) rng.nextInt(10 + 1) / (double) 100; // rng.nextGaussian();
+			ran = 0; //(double) rng.nextInt(10 + 1) / (double) 100; // rng.nextGaussian();
 			out = Double.parseDouble(df.format(ran));
 			break;
 		default:

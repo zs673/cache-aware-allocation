@@ -92,7 +92,7 @@ for util = 1:5
 
     
 
-    h = legend([c(3),c(2),c(1)],"AJLR no error","AJLR with error","AJLRE with error",'FontAngle','italic','location','southeast','Orientation','horizontal');
+    h = legend([c(3),c(2),c(1)],"v1.0 no error","v1.0 with error","v2.0 with error",'FontAngle','italic','location','southeast','Orientation','horizontal');
 %     h = legend([c(3),c(2),c(1)],"WF+EO","AJLR without deviations","AJLR with deviations",'FontAngle','italic','location','southeast','Orientation','horizontal');
     set(h,'FontSize',14);
 
