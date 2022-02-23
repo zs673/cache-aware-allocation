@@ -48,8 +48,18 @@ public class Node implements Serializable {
 
 	public List<List<Node>> allPaths = new ArrayList<>();
 	public List<Long> allPathLength = new ArrayList<>();
+
 	public int pathNum = 0;
 	public long pathET;
+
+//	public long globalMaxPathET = -1;
+//	public long globalMaxPathNum = -1;
+
+	public double gmpETNorm = -1;
+	public double gmpNumNorm = -1;
+	public double nodeETNorm = -1;
+	
+	public double sensitivity = -1;
 
 	/*
 	 * The priority of the node
@@ -57,7 +67,7 @@ public class Node implements Serializable {
 	public int priority = -1;
 
 	/*
-	 * Is the node belongs to the critcal path of the DAG.
+	 * Is the node belongs to the critical path of the DAG.
 	 */
 	public boolean isCritical = false;
 

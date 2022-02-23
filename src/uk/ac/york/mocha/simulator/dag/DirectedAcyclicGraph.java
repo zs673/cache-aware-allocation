@@ -68,6 +68,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	 * Offline parameters
 	 */
 	public boolean hard = false;
+	
+//	DecimalFormat df = new DecimalFormat("#.###");
 
 	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, int id, Random rng, boolean hard) {
 
@@ -459,6 +461,10 @@ public class DirectedAcyclicGraph implements Serializable {
 				n.isCritical = true;
 		}
 
+		int maxpathNum = -1;
+		long maxPathET = -1;
+		long maxET = -1;
+		
 		for (Node n : flatNodes) {
 			int count = 0;
 			for (int i = 0; i < allpaths.size(); i++) {
@@ -466,6 +472,12 @@ public class DirectedAcyclicGraph implements Serializable {
 					count++;
 			}
 			n.pathNum = count;
+			
+			if(maxpathNum < count)
+				maxpathNum = count;
+			
+			if(maxET < n.getWCET())
+				maxET = n.getWCET();
 		}
 
 		for (Node n : flatNodes) {
@@ -475,7 +487,22 @@ public class DirectedAcyclicGraph implements Serializable {
 					n.allPathLength.add(p.stream().mapToLong(n1 -> n1.getWCET()).sum());
 				}
 			}
-			n.pathET = n.allPathLength.stream().mapToLong(c -> c).max().getAsLong();
+			long localMaxPathET = n.allPathLength.stream().mapToLong(c -> c).max().getAsLong();
+			n.pathET = localMaxPathET;
+			
+			if(maxPathET < localMaxPathET)
+				maxPathET = localMaxPathET;
+		}
+		
+		for(Node n : flatNodes) {
+//			n.globalMaxPathET = maxPathET;
+//			n.globalMaxPathNum = maxpathNum;
+			
+			n.gmpETNorm =  Double.parseDouble(df.format((double) n.pathET / (double) maxPathET));
+			n.gmpNumNorm =  Double.parseDouble(df.format((double) n.pathNum / (double) maxpathNum));
+			n.nodeETNorm = Double.parseDouble(df.format((double) n.getWCET() / (double) maxET));
+			
+			n.sensitivity = n.gmpETNorm + n.gmpNumNorm + n.nodeETNorm;
 		}
 
 	}

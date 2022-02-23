@@ -77,6 +77,12 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		// Utils.getAllocHistoryByLevel2Cache(allocHistory);
 		// List<Node> level3 =
 		// allocHistory.stream().flatMap(List::stream).collect(Collectors.toList());
+		
+		List<Integer> availableCores = new ArrayList<>();
+		for (int i = 0; i < cores.size(); i++) {
+			if (localRunqueue.get(i).size() == 0 && coreTime[i] <= systemTime)
+				availableCores.add(i);
+		}
 		/**************************************************************************************************
 		 **************************************************************************************************
 		 **************************************************************************************************/

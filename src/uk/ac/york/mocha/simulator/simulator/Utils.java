@@ -73,6 +73,38 @@ public class Utils {
 		}
 	}
 
+	public static int compareNodeByPriorityAndSensitivity(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+
+		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+
+		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
+			return -1;
+		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
+			return 1;
+		} else {
+
+			int ins = Long.compare(c1.getDagInstNo(), c2.getDagInstNo());
+
+			if (ins != 0)
+				return ins;
+			else
+				return compareNodeBySensitivity(c1, c2);
+		}
+	}
+
+	private static int compareNodeBySensitivity(Node c1, Node c2) {
+
+		if (c1.sensitivity > c2.sensitivity)
+			return -1;
+		else if (c1.sensitivity < c2.sensitivity)
+			return 1;
+		else {
+			return -Long.compare(c1.getWCET(), c2.getWCET());
+		}
+
+	}
+
 	/*
 	 * Order nodes by 1) its DAG priority and 2) its WCET.
 	 */
@@ -247,7 +279,7 @@ public class Utils {
 		if (!theDir.exists()) {
 			theDir.mkdirs();
 		}
-		
+
 		PrintWriter writer = null;
 		try {
 			writer = new PrintWriter(new FileWriter(new File(path + "/" + file), false));
