@@ -220,7 +220,7 @@ public class EP1_2 {
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheCASim.simulate(SystemParameters.printSim);
 
 		SimualtorNWC cacheBFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();

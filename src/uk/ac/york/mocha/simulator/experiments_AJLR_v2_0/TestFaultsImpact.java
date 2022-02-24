@@ -372,7 +372,7 @@ public class TestFaultsImpact {
 
 	public static long oneRun(List<DirectedAcyclicGraph> dags, int cores, int seed, boolean print) {
 		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
 		no_fault.simulate(print);
 
 		if (print)

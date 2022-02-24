@@ -68,7 +68,7 @@ public class Test {
 
 	public static long oneRun(List<DirectedAcyclicGraph> dags, int cores, int seed, boolean print) {
 		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
 		no_fault.simulate(print);
 		System.out.println(dags.get(0).finishTime);
 
@@ -152,28 +152,28 @@ public class Test {
 		setUpGenearalFaults(-1, dags);
 
 		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
 		no_fault.simulate(true);
 
 		System.out.println("\n\n");
 
 		setUpGenearalFaults(0, dags);
 		SimualtorNWC all_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
 		all_fault.simulate(true);
 
 		System.out.println("\n\n");
 
 		setUpGenearalFaults(1, dags);
 		SimualtorNWC critical_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
 		critical_fault.simulate(true);
 
 		System.out.println("\n\n");
 
 		setUpGenearalFaults(2, dags);
 		SimualtorNWC non_critical_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
 		non_critical_fault.simulate(true);
 
 //		long longestpath = dags.get(0).longestPath.stream().mapToLong(n -> n.getWCET()).sum();

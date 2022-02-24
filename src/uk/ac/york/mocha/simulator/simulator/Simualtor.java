@@ -168,7 +168,7 @@ public class Simualtor {
 		case CACHE_AWARE:
 			allocM = new OnlineCacheAware();
 			break;
-		case CACHE_AWARE_ROBUST:
+		case CACHE_AWARE_ROBUST_v2_1:
 			allocM = new OnlineCacheAwareRobust_v2_1();
 			break;
 		case OFFLINE_CACHE_AWARE:
