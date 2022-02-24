@@ -4,7 +4,7 @@ import java.util.List;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.RecencyProfile;
+import uk.ac.york.mocha.simulator.dag.RecencyProfileSyn;
 
 public abstract class AllocationMethods {
 
@@ -12,7 +12,7 @@ public abstract class AllocationMethods {
 
 	public abstract void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> availableCores, long[] coreTimes, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocNodes, RecencyProfile table,
+			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocNodes, RecencyProfileSyn table,
 			long sysTime, boolean lcif);
 
 }

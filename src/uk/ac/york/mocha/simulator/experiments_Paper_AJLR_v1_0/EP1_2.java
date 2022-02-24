@@ -1,14 +1,16 @@
-package uk.ac.york.mocha.simulator.experiments;
+package uk.ac.york.mocha.simulator.experiments_Paper_AJLR_v1_0;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
+import uk.ac.york.mocha.simulator.generator.UUnifastDiscard;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
@@ -20,27 +22,71 @@ import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class EP_multiDAG_onlyOnePeriodChanging {
+public class EP1_2 {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static void main(String args[]) {
-		int nos = 5;
+
+		Thread t1 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				changeTaskNumRunner(4);
+
+			}
+		});
+
+		Thread t2 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				runOneDAG();
+
+			}
+		});
+
+//		t1.start();
+		t2.start();
+
 		try {
-			nos = Integer.parseInt(args[0]);
-			System.out.println("Input received, Number of Systems: " + nos);
-
-		} catch (Exception e) {
-			System.out.println("No input given, using the default Number of Sever Core: " + nos);
+			t1.join();
+			t2.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-
-		SystemParameters.NoS = nos;
-
-		changeTaskPeriodRunner(9);
 
 	}
 
-	public static void changeTaskPeriodRunner(int numMax) {
+	public static void runOneDAG() {
+		int intanceNum = 10;
+		int hyperPeriodNum = -1;
+		int seed = 1000;
+		int NoS = SystemParameters.NoS * 5;
+
+		List<List<Long>> periods = new ArrayList<>();
+		for (int j = 0; j < NoS; j++) {
+			ArrayList<Long> period = new ArrayList<>();
+			long p = 144000;
+			period.add(p);
+			periods.add(period);
+		}
+
+		UUnifastDiscard uu = new UUnifastDiscard(4, 1, 1000, SystemParameters.coreNum, false, new Random(seed));
+
+		List<List<Double>> utils = new ArrayList<>();
+		for (int i = 0; i < NoS; i++) {
+			double u = uu.getUtils().get(0);
+			List<Double> us = new ArrayList<>();
+			us.add(u);
+			utils.add(us);
+			System.out.println(u);
+		}
+
+		RunOneGroup(1, intanceNum, hyperPeriodNum, false, utils, seed, seed, periods, NoS, true, ExpName.oneDAG);
+	}
+
+	public static void changeTaskNumRunner(int numMax) {
 
 		int intanceNum = 10;
 		int hyperPeriodNum = -1;
@@ -48,43 +94,21 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 
 		List<Thread> threads = new ArrayList<>();
 
-		long[] periodOne = { 144000, 72000, 48000, 36000, 28800, 24000, 20500, 18000, 16000 };
+		for (int i = 1; i <= numMax; i++) {
 
-		for (int i = 1; i <= numMax; i += 2) {
-
-			final int index = i;
+			final int num = i;
 
 			threads.add(new Thread(new Runnable() {
 				@Override
 				public void run() {
-
-					List<Double> utils = new ArrayList<>();
-
-					double firstUtil = 0.8 * index;
-					double secondUtil = 2.4;
-					utils.add(firstUtil);
-					utils.add(secondUtil);
-
-					List<List<Double>> allUtils = new ArrayList<>();
-					for (int i = 0; i < SystemParameters.NoS; i++)
-						allUtils.add(utils);
-
-					List<List<Long>> periods = new ArrayList<>();
-					for (int i = 0; i < SystemParameters.NoS; i++) {
-						List<Long> p = new ArrayList<>();
-						p.add(periodOne[index - 1] / 10);
-						p.add((long) (144 * 1000 / 10));
-						periods.add(p);
-					}
-
-					RunOneGroup(2, intanceNum, hyperPeriodNum, true, allUtils, seed, seed, periods,
-							SystemParameters.NoS, true, ExpName.sysUtilOneDAG, index);
+					RunOneGroup(num, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS,
+							true, ExpName.taskNum);
 				}
 			}));
 		}
 
 		for (Thread t : threads)
-			t.run();
+			t.start();
 
 		try {
 			for (Thread t : threads)
@@ -96,9 +120,9 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 
 	public static List<Double> RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
-			ExpName name, int periodTime) {
+			ExpName name) {
 
-		ResultCapsule rc = new ResultCapsule();
+		List<OneSystemResults> allSys = new ArrayList<>();
 
 		int[] instanceNo = new int[taskNum];
 
@@ -116,73 +140,45 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 			System.out.println("Cannot get same instances number for randomly generated periods.");
 		}
 
-		final int baseSeed = 1000;
+//		List<List<DirectedAcyclicGraph>> systems = new ArrayList<>();
+//		for (int i = 0; i < NoS; i++) {
+//
+//			taskSeed++;
+//		}
+//
+//		systems.sort((c1, c2) -> -Long.compare(c1.get(0).getSchedParameters().getWCET(),
+//				c2.get(0).getSchedParameters().getWCET()));
 
-		int not = NoS > 100 ? 100 : NoS;
-		int workload = NoS / not;
+		taskSeed = 1000;
+		for (int i = 0; i < NoS; i++) {
+			System.out.println(
+					"\n\n****************************************************************************************************");
+			System.out.println("Change Task Number: " + taskNum + " --- Current system number: " + (i + 1));
 
-		List<Thread> runners = new ArrayList<>();
-		for (int i = 0; i < not; i++) {
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
+					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
+			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+					periods == null ? null : periods.get(i),false);
 
-			int offset = i * workload;
+			OneSystemResults res = null;
 
-			Thread t = new Thread(new Runnable() {
+			res = testOneCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
 
-				@Override
-				public void run() {
+			allSys.add(res);
 
-					int seed = baseSeed + offset;
+			taskSeed++;
 
-					for (int k = offset; k < offset + workload; k++) {
-
-						System.out.println(
-								"\n\n****************************************************************************************************");
-						System.out.println("First DAG Util: " + periodTime + " --- Current system number: " + (k + 1));
-
-//						Calendar calendar = Calendar.getInstance();
-//						calendar.setTime(new Date());
-//						int hours = calendar.get(Calendar.HOUR_OF_DAY);
-//						int minutes = calendar.get(Calendar.MINUTE);
-//						int seconds = calendar.get(Calendar.SECOND);
-//						System.out.println("First DAG Util: " + periodTime + " --- Current system number: " + (k + 1) + ", time: "
-//								+ hours + ":" + minutes + ":" + seconds + ".");
-
-						SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
-								util == null ? null : util.get(k), seed, randomC, SystemParameters.printGen);
-
-						List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-								periods == null ? null : periods.get(k), false);
-
-						OneSystemResults res = null;
-
-						res = testOneCase(dags, taskNum, instanceNo, SystemParameters.coreNum, seed, tableSeed);
-
-						rc.add(res);
-
-						seed++;
-					}
-				}
-			});
-
-			runners.add(t);
 		}
 
-		for (Thread t : runners) {
-			t.start();
-		}
+//		for (int i = 0; i < allSys.size(); i++) {
+//			System.out.println(
+//					allSys.get(i).resultsPerMethod.get(0).dags.get(0).getSchedParameters().getWCET());
+//		}
 
-		for (Thread t : runners) {
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-			}
-		}
-
-		List<OneSystemResults> allSys = rc.allSys;
 		allSys.sort((c1, c2) -> -Long.compare(c1.resultsPerMethod.get(0).dags.get(0).getSchedParameters().getWCET(),
 				c2.resultsPerMethod.get(0).dags.get(0).getSchedParameters().getWCET()));
 
-		new AllSystemsResults(allSys, instanceNo, SystemParameters.NoS, periodTime, name);
+		new AllSystemsResults(allSys, instanceNo, SystemParameters.NoS, taskNum, name);
 
 		List<Double> makespan_compare_medain = new ArrayList<>();
 
@@ -197,6 +193,10 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 
 			Median med = new Median();
 			double medain = med.evaluate(makesapn_compare_array);
+//
+//			double max = Collections.max(makespan_compare);
+//			double min = Collections.min(makespan_compare);
+//			double avg = makespan_compare.stream().mapToDouble(c -> c).average().getAsDouble();
 
 			makespan_compare_medain.add(medain);
 
@@ -215,16 +215,22 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
+//		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
+//				RecencyType.TIME, dags, cores, tableSeed, false, false);
+//		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
+
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
+//		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
 		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 
 		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
 
 		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
+//		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 
 		/*
@@ -241,16 +247,19 @@ public class EP_multiDAG_onlyOnePeriodChanging {
 
 			if (count < NoInstances[dags.get(i).id]) {
 				method0.add(m0.get(i));
+//				method1.add(m1.get(i));
 				method2.add(m2.get(i));
 				count++;
 			}
 		}
 
 		allMethods.add(method0);
+//		allMethods.add(method1);
 		allMethods.add(method2);
 
 		List<double[]> cachePerformance = new ArrayList<>();
 		cachePerformance.add(pair0.getSecond());
+//		cachePerformance.add(pair1.getSecond());
 		cachePerformance.add(pair2.getSecond());
 
 		OneSystemResults result = new OneSystemResults(allMethods, cachePerformance);

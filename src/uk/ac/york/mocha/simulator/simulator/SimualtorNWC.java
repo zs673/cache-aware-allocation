@@ -8,12 +8,13 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
-import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_2;
 import uk.ac.york.mocha.simulator.allocation.SimpleAllocation;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
-import uk.ac.york.mocha.simulator.dag.RecencyProfile;
+import uk.ac.york.mocha.simulator.dag.RecencyProfileSyn;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
@@ -36,7 +37,7 @@ public class SimualtorNWC {
 	/**********************************************************************
 	 ***** The global recency table and cache hierarchy of the system *****
 	 **********************************************************************/
-	private static RecencyProfile profile;
+	private static RecencyProfileSyn profile;
 
 	/**********************************************************************
 	 ************************ DAGs to be executed *************************
@@ -122,7 +123,7 @@ public class SimualtorNWC {
 
 		this.lcif = lcif;
 
-		profile = new RecencyProfile(recency, procNum, recencySeed);
+		profile = new RecencyProfileSyn(recency, procNum, recencySeed);
 
 		this.history_level1 = new ArrayList<>();
 		this.history_level2 = new ArrayList<>();
@@ -182,8 +183,11 @@ public class SimualtorNWC {
 		case CACHE_AWARE_NEW:
 			allocM = new OnlineCacheAwareNewSimu();
 			break;
-		case CACHE_AWARE_ROBUST:
-			allocM = new OnlineCacheAwareRobust();
+		case CACHE_AWARE_ROBUST_v2_1:
+			allocM = new OnlineCacheAwareRobust_v2_1();
+			break;
+		case CACHE_AWARE_ROBUST_v2_2:
+			allocM = new OnlineCacheAwareRobust_v2_2();
 			break;
 //		case OFFLINE_CACHE_AWARE:
 //			allocM = new OnlineAndOffline();

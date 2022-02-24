@@ -9,7 +9,7 @@ import org.apache.commons.math3.util.Pair;
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineAndOffline;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
-import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareWithOrdering;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
@@ -19,7 +19,7 @@ import uk.ac.york.mocha.simulator.allocation.onlineBFD;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
-import uk.ac.york.mocha.simulator.dag.RecencyProfile;
+import uk.ac.york.mocha.simulator.dag.RecencyProfileSyn;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
@@ -39,7 +39,7 @@ public class Simualtor {
 	/**********************************************************************
 	 ***** The gloabl recency table and cache hierarchy of the system *****
 	 **********************************************************************/
-	private static RecencyProfile profile;
+	private static RecencyProfileSyn profile;
 
 	/**********************************************************************
 	 ************************ DAGs to be executed *************************
@@ -110,7 +110,7 @@ public class Simualtor {
 		this.allProcs = new long[procNum];
 		this.lcif = lcif;
 
-		profile = new RecencyProfile(recency, procNum, recencySeed);
+		profile = new RecencyProfileSyn(recency, procNum, recencySeed);
 
 		this.history_level1 = new ArrayList<>();
 		this.history_level2 = new ArrayList<>();
@@ -169,7 +169,7 @@ public class Simualtor {
 			allocM = new OnlineCacheAware();
 			break;
 		case CACHE_AWARE_ROBUST:
-			allocM = new OnlineCacheAwareRobust();
+			allocM = new OnlineCacheAwareRobust_v2_1();
 			break;
 		case OFFLINE_CACHE_AWARE:
 			allocM = new OnlineAndOffline();

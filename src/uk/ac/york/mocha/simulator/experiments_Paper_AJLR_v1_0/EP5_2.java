@@ -1,4 +1,4 @@
-package uk.ac.york.mocha.simulator.errorResults;
+package uk.ac.york.mocha.simulator.experiments_Paper_AJLR_v1_0;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
@@ -17,40 +16,77 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
-import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
+import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OneTaskCriticalVSNonCritical {
+public class EP5_2 {
 
-	static DecimalFormat df = new DecimalFormat("#.###");
-	static int cores = 8;
+	static DecimalFormat df = new DecimalFormat("#.#");
 
 	public static void main(String args[]) {
-		oneTaskWithFaults();
+
+//		changeTaskUtil();
+
+		changeTaskNumRunner(5);
+
 	}
 
-	public static void oneTaskWithFaults() {
+	public static void changeTaskNumRunner(int numMax) {
 
 		int intanceNum = 10;
 		int hyperPeriodNum = -1;
 		int seed = 1000;
 
-		SystemParameters.fault_rate = 100;
-		SystemParameters.fault_median = 50;
-		SystemParameters.fault_range = SystemParameters.fault_median * 2;
+		SystemParameters.utilPerTask = 0.8;
 
-		for (int i = 8; i <= 80; i = i + 8) {
-			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
+		List<Thread> threads = new ArrayList<>();
 
-			RunOneGroupThreeMethod(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, 1000, true,
-					ExpName.recency_fault_util);
+		for (int i = 1; i <= 5; i++) {
 
+			final int num = i;
+
+			threads.add(new Thread(new Runnable() {
+				@Override
+				public void run() {
+					RunOneGroupThreeMethods(num, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
+							SystemParameters.NoS, true, RecencyType.TIME_DEFAULT, ExpName.offline_multi);
+				}
+			}));
 		}
+
+		for (Thread t : threads)
+			t.start();
+
+		try {
+			for (Thread t : threads)
+				t.join();
+		} catch (InterruptedException e) {
+		}
+
 	}
 
-	public static void RunOneGroupThreeMethod(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
+	public static void changeTaskUtil() {
+
+		int intanceNum = 10;
+		int hyperPeriodNum = -1;
+		int seed = 1000;
+
+		SystemParameters.fault_rate = 0;
+		SystemParameters.fault_median = 0;
+		SystemParameters.fault_range = SystemParameters.fault_median * 2;
+
+		for (int i = 8; i <= 40; i = i + 8) {
+			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
+
+			RunOneGroupThreeMethods(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, SystemParameters.NoS,
+					true, RecencyType.TIME_DEFAULT, ExpName.offline);
+		}
+
+	}
+
+	public static void RunOneGroupThreeMethods(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
-			ExpName name) {
+			RecencyType type, ExpName name) {
 
 		List<OneSystemResults> allSys = new ArrayList<>();
 
@@ -74,17 +110,18 @@ public class OneTaskCriticalVSNonCritical {
 		for (int i = 0; i < NoS; i++) {
 			System.out.println(
 					"\n\n****************************************************************************************************");
-			System.out.println(
-					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
+			System.out.println("Change Task Number: " + taskNum + "  " + SystemParameters.utilPerTask
+					+ " --- Current system number: " + (i + 1));
 
-			SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil,
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
 			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false);
+					periods == null ? null : periods.get(i), true);
 
 			OneSystemResults res = null;
 
-			res = testOneCaseThreeMethod(dags, taskNum, instanceNo, cores, taskSeed, tableSeed);
+			res = testOneCaseThreePattern(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed,
+					type);
 
 			allSys.add(res);
 
@@ -92,41 +129,24 @@ public class OneTaskCriticalVSNonCritical {
 
 		}
 
-		new AllSystemsResults(allSys, instanceNo, cores, taskNum, name);
+		new AllSystemsResults(allSys, instanceNo, SystemParameters.NoS, taskNum, name, "_" + type.toString());
 
 	}
 
-	/**
-	 * This test case will generate two fixed DAG strcuture.
-	 */
-	public static OneSystemResults testOneCaseThreeMethod(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
-			int cores, int taskSeed, int tableSeed) {
+	public static OneSystemResults testOneCaseThreePattern(List<DirectedAcyclicGraph> dags, int tasks,
+			int[] NoInstances, int cores, int taskSeed, int tableSeed, RecencyType type) {
 
-		boolean lcif = true;
-		
-		for (DirectedAcyclicGraph d : dags)
-			for (Node n : d.getFlatNodes())
-				n.hasFaults = false;
-
-		SimualtorNWC cacheBFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT, type,
+				dags, cores, tableSeed, false, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
-
-		for (DirectedAcyclicGraph d : dags)
-			for (Node n : d.getFlatNodes())
-				n.hasFaults = true;
-
-		SimualtorNWC cacheWFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+//
+		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE, type,
+				dags, cores, tableSeed, true, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
-		for (DirectedAcyclicGraph d : dags)
-			for (Node n : d.getFlatNodes())
-				n.hasFaults = true;
-
-		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
+		Simualtor cacheSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.OFFLINE_CACHE_AWARE,
+				type, dags, cores, tableSeed, true, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheSim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
@@ -154,6 +174,7 @@ public class OneTaskCriticalVSNonCritical {
 				method0.add(m0.get(i));
 				method1.add(m1.get(i));
 				method2.add(m2.get(i));
+
 				count++;
 			}
 		}
@@ -171,4 +192,5 @@ public class OneTaskCriticalVSNonCritical {
 
 		return result;
 	}
+
 }

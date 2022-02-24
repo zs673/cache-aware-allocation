@@ -1,4 +1,4 @@
-package uk.ac.york.mocha.simulator.errorResults;
+package uk.ac.york.mocha.simulator.experiments_AJLR_v2_0;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -207,20 +207,22 @@ public class OneTaskUtilCompareThreeMethods {
 		SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(SystemParameters.printSim);
-
-		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(SystemParameters.printSim);
-
+		
 		for (DirectedAcyclicGraph d : dags)
 			for (Node n : d.getFlatNodes())
 				n.hasFaults = true;
 
-		SimualtorNWC sim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
+		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(SystemParameters.printSim);
+
+		
+
+		SimualtorNWC sim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST_v2_1,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = sim3.simulate(SystemParameters.printSim);
 
-		SimualtorNWC sim4 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
+		SimualtorNWC sim4 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST_v2_2,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair4 = sim4.simulate(SystemParameters.printSim);
 

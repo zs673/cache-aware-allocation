@@ -1,6 +1,8 @@
-package uk.ac.york.mocha.simulator.errorResults;
+package uk.ac.york.mocha.simulator.experiments_AJLR_v2_0;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
@@ -17,15 +19,45 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
+import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class Evaluation {
+public class Recency3DCriticalVSNonCritical {
 	
+	static DecimalFormat df = new DecimalFormat("#.###");
+
 	public static void main(String args[]) {
-		faultsInRecency3D();
+
+		Thread t1 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				faultsInRecency3D(0);
+
+			}
+		});
+
+		Thread t2 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				faultsInRecency3D(1);
+
+			}
+		});
+
+		t1.start();
+		t2.start();
+
+		try {
+			t1.join();
+			t2.join();
+		} catch (InterruptedException e) {
+		}
+
 	}
 
-	public static void faultsInRecency3D() {
+	public static void faultsInRecency3D(int onlyCritical) {
 		int intanceNum = 10;
 		int hyperPeriodNum = -1;
 		int seed = 1000;
@@ -56,29 +88,31 @@ public class Evaluation {
 						true, ExpName.recency_fault);
 
 //				List<Double> r1 = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
-//						false, ExpName.recency_fault);
-				
-				System.out.println("r: " + r);
-//				System.out.println("r1: " + r1);
+//						false, onlyCritical, ExpName.recency_fault);
+
+
 
 				Median med = new Median();
 
 				double[] r_array = new double[r.size()];
 				for (int k = 0; k < r.size(); k++) {
 					double d = r.get(k);
-					r_array[k] = d;
+					r_array[k] = Double.parseDouble(df.format(d));
 				}
 
 //				double[] r1_array = new double[r1.size()];
 //				for (int k = 0; k < r1.size(); k++) {
 //					double d = r1.get(k);
-//					r1_array[k] = d;
+//					r1_array[k] = Double.parseDouble(df.format(d);
 //				}
+				
+				System.out.println(onlyCritical + "  r: " + Arrays.toString(r_array));
+//				System.out.println(onlyCritical + "  r1: " + r1);
 
 				res.add(med.evaluate(r_array));
 //				ref.add(med.evaluate(r1_array));
 
-				System.out.println("fault rate: " + i + "  fault effect: " + j);
+				System.out.println(onlyCritical + "  fault rate: " + i + "  fault effect: " + j);
 			}
 
 			results.add(res);
@@ -88,7 +122,7 @@ public class Evaluation {
 		StringBuilder xs = new StringBuilder();
 		StringBuilder ys = new StringBuilder();
 		StringBuilder zs = new StringBuilder();
-		StringBuilder rs = new StringBuilder();
+//		StringBuilder rs = new StringBuilder();
 
 		for (int j = 0; j < faultRate; j = j + jump) {
 			List<Integer> x = new ArrayList<>();
@@ -154,17 +188,24 @@ public class Evaluation {
 //		}
 
 		System.out.println("-------------------------------------------");
-		System.out.println(xs);
-		System.out.println(ys);
-		System.out.println(zs);
+//		System.out.println(xs);
+//		System.out.println(ys);
+//		System.out.println(zs);
 
-		Utils.writeResult("result/" + ExpName.recency_fault.name() + "/x.txt", xs.toString());
-		Utils.writeResult("result/" + ExpName.recency_fault.name() + "/y.txt", ys.toString());
-		Utils.writeResult("result/" + ExpName.recency_fault.name() + "/z.txt", zs.toString());
-		Utils.writeResult("result/" + ExpName.recency_fault.name() + "/r.txt", rs.toString());
+		if (onlyCritical==1) {
+			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/x0.txt", xs.toString());
+			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/y0.txt", ys.toString());
+			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/z0.txt", zs.toString());
+//			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/r0.txt", rs.toString());
+		} else {
+			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/x1.txt", xs.toString());
+			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/y1.txt", ys.toString());
+			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/z1.txt", zs.toString());
+//			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/r1.txt", rs.toString());
+		}
 
 	}
-	
+
 	public static List<Double> RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
 			boolean fault, ExpName name) {
@@ -241,19 +282,19 @@ public class Evaluation {
 
 		return makespan_compare_medain;
 	}
-	
+
 	/**
 	 * This test case will generate two fixed DAG structure.
 	 */
 	public static OneSystemResults oneTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
 			int taskSeed, int tableSeed) {
 
-		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT_OUR,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
-		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
+		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
@@ -301,12 +342,12 @@ public class Evaluation {
 	public static OneSystemResults RecencyFaultTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
 			int cores, int taskSeed, int tableSeed) {
 
-		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT_OUR,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
-		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
+		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();

@@ -8,7 +8,7 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.RecencyProfile;
+import uk.ac.york.mocha.simulator.dag.RecencyProfileSyn;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -18,7 +18,7 @@ public class OnlineCacheAware extends AllocationMethods {
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory,
-			RecencyProfile table, long currentTime, boolean lcif) {
+			RecencyProfileSyn table, long currentTime, boolean lcif) {
 
 		/*
 		 * Entry for debugging a single node
@@ -166,7 +166,7 @@ public class OnlineCacheAware extends AllocationMethods {
 
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
-			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, RecencyProfile table, long time,
+			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, RecencyProfileSyn table, long time,
 			boolean lcif, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
 
 		int row = -1;

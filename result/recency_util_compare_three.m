@@ -46,23 +46,27 @@ for util = 1:5
         
          pos = zeros(1);
          for col = 1:methodNum
-             pos(col) = (util - 1) * 3 + col;
+             pos(col) = (util - 1) * methodNum + col;
          end
 
          if util == 5
-               boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
-         hold on
-         boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
-         hold on
-         boxplot(data_per_util(:,3), 'position',pos(3), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
-         hold on
+             boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
+             hold on
+             boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
+             hold on
+             boxplot(data_per_util(:,3), 'position',pos(3), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
+             hold on
+              boxplot(data_per_util(:,4), 'position',pos(4), 'widths', 0.65, 'symbol','.', 'color', colors(4,:));
+             hold on
          else
-               boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
-         hold on
-         boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
-         hold on
-         boxplot(data_per_util(:,3), 'position',pos(3), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
-         hold on
+             boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
+             hold on
+             boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
+             hold on
+             boxplot(data_per_util(:,3), 'position',pos(3), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
+             hold on
+             boxplot(data_per_util(:,4), 'position',pos(4), 'widths', 0.65, 'symbol','.', 'color', colors(4,:));
+             hold on
          end
        
 
@@ -71,9 +75,9 @@ for util = 1:5
 %     set(findobj(gca,'type','line'),'linew',1.5)
 %     set(gca,'linew',1.5)
      
-    xlim([0 16]);
+    xlim([0 21]);
     ylim([0 1]);
-    xticks = [2 5 8 11 14];
+    xticks = 2.5 : 4 : 21;
     xticklables = ["10","20","30","40","50" ];
     
     set(gca,'xtick',xticks );

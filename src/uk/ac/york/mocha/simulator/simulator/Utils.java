@@ -2,18 +2,26 @@ package uk.ac.york.mocha.simulator.simulator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.math3.util.Pair;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.dag.RecencyProfileReal;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class Utils {
@@ -156,8 +164,8 @@ public class Utils {
 			int c = -1;
 
 			if (dag1.id != dag2.id) {
-				System.out.println(
-						"Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
+				System.out
+						.println("Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
 				System.exit(-1);
 			}
 
@@ -215,8 +223,8 @@ public class Utils {
 	}
 
 	/*
-	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a complete
-	 * hyperperiod.
+	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a
+	 * complete hyperperiod.
 	 */
 	public static long getHyperPeriod(List<Long> periods) {
 
@@ -317,6 +325,66 @@ public class Utils {
 
 	public static void writeResult(String filename, String result) {
 		writeResult(filename, result, false);
+	}
+
+	public static void main(String args[]) {
+		List<RecencyProfileReal> crps = readJson("crp/profile.tacle.crp.json");
+
+	}
+
+	public static List<RecencyProfileReal> readJson(String file) {
+		JSONParser parser = new JSONParser();
+
+		List<RecencyProfileReal> crps = new ArrayList<>();
+
+		try {
+			Object obj = parser.parse(new FileReader(file));
+			JSONObject jsonObj = (JSONObject) obj;
+
+			@SuppressWarnings("unchecked")
+			Set<String> names = jsonObj.keySet();
+
+			List<String> nameList = new ArrayList<String>();
+			for (String x : names)
+				nameList.add(x);
+
+			int id = 0;
+			for (String key : names) {
+				JSONObject job = (JSONObject) jsonObj.get(key);
+
+				double WCET = ((Number) job.get("baseline_timing")).doubleValue();
+
+				JSONArray breaks_j = (JSONArray) job.get("breaks");
+				JSONArray slopes_j = (JSONArray) job.get("slopes");
+				JSONArray intercepts_j = (JSONArray) job.get("intercepts");
+
+				double[] breaks = new double[breaks_j.size()];
+				double[] slopes = new double[slopes_j.size()];
+				double[] intercepts = new double[intercepts_j.size()];
+
+				for (int i = 0; i < breaks.length; i++) {
+					breaks[i] = ((Number) breaks_j.get(i)).doubleValue();
+					slopes[i] = ((Number) slopes_j.get(i)).doubleValue();
+					intercepts[i] = ((Number) intercepts_j.get(i)).doubleValue();
+				}
+
+				id++;
+
+				RecencyProfileReal crp = new RecencyProfileReal(key, id, WCET, breaks, slopes, intercepts);
+				crps.add(crp);
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return crps;
 	}
 
 }

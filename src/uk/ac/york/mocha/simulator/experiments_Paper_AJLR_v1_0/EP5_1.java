@@ -1,4 +1,4 @@
-package uk.ac.york.mocha.simulator.experiments;
+package uk.ac.york.mocha.simulator.experiments_Paper_AJLR_v1_0;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -19,19 +19,22 @@ import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class EP5_2 {
+public class EP5_1 {
 
 	static DecimalFormat df = new DecimalFormat("#.#");
 
 	public static void main(String args[]) {
 
-//		changeTaskUtil();
+		SystemParameters.coreNum = 8;
+		SystemParameters.NoS = 1000;
+		SystemParameters.maxParal = 15;
+		SystemParameters.minParal = 6;
 
-		changeTaskNumRunner(5);
-
+		changeTaskNumRunner(1, 4);
+		
 	}
 
-	public static void changeTaskNumRunner(int numMax) {
+	public static void changeTaskNumRunner(int numMin, int numMax) {
 
 		int intanceNum = 10;
 		int hyperPeriodNum = -1;
@@ -41,7 +44,7 @@ public class EP5_2 {
 
 		List<Thread> threads = new ArrayList<>();
 
-		for (int i = 1; i <= 5; i++) {
+		for (int i = numMin; i <= numMax; i++) {
 
 			final int num = i;
 
@@ -55,7 +58,7 @@ public class EP5_2 {
 		}
 
 		for (Thread t : threads)
-			t.start();
+			t.run();
 
 		try {
 			for (Thread t : threads)

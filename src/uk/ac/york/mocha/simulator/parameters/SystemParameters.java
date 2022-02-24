@@ -14,8 +14,7 @@ public class SystemParameters {
 	};
 
 	public enum Allocation {
-		SIMPLE, RANDOM, BEST_FIT, FIRST_FIT, WORST_FIT, WORST_FIT_OUR, CACHE_AWARE, CACHE_AWARE_NEW, CACHE_AWARE_ROBUST,
-		OFFLINE_CACHE_AWARE, CACHE_AWARE_OUR,
+		SIMPLE, RANDOM, BEST_FIT, FIRST_FIT, WORST_FIT, WORST_FIT_OUR, CACHE_AWARE, CACHE_AWARE_NEW, CACHE_AWARE_ROBUST_v2_1, CACHE_AWARE_ROBUST_v2_2, OFFLINE_CACHE_AWARE, CACHE_AWARE_OUR,
 
 	};
 
@@ -23,8 +22,7 @@ public class SystemParameters {
 	 *********************** Experimental Settings ************************
 	 **********************************************************************/
 	public enum ExpName {
-		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, offline_multi, methods, periods,
-		tasks, sysUtil, sysUtilOneDAG, util_compare, util_compare_three
+		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, offline_multi, methods, periods, tasks, sysUtil, sysUtilOneDAG, util_compare, util_compare_three
 	}
 
 	public static int NoS = 1000;

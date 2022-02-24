@@ -1,6 +1,5 @@
 package uk.ac.york.mocha.simulator.dag;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -12,7 +11,7 @@ import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 
-public class RecencyProfile {
+public class RecencyProfileSyn {
 
 	private RecencyType type;
 	public final List<List<Integer>> cacheHierarchy;
@@ -22,16 +21,14 @@ public class RecencyProfile {
 	 **********************************************************************/
 	public List<List<Double>> recencyTable;
 
-	private static final DecimalFormat df = new DecimalFormat("#.###");
-
 //	private Random rng;
 
-	public RecencyProfile(int procNum, int seed) {
+	public RecencyProfileSyn(int procNum, int seed) {
 
 		this(RecencyType.TIME_DEFAULT, procNum, seed);
 	}
 
-	public RecencyProfile(RecencyType type, int procNum, int seed) {
+	public RecencyProfileSyn(RecencyType type, int procNum, int seed) {
 
 		if (procNum % SystemParameters.Level2CoreNum != 0 || procNum / SystemParameters.Level2CoreNum < 1) {
 			System.err.println("Number of cores must be multiple of " + SystemParameters.Level2CoreNum);
@@ -448,7 +445,7 @@ public class RecencyProfile {
 		// System.out.println(d);
 		// }
 
-		RecencyProfile rp = new RecencyProfile(RecencyType.TIME_DEFAULT, 8, 1000);
+		RecencyProfileSyn rp = new RecencyProfileSyn(RecencyType.TIME_DEFAULT, 8, 1000);
 
 		Node n = new Node(1000000, -1, NodeType.NORMAL, -1, -1, new Random(1000));
 
