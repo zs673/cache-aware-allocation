@@ -77,7 +77,7 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 		// Utils.getAllocHistoryByLevel2Cache(allocHistory);
 		// List<Node> level3 =
 		// allocHistory.stream().flatMap(List::stream).collect(Collectors.toList());
-		
+
 		List<Integer> availableCores = new ArrayList<>();
 		for (int i = 0; i < cores.size(); i++) {
 			if (localRunqueue.get(i).size() == 0 && coreTime[i] <= systemTime)
@@ -245,12 +245,14 @@ public class OnlineCacheAwareRobust extends AllocationMethods {
 
 			for (int core = 0; core < cores.size(); core++) {
 
+				final int k = core;
 				/*
 				 * Option 1: Speed up by ABSOLUTE value
 				 */
 				long WCET = n.getWCET();
 				long estimatedET = table
-						.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, false)
+						.computeET(-1, history_level1, history_level2, history_level3, n, core, true,
+								localRunqueue.get(core).stream().mapToLong(c -> c.expectedETPerCore[k]).sum(), false)
 						.getFirst();
 				long speedup = WCET - estimatedET;
 				n.expectedETPerCore[core] = estimatedET;

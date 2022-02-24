@@ -274,6 +274,10 @@ public class Utils {
 	}
 
 	public static void writeResult(String path, String file, String result) {
+		writeResult(path, file, result, false);
+	}
+
+	public static void writeResult(String path, String file, String result, boolean append) {
 
 		File theDir = new File(path);
 		if (!theDir.exists()) {
@@ -282,7 +286,23 @@ public class Utils {
 
 		PrintWriter writer = null;
 		try {
-			writer = new PrintWriter(new FileWriter(new File(path + "/" + file), false));
+			writer = new PrintWriter(new FileWriter(new File(path + "/" + file), append));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		writer.println(result);
+		writer.close();
+	}
+
+	public static void writeResult(String filename, String result, boolean append) {
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter(new FileWriter(new File(filename), append));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
@@ -296,20 +316,7 @@ public class Utils {
 	}
 
 	public static void writeResult(String filename, String result) {
-
-		PrintWriter writer = null;
-		try {
-			writer = new PrintWriter(new FileWriter(new File(filename), false));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		writer.println(result);
-		writer.close();
+		writeResult(filename, result, false);
 	}
 
 }

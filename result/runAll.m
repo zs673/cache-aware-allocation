@@ -34,9 +34,9 @@ xlim_value = 300;
 % 
 % online_and_offline_taskNum
 
-% recency_util_compare
-% recency_util_compare_detail
-% recency_util_compare_detail_with_outlayer
+recency_util_compare
+recency_util_compare_detail
+recency_util_compare_detail_with_outlayer
 
-recency_util_compare_three
-recency_util_compare_three_abs
+% recency_util_compare_three
+% recency_util_compare_three_abs
