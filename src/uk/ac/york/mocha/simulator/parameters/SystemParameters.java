@@ -75,7 +75,7 @@ public class SystemParameters {
 	 * Recency Table Type
 	 */
 	public static enum RecencyType {
-		ORDER, TIME_DEFAULT, TIME_CURVE, TIME_STEP
+		REAL, ORDER, TIME_DEFAULT, TIME_CURVE, TIME_STEP
 	};
 
 	/*

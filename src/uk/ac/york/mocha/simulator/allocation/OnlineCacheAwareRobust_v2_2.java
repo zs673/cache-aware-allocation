@@ -8,7 +8,6 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.RecencyProfileSyn;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -51,7 +50,7 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue, List<Integer> cores,
 			long[] coreTime, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			List<List<Node>> allocHistory, RecencyProfileSyn table, long systemTime, boolean lcif) {
+			List<List<Node>> allocHistory, long systemTime, boolean lcif) {
 
 		if (readyNodes.size() == 0)
 			return;
@@ -63,7 +62,7 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 		 *************************************************************************************************/
 		/* Sort ready nodes list by DAG priority and then node WCET */
 		// readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
-		readyNodes.sort((c1, c2) -> Utils.compareNodeByPriorityAndSensitivity(dags, c1, c2));
+		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
 		// for (List<Node> l : localRunqueue) {
 		// readyNodes.addAll(l);
@@ -95,10 +94,10 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 		 **************************************************************************************************/
 
 		while (readyNodes.size() != allocNodes.size()) {
-			List<List<Long>> speedUpTable = computeSpeedUp(readyNodes, cores, table, coreTime, systemTime, localRunqueue, history_level1,
+			List<List<Long>> speedUpTable = computeSpeedUp(readyNodes, cores, coreTime, systemTime, localRunqueue, history_level1,
 					history_level2, history_level3);
 
-			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, readyNodes, cores, coreTime, table, systemTime,
+			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, readyNodes, cores, coreTime, systemTime,
 					lcif, history_level1, history_level2, history_level3);
 
 			Node n = readyNodes.get(p.getFirst().intValue());
@@ -123,7 +122,7 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 	}
 
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes, List<Integer> allocProcs,
-			List<Node> readyNodes, List<Integer> cores, long[] coreTime, RecencyProfileSyn table, long systemTime, boolean lcif,
+			List<Node> readyNodes, List<Integer> cores, long[] coreTime, long systemTime, boolean lcif,
 			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
 
 		int row = -1;
@@ -208,11 +207,11 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 
 					for (Node affected : affectedNodes) {
 
-						long affectedTimeOneNode = table
+						long affectedTimeOneNode = affected.crp
 								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, et_n,
 										false)
 								.getFirst()
-								- table.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, 0,
+								- affected.crp.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, 0,
 										false).getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
@@ -243,7 +242,7 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 		return new Pair<Integer, Integer>(row, col);
 	}
 
-	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfileSyn table, long[] coreTime,
+	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, long[] coreTime,
 			long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1, List<List<Node>> history_level2,
 			List<Node> history_level3) {
 
@@ -261,7 +260,7 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 
 				long WCET = n.getWCET();
 
-				Pair<Long, Integer> cacheRes = table.computeET(-1, history_level1, history_level2, history_level3, n, core, true,
+				Pair<Long, Integer> cacheRes = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true,
 						localRunqueue.get(core).stream().mapToLong(c -> c.expectedETPerCore[k]).sum(), false);
 
 				long estimatedET = cacheRes.getFirst();

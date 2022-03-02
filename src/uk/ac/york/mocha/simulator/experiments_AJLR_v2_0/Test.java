@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math3.util.Pair;
+
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
@@ -41,8 +44,9 @@ public class Test {
 
 		SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true,
 				SystemParameters.printGen);
-		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
+		Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
 
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		if (print) {
 
 			List<Node> longestPath = dags.get(0).longestPath;
@@ -57,22 +61,22 @@ public class Test {
 		}
 
 		setUpGenearalFaults(-1, dags);
-		oneRun(dags, cores, seed, print);
+		oneRun(sys, cores, seed, print);
 
 		for (int i = 0; i < dags.get(0).longestPath.size(); i++) {
 			setUpSpecificFaults(i + 1, 1, 0, 0.5, dags, print);
-			oneRun(dags, cores, seed, print);
+			oneRun(sys, cores, seed, print);
 		}
 
 	}
 
-	public static long oneRun(List<DirectedAcyclicGraph> dags, int cores, int seed, boolean print) {
+	public static long oneRun(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed, boolean print) {
 		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, seed, true);
 		no_fault.simulate(print);
-		System.out.println(dags.get(0).finishTime);
+		System.out.println(sys.getFirst().get(0).finishTime);
 
-		return dags.get(0).finishTime;
+		return sys.getFirst().get(0).finishTime;
 	}
 
 	public static void setUpSpecificFaults(int nof, int faultFlag, double medain, double effect,
@@ -147,33 +151,34 @@ public class Test {
 
 		SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true,
 				SystemParameters.printGen);
-		List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
+		Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
 
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		setUpGenearalFaults(-1, dags);
 
 		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, seed, true);
 		no_fault.simulate(true);
 
 		System.out.println("\n\n");
 
 		setUpGenearalFaults(0, dags);
 		SimualtorNWC all_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, seed, true);
 		all_fault.simulate(true);
 
 		System.out.println("\n\n");
 
 		setUpGenearalFaults(1, dags);
 		SimualtorNWC critical_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, seed, true);
 		critical_fault.simulate(true);
 
 		System.out.println("\n\n");
 
 		setUpGenearalFaults(2, dags);
 		SimualtorNWC non_critical_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, seed, true);
 		non_critical_fault.simulate(true);
 
 //		long longestpath = dags.get(0).longestPath.stream().mapToLong(n -> n.getWCET()).sum();
@@ -237,16 +242,18 @@ public class Test {
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true,
 					SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
+			Pair<List<DirectedAcyclicGraph>,CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
 
 //			System.out.println(dags.get(0).toString());
 
 			Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_ONLY, Allocation.FIRST_FIT,
-					RecencyType.TIME_DEFAULT, dags, 16, seed, true, false);
+					RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), 16, seed, true);
 			cacheCASim.simulate(false, 0);
 
 //			System.out.println(dags.get(0).printExeInfo());
 
+			List<DirectedAcyclicGraph> dags = sys.getFirst();
+			
 			long longestpath = dags.get(0).longestPath.stream().mapToLong(n -> n.getWCET()).sum();
 			if (longestpath != dags.get(0).finishTime) {
 				System.err.println("****!!! The " + i + "th time !!!****");

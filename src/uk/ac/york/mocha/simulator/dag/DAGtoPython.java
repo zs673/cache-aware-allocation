@@ -18,7 +18,7 @@ public class DAGtoPython {
 
 		for (int i = 0; i < 10000; i++) {
 			SystemGenerator gen = new SystemGenerator(8, 1, true, true, null, i, true, false);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true);
+			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true).getFirst();
 
 			DirectedAcyclicGraph dag = dags.get(0);
 

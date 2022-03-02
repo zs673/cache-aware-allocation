@@ -108,12 +108,12 @@ public class ExhaustiveSearching {
 		List<Node> nodes = new ArrayList<>();
 
 		if (num == 1) {
-			Node n0_0 = new Node(wcet.get(0), -1, null, 0, 0, rng);
-			Node n0_1 = new Node(wcet.get(1), -1, null, 1, 0, rng);
-			Node n0_2 = new Node(wcet.get(2), -1, null, 2, 0, rng);
-			Node n0_3 = new Node(wcet.get(3), -1, null, 3, 0, rng);
-			Node n0_4 = new Node(wcet.get(4), -1, null, 4, 0, rng);
-			Node n0_5 = new Node(wcet.get(5), -1, null, 5, 0, rng);
+			Node n0_0 = new Node(wcet.get(0), -1, null, 0, 0, null, false, rng);
+			Node n0_1 = new Node(wcet.get(1), -1, null, 1, 0, null, false, rng);
+			Node n0_2 = new Node(wcet.get(2), -1, null, 2, 0, null, false, rng);
+			Node n0_3 = new Node(wcet.get(3), -1, null, 3, 0, null, false, rng);
+			Node n0_4 = new Node(wcet.get(4), -1, null, 4, 0, null, false, rng);
+			Node n0_5 = new Node(wcet.get(5), -1, null, 5, 0, null, false, rng);
 
 			nodes.add(n0_0);
 			nodes.add(n0_1);
@@ -125,10 +125,10 @@ public class ExhaustiveSearching {
 
 		if (num == 2) {
 
-			Node n1_0 = new Node(wcet.get(6), -1, null, 0, 1, rng);
-			Node n1_1 = new Node(wcet.get(7), -1, null, 1, 1, rng);
-			Node n1_2 = new Node(wcet.get(8), -1, null, 2, 1, rng);
-			Node n1_3 = new Node(wcet.get(9), -1, null, 3, 1, rng);
+			Node n1_0 = new Node(wcet.get(6), -1, null, 0, 1, null, false, rng);
+			Node n1_1 = new Node(wcet.get(7), -1, null, 1, 1, null, false, rng);
+			Node n1_2 = new Node(wcet.get(8), -1, null, 2, 1, null, false, rng);
+			Node n1_3 = new Node(wcet.get(9), -1, null, 3, 1, null, false, rng);
 
 			nodes.add(n1_0);
 			nodes.add(n1_1);

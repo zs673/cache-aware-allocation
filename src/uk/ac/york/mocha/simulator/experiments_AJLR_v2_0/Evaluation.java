@@ -7,6 +7,7 @@ import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
@@ -195,15 +196,15 @@ public class Evaluation {
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
 					periods == null ? null : periods.get(i), false);
 
 			OneSystemResults res = null;
 
 			if (fault)
-				res = RecencyFaultTestCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
+				res = RecencyFaultTestCase(sys, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
 			else
-				res = oneTestCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
+				res = oneTestCase(sys, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
 
 			allSys.add(res);
 
@@ -245,15 +246,15 @@ public class Evaluation {
 	/**
 	 * This test case will generate two fixed DAG structure.
 	 */
-	public static OneSystemResults oneTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
+	public static OneSystemResults oneTestCase(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int tasks, int[] NoInstances, int cores,
 			int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT_OUR,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
+				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
@@ -264,6 +265,7 @@ public class Evaluation {
 		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
 		 */
@@ -298,15 +300,15 @@ public class Evaluation {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults RecencyFaultTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
+	public static OneSystemResults RecencyFaultTestCase(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int tasks, int[] NoInstances,
 			int cores, int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT_OUR,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
@@ -317,6 +319,7 @@ public class Evaluation {
 		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
 		 */

@@ -9,6 +9,7 @@ import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
@@ -23,7 +24,7 @@ import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class Recency3DCriticalVSNonCritical {
-	
+
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	public static void main(String args[]) {
@@ -90,8 +91,6 @@ public class Recency3DCriticalVSNonCritical {
 //				List<Double> r1 = RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, NoS, true,
 //						false, onlyCritical, ExpName.recency_fault);
 
-
-
 				Median med = new Median();
 
 				double[] r_array = new double[r.size()];
@@ -105,7 +104,7 @@ public class Recency3DCriticalVSNonCritical {
 //					double d = r1.get(k);
 //					r1_array[k] = Double.parseDouble(df.format(d);
 //				}
-				
+
 				System.out.println(onlyCritical + "  r: " + Arrays.toString(r_array));
 //				System.out.println(onlyCritical + "  r1: " + r1);
 
@@ -192,7 +191,7 @@ public class Recency3DCriticalVSNonCritical {
 //		System.out.println(ys);
 //		System.out.println(zs);
 
-		if (onlyCritical==1) {
+		if (onlyCritical == 1) {
 			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/x0.txt", xs.toString());
 			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/y0.txt", ys.toString());
 			Utils.writeResult("result/" + ExpName.recency_fault.name() + "/z0.txt", zs.toString());
@@ -236,15 +235,15 @@ public class Recency3DCriticalVSNonCritical {
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
-					periods == null ? null : periods.get(i), false);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum,
+					hyperperiodNum, periods == null ? null : periods.get(i), false);
 
 			OneSystemResults res = null;
 
 			if (fault)
-				res = RecencyFaultTestCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
+				res = RecencyFaultTestCase(sys, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
 			else
-				res = oneTestCase(dags, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
+				res = oneTestCase(sys, taskNum, instanceNo, SystemParameters.coreNum, taskSeed, tableSeed);
 
 			allSys.add(res);
 
@@ -286,15 +285,16 @@ public class Recency3DCriticalVSNonCritical {
 	/**
 	 * This test case will generate two fixed DAG structure.
 	 */
-	public static OneSystemResults oneTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances, int cores,
-			int taskSeed, int tableSeed) {
+	public static OneSystemResults oneTestCase(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int tasks,
+			int[] NoInstances, int cores, int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, false);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
-		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST_v2_1,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true);
+		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
+				tableSeed, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
@@ -305,6 +305,7 @@ public class Recency3DCriticalVSNonCritical {
 		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
 		 */
@@ -339,15 +340,15 @@ public class Recency3DCriticalVSNonCritical {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults RecencyFaultTestCase(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
-			int cores, int taskSeed, int tableSeed) {
+	public static OneSystemResults RecencyFaultTestCase(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int tasks,
+			int[] NoInstances, int cores, int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, true);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
@@ -358,6 +359,7 @@ public class Recency3DCriticalVSNonCritical {
 		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
 		 */

@@ -4,8 +4,11 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.util.Pair;
+
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
@@ -116,7 +119,7 @@ public class TestFaultsImpact {
 			System.out.println("No. of system: " + i);
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true, print);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(instanceNum, -1, null, false);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(instanceNum, -1, null, false);
 
 //			System.out.println("No. node: " + dags.get(0).getFlatNodes().size());
 
@@ -127,6 +130,8 @@ public class TestFaultsImpact {
 			// System.out.println();
 			// }
 
+			List<DirectedAcyclicGraph> dags = sys.getFirst();
+			
 			if (print) {
 				// System.out.println(dags.get(0).toString());
 
@@ -143,19 +148,19 @@ public class TestFaultsImpact {
 
 			List<Long> results = new ArrayList<>();
 
-			results.addAll(run(dags, cores, seed, faultType.all_nodes, percent, effect, print));
+			results.addAll(run(sys, cores, seed, faultType.all_nodes, percent, effect, print));
 			// if(print)
 			// System.out.println();
-			results.addAll(run(dags, cores, seed, faultType.high_pathET, percent, effect, print));
+			results.addAll(run(sys, cores, seed, faultType.high_pathET, percent, effect, print));
 			// if(print)
 			// System.out.println();
-			results.addAll(run(dags, cores, seed, faultType.high_et, percent, effect, print));
+			results.addAll(run(sys, cores, seed, faultType.high_et, percent, effect, print));
 			// if(print)
 			// System.out.println();
-			results.addAll(run(dags, cores, seed, faultType.high_pathNum, percent, effect, print));
+			results.addAll(run(sys, cores, seed, faultType.high_pathNum, percent, effect, print));
 			// if(print)
 			// System.out.println();
-			results.addAll(run(dags, cores, seed, faultType.sensivitiy, percent, effect, print));
+			results.addAll(run(sys, cores, seed, faultType.sensivitiy, percent, effect, print));
 			// if(print)
 			// System.out.println();
 
@@ -180,7 +185,7 @@ public class TestFaultsImpact {
 		Utils.writeResult(folderAndFile, out);
 	}
 
-	public static List<Long> run(List<DirectedAcyclicGraph> dags, int cores, int seed, faultType type, double percent,
+	public static List<Long> run(Pair<List<DirectedAcyclicGraph>,CacheHierarchy> sys, int cores, int seed, faultType type, double percent,
 			double effect, boolean print) {
 
 		List<Long> makespans = new ArrayList<>();
@@ -188,8 +193,8 @@ public class TestFaultsImpact {
 		if (print)
 			System.out.println("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " + type.toString()
 					+ "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		setUpSpecificFaults(dags, type, percent, effect, true, print);
-		long makespan_opposite = oneRun(dags, cores, seed, print);
+		setUpSpecificFaults(sys.getFirst(), type, percent, effect, true, print);
+		long makespan_opposite = oneRun(sys, cores, seed, print);
 		makespans.add(makespan_opposite);
 		if (print)
 			System.out.println(
@@ -198,8 +203,8 @@ public class TestFaultsImpact {
 		if (print)
 			System.out.println("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " + type.toString()
 					+ "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		setUpSpecificFaults(dags, type, percent, effect, false, print);
-		long makespan = oneRun(dags, cores, seed, print);
+		setUpSpecificFaults(sys.getFirst(), type, percent, effect, false, print);
+		long makespan = oneRun(sys, cores, seed, print);
 		makespans.add(makespan);
 		if (print)
 			System.out.println(
@@ -370,11 +375,12 @@ public class TestFaultsImpact {
 		return faultNodesinDAGs;
 	}
 
-	public static long oneRun(List<DirectedAcyclicGraph> dags, int cores, int seed, boolean print) {
+	public static long oneRun(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed, boolean print) {
 		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, seed, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, seed, true);
 		no_fault.simulate(print);
 
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		if (print)
 			System.out.println(dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime);
 

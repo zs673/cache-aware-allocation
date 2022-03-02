@@ -8,7 +8,6 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.RecencyProfileSyn;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -16,8 +15,9 @@ public class OnlineAndOffline extends AllocationMethods {
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
-			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3, List<List<Node>> allocHistory, RecencyProfileSyn table, long currentTime, boolean affinity) {
+			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1,
+			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
+			boolean affinity) {
 
 		/*
 		 * Entry for debugging a single node
@@ -34,8 +34,7 @@ public class OnlineAndOffline extends AllocationMethods {
 		readyNodes.stream().forEach(c -> c.partition = -1);
 
 		/*
-		 * Sort ready nodes list by FPS+WF, take first procNum nodes to
-		 * allocate.
+		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.
 		 */
 		readyNodes.sort((c1, c2) -> Utils.compareNodeWithHard(dags, c1, c2));
 
@@ -126,7 +125,8 @@ public class OnlineAndOffline extends AllocationMethods {
 					 * Option 1: Speed up by ABSOLUTE vaue
 					 */
 					long WCET = n.getWCET();
-					long realET = table.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, false)
+					long realET = n.crp
+							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, false)
 							.getFirst();
 					long speedup = WCET - realET;
 
@@ -171,8 +171,9 @@ public class OnlineAndOffline extends AllocationMethods {
 			if (k >= preEligible.size())
 				break;
 
-			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory, preEligible,
-					availableP, availableTimeAllProcs, table, currentTime, affinity, history_level1, history_level2, history_level3);
+			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory,
+					preEligible, availableP, availableTimeAllProcs, currentTime, affinity, history_level1,
+					history_level2, history_level3);
 
 			Node n = preEligible.get(p.getFirst().intValue());
 
@@ -186,10 +187,10 @@ public class OnlineAndOffline extends AllocationMethods {
 
 	}
 
-	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes, List<Integer> allocProcs,
-			List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory, List<Node> preEligible, List<Integer> procs,
-			long[] availableTimeAllProcs, RecencyProfileSyn table, long time, boolean affinity, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3) {
+	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
+			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
+			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean affinity,
+			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
 
 		int row = -1;
 		int col = -1;
@@ -252,8 +253,7 @@ public class OnlineAndOffline extends AllocationMethods {
 					List<Node> nodesInProc = allocHistory.get(procIndex);
 
 					/*
-					 * Get the nodes that can hit level two cache in each free
-					 * core.
+					 * Get the nodes that can hit level two cache in each free core.
 					 */
 					long Nodenum = 0;
 					for (int j = nodesInProc.size() - 1; j >= 0; j--) {
@@ -270,12 +270,10 @@ public class OnlineAndOffline extends AllocationMethods {
 					long affectedTime = 0;
 
 					for (Node affected : affectedNodes) {
-						long affectedTimeOneNode = table
-								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, et_n,
-										false)
-								.getFirst()
-								- table.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, 0,
-										false).getFirst();
+						long affectedTimeOneNode = affected.crp.computeET(-1, history_level1, history_level2,
+								history_level3, affected, affected.partition, true, et_n, false).getFirst()
+								- affected.crp.computeET(-1, history_level1, history_level2, history_level3, affected,
+										affected.partition, true, 0, false).getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 

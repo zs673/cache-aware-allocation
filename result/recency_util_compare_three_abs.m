@@ -2,9 +2,9 @@
 maxUtil = 8;
 
 
-    f=figure('Position', [100, 100, wid, len]);
-    set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
-    
+f=figure('Position', [100, 100, wid, len]);
+set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
+
 gmax = 0;
 for util = 1:5
     read = util + 0;
@@ -64,7 +64,7 @@ for util = 1:5
         
          pos = zeros(1);
          for col = 1:methodNum
-             pos(col) = (util - 1) * 3 + col;
+             pos(col) = (util - 1) * 4 + col;
          end
 
 
@@ -75,12 +75,16 @@ for util = 1:5
              hold on
              boxplot(data_per_util(:,3)/gmax, 'position',pos(3), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
              hold on
+             boxplot(data_per_util(:,4)/gmax, 'position',pos(4), 'widths', 0.65, 'symbol','.', 'color', colors(4,:));
+             hold on
          else
              boxplot(data_per_util(:,1)/gmax, 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
              hold on
              boxplot(data_per_util(:,2)/gmax, 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
              hold on
              boxplot(data_per_util(:,3)/gmax, 'position',pos(3), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
+             hold on
+             boxplot(data_per_util(:,4)/gmax, 'position',pos(4), 'widths', 0.65, 'symbol','.', 'color', colors(4,:));
              hold on
          end
 
@@ -89,10 +93,10 @@ for util = 1:5
 %     set(findobj(gca,'type','line'),'linew',1.5)
 %     set(gca,'linew',1.5)
      
-    xlim([0 16]);
+    xlim([0 21]);
 %     ylim([0 1]);
 ylim([-1000 110000]);
-    xticks = [2 5 8 11 14];
+    xticks = 2.5 : 4 : 21;
     xticklables = ["10","20","30","40","50" ];
     
     set(gca,'xtick',xticks );

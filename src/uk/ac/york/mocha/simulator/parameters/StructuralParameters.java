@@ -36,13 +36,22 @@ public class StructuralParameters implements Serializable {
 			System.exit(-1);
 		}
 
-		this.parallelism = rng.nextInt(maxParall - minparall) + minparall;
-		this.parallelism_max = maxParall;
-		this.parallelism_min = minparall;
+		if (maxParall == minparall) {
+			this.parallelism = maxParall;
+			this.parallelism_max = maxParall;
+			this.parallelism_min = minparall;
+		} else {
+			this.parallelism = rng.nextInt(maxParall - minparall) + minparall;
+			this.parallelism_max = maxParall;
+			this.parallelism_min = minparall;
+		}
 
 		this.connect_prob = connect_prob;
 
-		this.layers = rng.nextInt(maxLayer - minLayer) + minLayer;
+		if (maxLayer == minLayer)
+			this.layers = maxLayer;
+		else
+			this.layers = rng.nextInt(maxLayer - minLayer) + minLayer;
 	}
 
 	public int getParallelism() {

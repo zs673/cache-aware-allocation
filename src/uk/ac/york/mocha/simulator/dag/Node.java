@@ -13,7 +13,7 @@ public class Node implements Serializable {
 
 	/* NodeType */
 	public enum NodeType {
-		SOURCE, SINK, NORMAL
+		SOURCE, SINK, NORMAL, SOLO
 	}
 
 	/*
@@ -58,7 +58,7 @@ public class Node implements Serializable {
 	public double gmpETNorm = -1;
 	public double gmpNumNorm = -1;
 	public double nodeETNorm = -1;
-	
+
 	public double sensitivity = -1;
 
 	/*
@@ -94,15 +94,18 @@ public class Node implements Serializable {
 	/*
 	 * The variability of the node
 	 */
+	public RecencyProfile crp;
 	public CacheVariabilityProfile cvp;
+
+	boolean isReal;
 
 	Random rng;
 
-	public Node(int layer, NodeType type, int id, int dagID, Random rng) {
-		this(-1, layer, type, id, dagID, rng);
+	public Node(int layer, NodeType type, int id, int dagID, RecencyProfile crp, Random rng) {
+		this(-1, layer, type, id, dagID, crp, false, rng);
 	}
 
-	public Node(long WCET, int layer, NodeType type, int id, int dagID, Random rng) {
+	public Node(long WCET, int layer, NodeType type, int id, int dagID, RecencyProfile crp, boolean real, Random rng) {
 		this.WCET = WCET;
 		this.layer = layer;
 		this.type = type;
@@ -118,16 +121,19 @@ public class Node implements Serializable {
 		// this.crp = new CacheRecencyProfile(this, SystemParameters.coreNum,
 		// 1000);
 
-		this.cvp = new CacheVariabilityProfile(this, SystemParameters.err_median,
-				((double) this.rng.nextInt(SystemParameters.err_range + 1) / (double) 100) / 3.0, new Random(1000));
+		this.crp = crp;
 
+		this.cvp = new CacheVariabilityProfile(this, SystemParameters.err_median,
+				((double) this.rng.nextInt(SystemParameters.err_range + 1) / (double) 100) / 3.0, rng);
+
+		this.isReal = real;
 	}
 
 	@Override
 	public String toString() {
-//		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + " P:" + partition;
-		return "Node " + dagID + "_" + id + ", C:" + WCET + ", in: " + predecessors.size() + ", out: "
-				+ successors.size() + ", in+out: " + predecessors.size() + successors.size() + ", pathNum: " + pathNum;
+		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET;
+//		return "Node " + dagID + "_" + id + ", C:" + WCET + ", in: " + predecessors.size() + ", out: "
+//				+ successors.size() + ", in+out: " + predecessors.size() + successors.size() + ", pathNum: " + pathNum;
 //		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
 	}
 

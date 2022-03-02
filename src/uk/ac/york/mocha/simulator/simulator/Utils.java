@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +21,9 @@ import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.RecencyProfileReal;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 
 public class Utils {
 
@@ -164,8 +165,8 @@ public class Utils {
 			int c = -1;
 
 			if (dag1.id != dag2.id) {
-				System.out
-						.println("Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
+				System.out.println(
+						"Utils.compareNodeWithHard(): the IDs of DAG-1 and DAG-2 are not equal, but they have the same priority!");
 				System.exit(-1);
 			}
 
@@ -223,8 +224,8 @@ public class Utils {
 	}
 
 	/*
-	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a
-	 * complete hyperperiod.
+	 * Compute the hyperperiod of input DAGs. NOTE: The simulation covers a complete
+	 * hyperperiod.
 	 */
 	public static long getHyperPeriod(List<Long> periods) {
 
@@ -328,11 +329,11 @@ public class Utils {
 	}
 
 	public static void main(String args[]) {
-		List<RecencyProfileReal> crps = readJson("crp/profile.tacle.crp.json");
+//		List<RecencyProfileReal> crps = readJson("crp/profile.tacle.crp.json");
 
 	}
 
-	public static List<RecencyProfileReal> readJson(String file) {
+	public static List<RecencyProfileReal> readJson(String file, CacheHierarchy cache) {
 		JSONParser parser = new JSONParser();
 
 		List<RecencyProfileReal> crps = new ArrayList<>();
@@ -370,7 +371,8 @@ public class Utils {
 
 				id++;
 
-				RecencyProfileReal crp = new RecencyProfileReal(key, id, WCET, breaks, slopes, intercepts);
+				RecencyProfileReal crp = new RecencyProfileReal(cache, RecencyType.REAL, key, id, WCET, breaks, slopes,
+						intercepts);
 				crps.add(crp);
 			}
 

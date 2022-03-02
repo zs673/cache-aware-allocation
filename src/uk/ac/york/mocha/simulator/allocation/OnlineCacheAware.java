@@ -8,7 +8,6 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.RecencyProfileSyn;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -17,8 +16,8 @@ public class OnlineCacheAware extends AllocationMethods {
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory,
-			RecencyProfileSyn table, long currentTime, boolean lcif) {
+			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
+			boolean lcif) {
 
 		/*
 		 * Entry for debugging a single node
@@ -60,7 +59,7 @@ public class OnlineCacheAware extends AllocationMethods {
 					 * Option 1: Speed up by ABSOLUTE value
 					 */
 					long WCET = n.getWCET();
-					long realET = table
+					long realET = n.crp
 							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, false)
 							.getFirst();
 					long speedup = WCET - realET;
@@ -107,8 +106,8 @@ public class OnlineCacheAware extends AllocationMethods {
 				break;
 
 			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory,
-					preEligible, availableP, availableTimeAllProcs, table, currentTime, lcif, history_level1,
-					history_level2, history_level3);
+					preEligible, availableP, availableTimeAllProcs, currentTime, lcif, history_level1, history_level2,
+					history_level3);
 
 			Node n = preEligible.get(p.getFirst().intValue());
 
@@ -120,7 +119,7 @@ public class OnlineCacheAware extends AllocationMethods {
 		}
 
 	}
-	
+
 //	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfile table,
 //			long[] coreTime, long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1,
 //			List<List<Node>> history_level2, List<Node> history_level3) {
@@ -166,8 +165,8 @@ public class OnlineCacheAware extends AllocationMethods {
 
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
-			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, RecencyProfileSyn table, long time,
-			boolean lcif, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
+			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
+			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
 
 		int row = -1;
 		int col = -1;
@@ -247,11 +246,9 @@ public class OnlineCacheAware extends AllocationMethods {
 					long affectedTime = 0;
 
 					for (Node affected : affectedNodes) {
-						long affectedTimeOneNode = table
-								.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, et_n, false)
-								.getFirst()
-								- table.computeET(-1, history_level1, history_level2, history_level3, affected,
+						long affectedTimeOneNode = affected.crp.computeET(-1, history_level1, history_level2,
+								history_level3, affected, affected.partition, true, et_n, false).getFirst()
+								- affected.crp.computeET(-1, history_level1, history_level2, history_level3, affected,
 										affected.partition, true, 0, false).getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;

@@ -19,8 +19,7 @@ import uk.ac.york.mocha.simulator.allocation.onlineBFD;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
-import uk.ac.york.mocha.simulator.dag.RecencyProfileSyn;
-import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
@@ -37,14 +36,10 @@ public class Simualtor {
 	private Allocation alloc;
 
 	/**********************************************************************
-	 ***** The gloabl recency table and cache hierarchy of the system *****
-	 **********************************************************************/
-	private static RecencyProfileSyn profile;
-
-	/**********************************************************************
 	 ************************ DAGs to be executed *************************
 	 **********************************************************************/
 	public List<DirectedAcyclicGraph> dags;
+	public CacheHierarchy cache;
 
 	/**********************************************************************
 	 *********************** Current system time **************************
@@ -87,15 +82,17 @@ public class Simualtor {
 	long[] cachePerformance;
 	int totalAccess = 0;
 
-	boolean recency_fault = false;
 
 	DecimalFormat df = new DecimalFormat("#.###");
+	
+	public long totalMakespan = -1;
 
 	/********************* Runtime queues *********************************/
 
 	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
-			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean lcif, boolean recency_fault) {
+			List<DirectedAcyclicGraph> dags, CacheHierarchy cache, int procNum, int recencySeed, boolean lcif) {
 
+		this.cache = cache;
 		this.type = type;
 		this.hardware = hardware;
 		this.alloc = alloc;
@@ -109,8 +106,6 @@ public class Simualtor {
 		this.currentExe = new Node[procNum];
 		this.allProcs = new long[procNum];
 		this.lcif = lcif;
-
-		profile = new RecencyProfileSyn(recency, procNum, recencySeed);
 
 		this.history_level1 = new ArrayList<>();
 		this.history_level2 = new ArrayList<>();
@@ -127,13 +122,13 @@ public class Simualtor {
 			this.allocNodes.add(oneProcAlloc);
 		}
 
-		for (int i = 0; i < (procNum / SystemParameters.Level2CoreNum); i++) {
+		for (int i = 0; i < cache.level2.size(); i++) {
 			List<Node> oneCluster = new ArrayList<>();
 			this.history_level2.add(oneCluster);
 		}
 
 		this.cachePerformance = new long[4];
-		this.recency_fault = recency_fault;
+		
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
@@ -217,6 +212,8 @@ public class Simualtor {
 			 */
 			ExecuteReadyNodes(availableProc, allocM, cacheAware, onlyCritical, printSim);
 
+			if(sleepingDAGs.size() == 0 && readyDAGs.size() == 0)
+				totalMakespan = systemTime;
 			/*
 			 * advance to next time unit.
 			 */
@@ -273,7 +270,7 @@ public class Simualtor {
 		 * get ready nodes to execute by the specified allocation method
 		 */
 		allocM.allocate(dags, readyNodes, null, availableProc, allProcs, history_level1, history_level2, history_level3,
-				allocNodes, profile, systemTime, lcif);
+				allocNodes, systemTime, lcif);
 
 		///////////////// Debug Output //////////////////////
 		String[] oneSched = new String[allProcs.length];
@@ -298,21 +295,8 @@ public class Simualtor {
 			allocNodes.get(n.partition).add(n);
 			n.start = systemTime;
 
-			boolean falutsOccur = false;
-//			if (recency_fault && onlyCritical == 0) {
-//				falutsOccur = true;
-//			}
-//
-//			if (recency_fault && onlyCritical == 1 && n.isCritical) {
-//				falutsOccur = true;
-//			}
-//
-//			if (recency_fault && onlyCritical == 2 && !n.isCritical) {
-//				falutsOccur = true;
-//			}
-
-			Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3, n,
-					n.partition, cacheAware, 0, falutsOccur);
+			Pair<Long, Integer> ETWithCache = n.crp.computeET(-1, history_level1, history_level2, history_level3, n,
+					n.partition, cacheAware, 0, n.hasFaults);
 
 			long realET = ETWithCache.getFirst();
 			int cacheEffects = ETWithCache.getSecond();
@@ -333,7 +317,7 @@ public class Simualtor {
 			/*
 			 * A DAG is started when its SOURCE node starts execution
 			 */
-			if (n.getType().equals(NodeType.SOURCE)) {
+			if (n.getType().equals(NodeType.SOURCE) || n.getType().equals(NodeType.SOLO)) {
 				Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo()).startTime = systemTime;
 			}
 
@@ -374,7 +358,7 @@ public class Simualtor {
 
 				/* add the node to history for each cache level */
 				history_level1.get(i).add(n);
-				int clusterID = i / SystemParameters.Level2CoreNum;
+				int clusterID = cache.getLevel2ClusterID(i);
 				history_level2.get(clusterID).add(n);
 				history_level3.add(n);
 
@@ -398,7 +382,7 @@ public class Simualtor {
 				/*
 				 * A DAG is finished when its SINK node finishes execution
 				 */
-				if (n.getType().equals(NodeType.SINK)) {
+				if (n.getType().equals(NodeType.SINK) || n.getType().equals(NodeType.SOLO)) {
 					Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo()).finishTime = systemTime;
 				}
 			}
@@ -428,6 +412,7 @@ public class Simualtor {
 				i--;
 			}
 		}
+		
 	}
 
 	/****************************************************************

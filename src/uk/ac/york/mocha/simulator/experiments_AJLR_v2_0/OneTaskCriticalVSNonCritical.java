@@ -8,6 +8,7 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
@@ -79,12 +80,12 @@ public class OneTaskCriticalVSNonCritical {
 
 			SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil,
 					util == null ? null : util.get(i), taskSeed, randomC, SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, hyperperiodNum,
 					periods == null ? null : periods.get(i), false);
 
 			OneSystemResults res = null;
 
-			res = testOneCaseThreeMethod(dags, taskNum, instanceNo, cores, taskSeed, tableSeed);
+			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed);
 
 			allSys.add(res);
 
@@ -99,33 +100,33 @@ public class OneTaskCriticalVSNonCritical {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults testOneCaseThreeMethod(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
+	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int tasks, int[] NoInstances,
 			int cores, int taskSeed, int tableSeed) {
 
 		boolean lcif = true;
 		
-		for (DirectedAcyclicGraph d : dags)
+		for (DirectedAcyclicGraph d : sys.getFirst())
 			for (Node n : d.getFlatNodes())
 				n.hasFaults = false;
 
 		SimualtorNWC cacheBFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
-		for (DirectedAcyclicGraph d : dags)
+		for (DirectedAcyclicGraph d : sys.getFirst())
 			for (Node n : d.getFlatNodes())
 				n.hasFaults = true;
 
 		SimualtorNWC cacheWFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
-		for (DirectedAcyclicGraph d : dags)
+		for (DirectedAcyclicGraph d : sys.getFirst())
 			for (Node n : d.getFlatNodes())
 				n.hasFaults = true;
 
 		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+				Allocation.CACHE_AWARE_ROBUST_v2_1, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
@@ -138,6 +139,7 @@ public class OneTaskCriticalVSNonCritical {
 		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
 		 */

@@ -14,7 +14,7 @@ import uk.ac.york.mocha.simulator.allocation.SimpleAllocation;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.dag.Node.NodeType;
-import uk.ac.york.mocha.simulator.dag.RecencyProfileSyn;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
@@ -33,11 +33,7 @@ public class SimualtorNWC {
 	private Allocation alloc;
 
 	List<Integer> cores;
-
-	/**********************************************************************
-	 ***** The global recency table and cache hierarchy of the system *****
-	 **********************************************************************/
-	private static RecencyProfileSyn profile;
+	CacheHierarchy cache;
 
 	/**********************************************************************
 	 ************************ DAGs to be executed *************************
@@ -94,9 +90,10 @@ public class SimualtorNWC {
 
 	/********************* Runtime queues *********************************/
 
-	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
-			List<DirectedAcyclicGraph> dags, int procNum, int recencySeed, boolean lcif) {
+	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency, 
+			List<DirectedAcyclicGraph> dags, CacheHierarchy cache, int procNum, int recencySeed, boolean lcif) {
 
+		this.cache = cache;
 		this.type = type;
 		this.hardware = hardware;
 		this.alloc = alloc;
@@ -123,8 +120,6 @@ public class SimualtorNWC {
 
 		this.lcif = lcif;
 
-		profile = new RecencyProfileSyn(recency, procNum, recencySeed);
-
 		this.history_level1 = new ArrayList<>();
 		this.history_level2 = new ArrayList<>();
 		this.history_level3 = new ArrayList<>();
@@ -140,7 +135,7 @@ public class SimualtorNWC {
 			this.allocHistory.add(oneProcAlloc);
 		}
 
-		for (int i = 0; i < (procNum / SystemParameters.Level2CoreNum); i++) {
+		for (int i = 0; i < cache.level2ClusterNum; i++) {
 			List<Node> oneCluster = new ArrayList<>();
 			this.history_level2.add(oneCluster);
 		}
@@ -380,7 +375,7 @@ public class SimualtorNWC {
 			} else {
 				noCalls++;
 				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
-						history_level3, allocHistory, profile, systemTime, lcif);
+						history_level3, allocHistory, systemTime, lcif);
 			}
 
 		} else {
@@ -388,7 +383,7 @@ public class SimualtorNWC {
 			} else {
 				noCalls++;
 				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
-						history_level3, allocHistory, profile, systemTime, lcif);
+						history_level3, allocHistory, systemTime, lcif);
 			}
 		}
 
@@ -423,7 +418,7 @@ public class SimualtorNWC {
 				 * computeET is inside each cache-aware allocation method, which reflects the
 				 * value we got from the MODEL.
 				 */
-				Pair<Long, Integer> ETWithCache = profile.computeET(-1, history_level1, history_level2, history_level3,
+				Pair<Long, Integer> ETWithCache = n.crp.computeET(-1, history_level1, history_level2, history_level3,
 						n, n.partition, cacheAware, 0, n.hasFaults);
 
 				long realET = ETWithCache.getFirst();
@@ -595,7 +590,7 @@ public class SimualtorNWC {
 			SystemParameters.utilPerTask = 0.2;
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, i, true, false);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> res = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
 
 			// SimualtorNWC cacheBFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 			// Hardware.PROC_CACHE,
@@ -604,10 +599,10 @@ public class SimualtorNWC {
 			// true);
 			// cacheBFSim.simulate(true, 0);
 
-			// System.out.println("The " + i + "th systen FINISHED!");
+			// System.out.println("The " + i + "th system FINISHED!");
 			//
 			SimualtorNWC cacheBFSim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.SIMPLE,
-					RecencyType.TIME_DEFAULT, dags, SystemParameters.coreNum, i, true);
+					RecencyType.TIME_DEFAULT, res.getFirst(), res.getSecond(),  SystemParameters.coreNum, i, true);
 			cacheBFSim1.simulate(true);
 		}
 

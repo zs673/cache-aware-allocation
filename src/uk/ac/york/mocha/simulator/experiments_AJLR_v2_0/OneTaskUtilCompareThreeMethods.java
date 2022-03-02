@@ -9,6 +9,7 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
@@ -24,7 +25,7 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 public class OneTaskUtilCompareThreeMethods {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
-	static int cores = 8;
+	static int cores = 4;
 	static int nos = 1000;
 
 	static List<double[]> avg_data1 = new ArrayList<>();
@@ -64,13 +65,13 @@ public class OneTaskUtilCompareThreeMethods {
 		SystemParameters.utilPerTask = Double.parseDouble(df.format((double) 40 / (double) 10));
 
 		System.out.println("Generating taskset...");
-		List<List<DirectedAcyclicGraph>> allDags = new ArrayList<>();
+		List<Pair<List<DirectedAcyclicGraph>, CacheHierarchy>> allSys = new ArrayList<>();
 
 		for (int i = 0; i < nos; i++) {
 			SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, 1000 + i, true,
 					SystemParameters.printGen);
-			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(intanceNum, hyperPeriodNum, null, false);
-			allDags.add(dags);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, hyperPeriodNum, null, false);
+			allSys.add(sys);
 		}
 
 		System.out.println("Generating done!");
@@ -102,7 +103,7 @@ public class OneTaskUtilCompareThreeMethods {
 			noCall4 = new ArrayList<>();
 
 			RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true,
-					ExpName.util_compare_three, allDags);
+					ExpName.util_compare_three, allSys);
 
 			double d1_delay = avg_data1.stream().mapToDouble(d -> d[0]).average().getAsDouble();
 			double d1_et = avg_data1.stream().mapToDouble(d -> d[1]).average().getAsDouble();
@@ -142,7 +143,7 @@ public class OneTaskUtilCompareThreeMethods {
 
 	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
-			ExpName name, List<List<DirectedAcyclicGraph>> allDags) {
+			ExpName name, List<Pair<List<DirectedAcyclicGraph>, CacheHierarchy>> allSystems) {
 
 		List<OneSystemResults> allSys = new ArrayList<>();
 
@@ -169,7 +170,7 @@ public class OneTaskUtilCompareThreeMethods {
 			System.out.println(
 					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
 
-			List<DirectedAcyclicGraph> dags = allDags.get(i);
+			List<DirectedAcyclicGraph> dags = allSystems.get(i).getFirst();
 
 			for (DirectedAcyclicGraph d : dags) {
 				d.getSchedParameters().setWCET((long) Math
@@ -180,7 +181,7 @@ public class OneTaskUtilCompareThreeMethods {
 
 			OneSystemResults res = null;
 
-			res = testOneCaseThreeMethod(dags, taskNum, instanceNo, cores, taskSeed, tableSeed, i);
+			res = testOneCaseThreeMethod(allSystems.get(i), taskNum, instanceNo, cores, taskSeed, tableSeed, i);
 
 			allSys.add(res);
 
@@ -195,35 +196,35 @@ public class OneTaskUtilCompareThreeMethods {
 	/**
 	 * This test case will generate two fixed DAG structure.
 	 */
-	public static OneSystemResults testOneCaseThreeMethod(List<DirectedAcyclicGraph> dags, int tasks, int[] NoInstances,
+	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int tasks, int[] NoInstances,
 			int cores, int taskSeed, int tableSeed, int not) {
 
 		boolean lcif = true;
 
-		for (DirectedAcyclicGraph d : dags)
+		for (DirectedAcyclicGraph d : sys.getFirst())
 			for (Node n : d.getFlatNodes())
 				n.hasFaults = false;
 
 		SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(SystemParameters.printSim);
 		
-		for (DirectedAcyclicGraph d : dags)
+		for (DirectedAcyclicGraph d : sys.getFirst())
 			for (Node n : d.getFlatNodes())
 				n.hasFaults = true;
 
 		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(SystemParameters.printSim);
 
 		
 
 		SimualtorNWC sim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST_v2_1,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = sim3.simulate(SystemParameters.printSim);
 
 		SimualtorNWC sim4 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST_v2_2,
-				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, lcif);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair4 = sim4.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
@@ -326,6 +327,7 @@ public class OneTaskUtilCompareThreeMethods {
 //			d4_ets.addAll(d4_et);
 //		}
 
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
 		 */
