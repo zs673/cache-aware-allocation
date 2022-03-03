@@ -41,14 +41,14 @@ public class SystemGenerator {
 	DecimalFormat df = new DecimalFormat("#.###");
 
 	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
-			List<Double> assignedUtils, int seed, boolean randomC, boolean print, List<int[]> level2) {
+			List<Double> assignedUtils, Random rng, boolean randomC, boolean print, List<int[]> level2) {
 
 		this.totalUtil = SystemParameters.utilPerTask * (double) totalTasks;
 		this.takeAllUtil = takeAllUtil;
 		this.total_tasks = totalTasks;
 		this.isHarmonic = isHarmonic;
 		this.print = print;
-		this.ran = new Random(seed);
+		this.ran = rng;
 		this.cores = total_partitions;
 
 		this.assignedUtils = assignedUtils;
@@ -64,7 +64,7 @@ public class SystemGenerator {
 	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
 			List<Double> assignedUtils, int seed, boolean randomC, boolean print) {
 
-		this(total_partitions, totalTasks, isHarmonic, takeAllUtil, assignedUtils, seed, randomC, print, null);
+		this(total_partitions, totalTasks, isHarmonic, takeAllUtil, assignedUtils, new Random(seed), randomC, print, null);
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, CacheHierarchy> generatedDAGInstancesInOneHP(int forceInstanceNum,

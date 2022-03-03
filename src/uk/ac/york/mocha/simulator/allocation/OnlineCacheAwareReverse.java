@@ -8,10 +8,10 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.experiments_real.FiveNodeAllocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineCacheAware extends AllocationMethods {
+public class OnlineCacheAwareReverse extends AllocationMethods {
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
@@ -38,10 +38,8 @@ public class OnlineCacheAware extends AllocationMethods {
 		 */
 //		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
-		
-		
 		List<Node> preEligible = new ArrayList<>();
-		for (int i = 0; i < FiveNodeAllocation.cores; i++) {
+		for (int i = 0; i < availableProcs.size(); i++) {
 			if (readyNodes.size() == i)
 				break;
 			preEligible.add(readyNodes.get(i));
@@ -172,14 +170,14 @@ public class OnlineCacheAware extends AllocationMethods {
 
 		int row = -1;
 		int col = -1;
-		long max = Long.MIN_VALUE;
+		long min = Long.MAX_VALUE;
 
 		for (int i = 0; i < speedUpTable.size(); i++) {
 			if (!allocNodes.contains(i)) {
 				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 					if (!allocProcs.contains(j)) {
-						if (max < speedUpTable.get(i).get(j)) {
-							max = speedUpTable.get(i).get(j);
+						if (min > speedUpTable.get(i).get(j)) {
+							min = speedUpTable.get(i).get(j);
 							row = i;
 							col = j;
 						}
@@ -199,7 +197,7 @@ public class OnlineCacheAware extends AllocationMethods {
 			 * Find all available cores that can have the same speed up
 			 */
 			for (int i = 0; i < procs.size(); i++) {
-				if (!allocProcs.contains(i) && speedUpTable.get(row).get(i) == max) {
+				if (!allocProcs.contains(i) && speedUpTable.get(row).get(i) == min) {
 					freeProcIndex.add(i);
 
 					int proc = procs.get(i);

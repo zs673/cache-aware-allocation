@@ -21,8 +21,8 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 	double[] slopes;
 	double[] intercepts;
 
-	public RecencyProfileReal(CacheHierarchy cache, RecencyType type, String job_name, int job_id, double WCET,
-			double[] breaks, double[] slopes, double[] intercepts) {
+	public RecencyProfileReal(CacheHierarchy cache, RecencyType type, String job_name, int job_id, double WCET, double[] breaks,
+			double[] slopes, double[] intercepts) {
 
 		super(cache, type);
 
@@ -44,19 +44,19 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 	public Pair<Long, Integer> computeET(long time, List<List<Node>> history_level1, List<List<Node>> history_level2,
 			List<Node> history_level3, Node n, int proc, boolean cacheAware, long additionalTime, boolean error) {
 
-		Pair<Long, Integer> res = computeET(time, history_level1, history_level2, history_level3, n, proc, cacheAware,
-				additionalTime);
+		Pair<Long, Integer> res = computeET(time, history_level1, history_level2, history_level3, n, proc, cacheAware, additionalTime);
 
 		if (n != null && error) {
-			double err = n.cvp.rng.nextDouble() * (0.1);
-//			double err = n.cvp.getMedian();
+			double err = n.cvp.rng.nextDouble() * 0.1;
+//			System.out.println(err);
+			// double err = n.cvp.getMedian();
 
 			if (err < -1 || err > 1) {
 				System.out.println("Error Value: " + err);
 				System.exit(-1);
 			}
 
-//			System.out.println(n.getFullName() + "   :   err: " + err);
+			// System.out.println(n.getFullName() + " : err: " + err);
 
 			long ETwithErr = (long) Math.ceil((double) res.getFirst() * (1.0 + err));
 
@@ -81,11 +81,10 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 		/**************************************************************************
 		 ************************* level 1 recency distance ************************
 		 ***************************************************************************/
-		long leve1Time = time != -1 ? time
-				: getTimeofLastIndex(history_level1.get(proc), n, breaks[0]) + additionalTime;
+		long leve1Time = time != -1 ? time : getTimeofLastIndex(history_level1.get(proc), n, breaks[0]) + additionalTime;
 
 		if (0 <= leve1Time && leve1Time <= breaks[0]) {
-			double speedUp = getET(leve1Time);
+			double speedUp = getET(leve1Time, 0);
 			return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 1);
 		}
 
@@ -93,10 +92,9 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 		 ************************* level 2 recency distance ************************
 		 ***************************************************************************/
 		int clusterID = cache.getLevel2ClusterID(proc);
-		long level2Time = time != -1 ? time
-				: getTimeofLastIndex(history_level2.get(clusterID), n, breaks[1]) + additionalTime;
+		long level2Time = time != -1 ? time : getTimeofLastIndex(history_level2.get(clusterID), n, breaks[1]) + additionalTime;
 		if (breaks[0] <= level2Time && level2Time < breaks[1]) {
-			double speedUp = getET(level2Time);
+			double speedUp = getET(level2Time, 1);
 			return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 2);
 		}
 
@@ -105,7 +103,7 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 		 ***************************************************************************/
 		long level3Time = time != -1 ? time : getTimeofLastIndex(history_level3, n, breaks[2]) + additionalTime;
 		if (breaks[0] <= level3Time && level3Time < breaks[2]) {
-			double speedUp = getET(level3Time);
+			double speedUp = getET(level3Time, 2);
 			return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 3);
 		}
 
@@ -114,19 +112,19 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 	}
 
 	/**
-	 * Calculate the speed-up by reading the CRP table Percentage of execution time
-	 * speedup
+	 * Calculate the speed-up by reading the CRP table Percentage of execution
+	 * time speedup
 	 */
-	public double getET(double rd) {
+	public double getET(double rd, int breakpoint) {
 
 		// Find linear piece where rd fits
-		int c = 0;
-		while (c < breaks.length && rd < breaks[c]) {
-			++c;
-		}
+		// int c = 1;
+		// while (c - 1 < breaks.length && rd < breaks[c - 1]) {
+		// ++c;
+		// }
 
 		// Fit rd to the linear pc
-		double crp = slopes[c - 1] * rd + intercepts[c - 1];
+		double crp = slopes[breakpoint] * rd + intercepts[breakpoint];
 
 		// Normalize crp in interval [CPR_MIN, 1.0]
 		if (crp > 1.0) {

@@ -9,6 +9,7 @@ import org.apache.commons.math3.util.Pair;
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineAndOffline;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareReverse;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareWithOrdering;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
@@ -162,6 +163,9 @@ public class Simualtor {
 			break;
 		case CACHE_AWARE:
 			allocM = new OnlineCacheAware();
+			break;
+		case CACHE_AWARE_RESERVE:
+			allocM = new OnlineCacheAwareReverse();
 			break;
 		case CACHE_AWARE_ROBUST_v2_1:
 			allocM = new OnlineCacheAwareRobust_v2_1();
