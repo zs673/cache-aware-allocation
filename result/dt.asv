@@ -10,10 +10,8 @@ xticklables = ["AJLR","WF","AJLR","WF","AJLR","WF" ];
 
 set(gca,'xticklabel',xticklables,'FontSize', 14);
 
-ylim([1 100000])
-
 ylabel('Makespan','FontSize', 18)
-xlabel({'3 Cores                              4 Cores                              5 Cores';'5 Tasks'},'FontSize', 18)
+xlabel({'3 Cores                              4 Cores                           5 Cores';'5 Tasks'},'FontSize', 18)
 
 
 f=figure('Position', [100, 100, 800, 350]);
@@ -26,9 +24,6 @@ xticklables = ["AJLR","WF","AJLR","WF","AJLR","WF" ];
 
 set(gca,'xticklabel',xticklables,'FontSize', 14);
 
-ylim([1 100000])
-
-
 ylabel('Makespan','FontSize', 18)
-% xlabel({'3 Tasks                                                  4 Tasks';'3 Cores'},'FontSize', 18)
-xlabel({'3 Tasks                              4 Tasks                              5 Tasks';'3 Cores'},'FontSize', 18)
+xlabel('3 Tasks                                                  4 Tasks','FontSize', 18)
+% xlabel('3 Tasks                              4 Tasks                           5 Tasks','FontSize', 18)

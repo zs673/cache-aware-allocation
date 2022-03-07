@@ -333,7 +333,7 @@ public class Utils {
 
 	}
 
-	public static List<RecencyProfileReal> readJson(String file, CacheHierarchy cache) {
+	public static List<RecencyProfileReal> readJson(String file, List<String> taskNames, CacheHierarchy cache) {
 		JSONParser parser = new JSONParser();
 
 		List<RecencyProfileReal> crps = new ArrayList<>();
@@ -345,15 +345,23 @@ public class Utils {
 			@SuppressWarnings("unchecked")
 			Set<String> names = jsonObj.keySet();
 
+			
 			List<String> nameList = new ArrayList<String>();
-			for (String x : names)
-				nameList.add(x);
+			if(taskNames == null) {
+				for (String x : names)
+					nameList.add(x);
+			}
+			else {
+				nameList = taskNames;
+			}
 
 			int id = 0;
-			for (String key : names) {
+			for (String key : nameList) {
 				JSONObject job = (JSONObject) jsonObj.get(key);
 
 				double WCET = ((Number) job.get("baseline_timing")).doubleValue();
+				
+				double medianET = ((Number) job.get("baseline_timing")).doubleValue();
 
 				JSONArray breaks_j = (JSONArray) job.get("breaks");
 				JSONArray slopes_j = (JSONArray) job.get("slopes");
@@ -371,7 +379,7 @@ public class Utils {
 
 				id++;
 
-				RecencyProfileReal crp = new RecencyProfileReal(cache, RecencyType.REAL, key, id, WCET, breaks, slopes,
+				RecencyProfileReal crp = new RecencyProfileReal(cache, RecencyType.REAL, key, id, WCET, medianET, breaks, slopes,
 						intercepts);
 				crps.add(crp);
 			}
