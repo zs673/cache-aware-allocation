@@ -21,7 +21,6 @@ import uk.ac.york.mocha.simulator.dag.Node.NodeType;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
-import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class DirectedAcyclicGraph implements Serializable {
 
