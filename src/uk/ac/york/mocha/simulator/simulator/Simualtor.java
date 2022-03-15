@@ -16,6 +16,7 @@ import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFWithOrdering;
+import uk.ac.york.mocha.simulator.allocation.SimpleAllocationConversing;
 import uk.ac.york.mocha.simulator.allocation.onlineBFD;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
@@ -149,6 +150,9 @@ public class Simualtor {
 		AllocationMethods allocM = null;
 
 		switch (alloc) {
+		case SIMPLE:
+			allocM = new SimpleAllocationConversing();
+			break;
 		case RANDOM:
 			allocM = new OnlineRandom();
 			break;

@@ -6,6 +6,7 @@ import java.util.List;
 
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.experiments_real.FiveNodeAllocation;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineWFD extends AllocationMethods {
@@ -28,14 +29,26 @@ public class OnlineWFD extends AllocationMethods {
 			}
 		}
 
+		readyNodes.stream().forEach(c -> c.partition = -1);
+		
 		/*
 		 * sort ready nodes list by FPS+WF, take first procNum nodes to execute.
 		 */
 		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		
+//		Math.max(FiveNodeAllocation.cores, FiveNodeAllocation.taskNum)
+//		List<Node> preEligible = new ArrayList<>();
+//		for (int i = 0; i < FiveNodeAllocation.taskNum ; i++) {
+//			if (readyNodes.size() == i)
+//				break;
+//			preEligible.add(readyNodes.get(i));
+//		}
 
-		readyNodes.stream().forEach(c -> c.partition = -1);
+//		preEligible.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
 		List<Integer> freeProc = new ArrayList<>(availableProcs);
+		
+		
 
 		for (int i = 0; i < availableProcs.size(); i++) {
 			if (i >= readyNodes.size())

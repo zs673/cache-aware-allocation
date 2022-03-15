@@ -15,6 +15,7 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 	String job_name;
 	int job_id;
 
+	public double highWaterMark;
 	public double WCET;
 	public double medainET;
 
@@ -22,7 +23,7 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 	double[] slopes;
 	double[] intercepts;
 	
-	public RecencyProfileReal(CacheHierarchy cache, RecencyType type, String job_name, int job_id, double WCET, double medainET, double[] breaks,
+	public RecencyProfileReal(CacheHierarchy cache, RecencyType type, String job_name, int job_id, double highWaterMark, double WCET, double medainET, double[] breaks,
 			double[] slopes, double[] intercepts) {
 
 		super(cache, type);
@@ -30,19 +31,13 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 		this.job_name = job_name;
 		this.job_id = job_id;
 
+		this.highWaterMark = highWaterMark;
 		this.WCET = WCET;
 		this.medainET = medainET;
 
 		this.breaks = breaks;
 		this.slopes = slopes;
 		this.intercepts = intercepts;
-
-	}
-
-	public RecencyProfileReal(CacheHierarchy cache, RecencyType type, String job_name, int job_id, double WCET, double[] breaks,
-			double[] slopes, double[] intercepts) {
-
-		this(cache, type, job_name, job_id, WCET, -1, breaks, slopes, intercepts);
 
 	}
 

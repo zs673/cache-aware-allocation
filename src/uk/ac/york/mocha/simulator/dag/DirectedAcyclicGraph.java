@@ -31,10 +31,10 @@ public class DirectedAcyclicGraph implements Serializable {
 	public long totalInstNum = -1;
 	public final String name;
 
-	/* Shceduling parameters of Sporadic DAG task */
+	/* Scheduling parameters of Sporadic DAG task */
 	private final SchedulingParameters sched_param;
 
-	/* Structual parameters of Sporadic DAG task */
+	/* Structural parameters of Sporadic DAG task */
 	private final StructuralParameters dag_param;
 
 	/* DAG parameters */

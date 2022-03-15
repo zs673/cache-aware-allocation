@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Pair;
 
+import jnr.ffi.annotations.In;
 import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
@@ -227,7 +228,7 @@ public class SystemGenerator {
 	}
 
 	public List<DirectedAcyclicGraph> generatedForSteven(List<Long> wcet, List<Long> periods, List<Integer> priority,
-			List<RecencyProfileReal> crps, CacheHierarchy cache, int instanceNum) {
+			List<RecencyProfileReal> crps, CacheHierarchy cache, int instanceNum, List<Integer> instances) {
 
 		if (periods != null && periods.size() != total_tasks) {
 			System.err
@@ -259,9 +260,14 @@ public class SystemGenerator {
 		}
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
-		for (DirectedAcyclicGraph d : dagTemplates) {
-
-			d.totalInstNum = instanceNum;
+		for (int i=0; i< dagTemplates.size();i++) {
+			DirectedAcyclicGraph d = dagTemplates.get(i);
+			
+			if(instances != null)
+				d.totalInstNum = instances.get(i);
+			else
+				d.totalInstNum = instanceNum;
+			
 			dags.addAll(d.getInstances(d.totalInstNum));
 
 		}

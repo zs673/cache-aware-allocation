@@ -10,6 +10,7 @@ import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.experiments_real.FiveNodeAllocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineCacheAware extends AllocationMethods {
 
@@ -36,16 +37,16 @@ public class OnlineCacheAware extends AllocationMethods {
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.
 		 */
-//		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
 		
-		
-		List<Node> preEligible = new ArrayList<>();
-		for (int i = 0; i < FiveNodeAllocation.cores; i++) {
-			if (readyNodes.size() == i)
-				break;
-			preEligible.add(readyNodes.get(i));
-		}
+//		
+		List<Node> preEligible = new ArrayList<>(readyNodes);
+//		for (int i = 0; i < Math.max(FiveNodeAllocation.cores, FiveNodeAllocation.taskNum); i++) {
+//			if (readyNodes.size() == i)
+//				break;
+//			preEligible.add(readyNodes.get(i));
+//		}
 
 		List<Integer> availableP = new ArrayList<>(availableProcs);
 
@@ -121,49 +122,6 @@ public class OnlineCacheAware extends AllocationMethods {
 		}
 
 	}
-
-//	private List<List<Long>> computeSpeedUp(List<Node> readyNodes, List<Integer> cores, RecencyProfile table,
-//			long[] coreTime, long systemTime, List<List<Node>> localRunqueue, List<List<Node>> history_level1,
-//			List<List<Node>> history_level2, List<Node> history_level3) {
-//
-//		List<List<Long>> speedUpTable = new ArrayList<>();
-//
-//		for (int i = 0; i < readyNodes.size(); i++) {
-//
-//			Node n = readyNodes.get(i);
-//
-//			List<Long> ETdrop = new ArrayList<>();
-//
-//			for (int core = 0; core < cores.size(); core++) {
-//
-//				/*
-//				 * Option 1: Speed up by ABSOLUTE value
-//				 */
-//				long WCET = n.getWCET();
-//				long realET = table
-//						.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, false)
-//						.getFirst();
-//				long speedup = WCET - realET;
-//
-//				long waitforCore = coreTime[core] > systemTime ? coreTime[core] - systemTime : 0;
-//				long waitforReady = localRunqueue.get(core).stream().mapToLong(x -> x.expectedET).sum();
-//
-////				for (int i = 0; i < speedUpTable.size(); i++) {
-////				long speedUp = speedUpTable.get(i).get(n.partition) - n.expectedET;
-////				speedUpTable.get(i).set(n.partition, speedUp);
-////			}
-//
-//				speedup = speedup - waitforCore - waitforReady;
-//
-//				ETdrop.add(speedup);
-//
-//			}
-//
-//			speedUpTable.add(ETdrop);
-//		}
-//
-//		return speedUpTable;
-//	}
 
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,

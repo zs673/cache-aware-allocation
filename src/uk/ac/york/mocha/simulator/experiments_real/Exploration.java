@@ -18,11 +18,10 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class FiveNodeAllocation {
+public class Exploration {
 
 	public static final String[] tasks = { "tacle/adpcm_dec", "tacle/adpcm_enc", "tacle/gsm_dec", "tacle/ndes", "tacle/h264_dec", 
-										   "tacle/statemate", "tacle/g723_enc", "tacle/anagram", "tacle/gsm_enc", "tacle/mpeg2", 
-										   "tacle/ammunition" };
+										   "tacle/statemate", "tacle/g723_enc", "tacle/gsm_enc", "tacle/mpeg2", "tacle/anagram", "tacle/ammunition" };
 
 	public static final String crpFile = "crp/test.profile_220311.crp.scaled.json";
 
@@ -43,7 +42,7 @@ public class FiveNodeAllocation {
 
 //		real();
 
-//		changeTaskNum(3, 7);
+		changeTaskNum(5, 10);
 		changeCoreNum(3, 8);
 	}
 
@@ -80,7 +79,7 @@ public class FiveNodeAllocation {
 	}
 
 	public static void changeCoreNum(int startCore, int endCore) {
-		taskNum = 7;
+		taskNum = 8;
 
 		List<List<long[]>> res = new ArrayList<>();
 

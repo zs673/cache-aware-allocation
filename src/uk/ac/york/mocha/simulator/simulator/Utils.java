@@ -129,7 +129,7 @@ public class Utils {
 		} else {
 
 			int ins = Long.compare(c1.getDagInstNo(), c2.getDagInstNo());
-
+//
 			if (ins != 0)
 				return ins;
 			else
@@ -361,7 +361,8 @@ public class Utils {
 
 				double WCET = ((Number) job.get("baseline_timing")).doubleValue();
 				
-				double medianET = ((Number) job.get("baseline_timing")).doubleValue();
+//				double highWaterMark = ((Number) job.get("hwm")).doubleValue();
+				double medianET = ((Number) job.get("median_timing")).doubleValue();
 
 				JSONArray breaks_j = (JSONArray) job.get("breaks");
 				JSONArray slopes_j = (JSONArray) job.get("slopes");
@@ -379,7 +380,7 @@ public class Utils {
 
 				id++;
 
-				RecencyProfileReal crp = new RecencyProfileReal(cache, RecencyType.REAL, key, id, WCET, medianET, breaks, slopes,
+				RecencyProfileReal crp = new RecencyProfileReal(cache, RecencyType.REAL, key, id, -1, WCET, medianET, breaks, slopes,
 						intercepts);
 				crps.add(crp);
 			}
