@@ -41,10 +41,10 @@ public class FiveNodeAllocation {
 //		taskNum = 3;
 //		runOne(3, 5, 20, true, seed, rng);
 
-//		real();
+		real();
 
-//		changeTaskNum(3, 7);
-		changeCoreNum(3, 8);
+//		changeTaskNum(3, 10);
+//		changeCoreNum(3, 10);
 	}
 
 	public static void real() {

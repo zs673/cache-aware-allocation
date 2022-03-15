@@ -6,7 +6,6 @@ f=figure('Position', [100, 100, 800, 350]);
 set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
 
 data = readmatrix(strcat('real/cores.txt'));
-
 col = size(data,2);
 
 if absolute == 0
