@@ -11,6 +11,7 @@ boxplot([data(:,1), data(:,2) ],  'symbol' , '-'); % , 'Whisker', 5
 xticklables = ["AJLR","WFD"];
 set(gca,'xticklabel',xticklables,'FontSize', 12);
 
+% ylim([5700 5900])
 
 
 ylabel('Makespan','FontSize', 14)
@@ -38,6 +39,7 @@ xticklables = ["AJLR","WFD"];
 set(gca,'xticklabel',xticklables,'FontSize', 12);
 
 ylim([5700 5900])
+
 ylabel('Makespan','FontSize', 14)
 
 set(gcf, 'PaperSize', [25 25])
