@@ -28,6 +28,8 @@ public abstract class RecencyProfile  implements Serializable {
 	public long getTimeofLastIndex(List<Node> nodes, Node n, double bound) {
 
 		long time = 0;
+		
+		
 
 		for (int i = nodes.size() - 1; i >= 0; i--) {
 			if (nodes.get(i).getDagID() == n.getDagID() && nodes.get(i).getId() == n.getId()) {

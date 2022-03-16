@@ -359,7 +359,7 @@ public class Utils {
 			for (String key : nameList) {
 				JSONObject job = (JSONObject) jsonObj.get(key);
 
-				double WCET = ((Number) job.get("baseline_timing")).doubleValue();
+				double WCET = ((Number) job.get("median_timing")).doubleValue();
 				
 //				double highWaterMark = ((Number) job.get("hwm")).doubleValue();
 				double medianET = ((Number) job.get("median_timing")).doubleValue();

@@ -115,38 +115,35 @@ data = readmatrix(strcat('real/utils.txt'));
 
 col = size(data,2);
 
-index=1;
 if absolute == 0
     for i = 1 :3 : col
         normalizer = max(max(data(:,i:i+1)));
         
-        boxplot(data(:,i)/normalizer, 'position',index, 'widths', 0.65, 'symbol','.', 'color', 'b');
+        boxplot(data(:,i)/normalizer, 'position',i, 'widths', 0.65, 'symbol','.', 'color', 'b');
         hold on
         
-        boxplot(data(:,i+1)/normalizer, 'position',index+1, 'widths', 0.65, 'symbol','.', 'color', 'r');
+        boxplot(data(:,i+1)/normalizer, 'position',i+1, 'widths', 0.65, 'symbol','.', 'color', 'r');
         hold on
         
-        index = index + 2;
 %         boxplot(data(:,i+2)/normalizer, 'position',i+2, 'widths', 0.65, 'symbol','.', 'color', 'k');
 %         hold on
     end
     ylabel('Normalised Makespan','FontSize', 16)
 else
     for i = 1 : 3: col
-        boxplot(data(:,i), 'position',index, 'widths', 0.65, 'symbol','.', 'color', 'b');
+        boxplot(data(:,i), 'position',i, 'widths', 0.65, 'symbol','.', 'color', 'b');
         hold on
         
-        boxplot(data(:,i+1), 'position',index+1, 'widths', 0.65, 'symbol','.', 'color', 'r');
+        boxplot(data(:,i+1), 'position',i+1, 'widths', 0.65, 'symbol','.', 'color', 'r');
         hold on
         
-        index = index +2;
 %         boxplot(data(:,i+2), 'position',i+2, 'widths', 0.65, 'symbol','.', 'color', 'k');
 %         hold on
     end
     ylabel('Makespan','FontSize', 16)
 end
 
-xticklables = 0.5 : 0.5 : 3.0;
+xticklables = 0.7 : 0.7 : 7.0;
 set(gca,'xticklabel',xticklables,'FontSize', 14);
 xticks = 1.5 : 2 : col;
 set(gca,'xtick',xticks );

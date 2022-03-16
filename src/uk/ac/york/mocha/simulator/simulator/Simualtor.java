@@ -222,6 +222,7 @@ public class Simualtor {
 
 			if(sleepingDAGs.size() == 0 && readyDAGs.size() == 0)
 				totalMakespan = systemTime;
+			
 			/*
 			 * advance to next time unit.
 			 */

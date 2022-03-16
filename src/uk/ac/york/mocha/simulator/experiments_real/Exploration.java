@@ -20,8 +20,9 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class Exploration {
 
-	public static final String[] tasks = { "tacle/adpcm_dec", "tacle/adpcm_enc", "tacle/gsm_dec", "tacle/ndes", "tacle/h264_dec", 
-										   "tacle/statemate", "tacle/g723_enc", "tacle/gsm_enc", "tacle/mpeg2", "tacle/anagram", "tacle/ammunition" };
+	public static final String[] tasks = { "tacle/adpcm_dec", "tacle/adpcm_enc", "tacle/gsm_dec", "tacle/ndes",
+			"tacle/h264_dec", "tacle/statemate", "tacle/g723_enc", "tacle/gsm_enc", "tacle/mpeg2", "tacle/anagram",
+			"tacle/ammunition" };
 
 	public static final String crpFile = "crp/test.profile_220311.crp.scaled.json";
 
@@ -42,77 +43,19 @@ public class Exploration {
 
 //		real();
 
-		changeTaskNum(5, 10);
-		changeCoreNum(3, 8);
+//		changeTaskNum(5, 10);
+//		changeTaskNum(3, 10);
+		changeUtilization(1, 10);
 	}
 
-	public static void real() {
-		List<long[]> res0 = new ArrayList<>();
+	public static void changeUtilization(int startUtil, int endUtil) {
 
-		cores = 3;
-
-		taskNum = 5;
-		for (int i = 0; i < nos; i++) {
-			rng = new Random(seed);
-			System.out.println("--------------------- " + " Core: " + 3 + ", TaskNum: " + 5 + ", No. System " + (i + 1)
-					+ " ---------------------");
-			long[] r = runOne(cores, taskNum, instanceNum, false, seed, rng);
-			res0.add(r);
-			seed++;
-		}
-
-		String out = "";
-		System.out.println("\n\n\n------------ ALL RESULTS ------------");
-		for (int i = 0; i < res0.size(); i++) {
-			for (int k = 0; k < res0.get(i).length; k++) {
-				if (k < res0.get(i).length - 1) {
-					System.out.print(res0.get(i)[k] + ",");
-					out += res0.get(i)[k] + ",";
-				} else {
-					System.out.print(res0.get(i)[k] + "\n");
-					out += res0.get(i)[k] + "\\n";
-				}
-			}
-		}
-
-		Utils.writeResult("result/real/" + "real" + ".txt", out);
-	}
-
-	public static void changeCoreNum(int startCore, int endCore) {
-		taskNum = 8;
+		cores = 4;
+		taskNum = 7;
 
 		List<List<long[]>> res = new ArrayList<>();
 
-		for (int i = 0; i <= (endCore - startCore); i++) {
-			res.add(new ArrayList<>());
-		}
-
-		int index = 0;
-		for (int i = startCore; i <= endCore; i++) {
-			cores = i;
-
-			for (int k = 0; k < nos; k++) {
-				rng = new Random(seed);
-				System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum
-						+ ", No. System " + (k + 1) + " ---------------------");
-				long[] r = runOne(cores, taskNum, instanceNum, print, seed, rng);
-				res.get(index).add(r);
-				seed++;
-			}
-
-			index++;
-		}
-
-		getAllResults("cores", res);
-	}
-
-	public static void changeTaskNum(int startNum, int endNum) {
-
-		cores = 3;
-
-		List<List<long[]>> res = new ArrayList<>();
-
-		for (int i = 0; i <= (endNum - startNum); i++) {
+		for (int i = 0; i < 10; i++) {
 			res.add(new ArrayList<>());
 		}
 
@@ -121,14 +64,13 @@ public class Exploration {
 //		List<long[]> res2 = new ArrayList<>();
 
 		int index = 0;
-		for (int i = startNum; i <= endNum; i++) {
-			taskNum = i;
+		for (int i = startUtil; i <= endUtil; i++) {
 
 			for (int k = 0; k < nos; k++) {
 				rng = new Random(seed);
-				System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum
-						+ ", No. System " + (k + 1) + " ---------------------");
-				long[] r = runOne(cores, taskNum, instanceNum, print, seed, rng);
+				System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum + ", Util: "
+						+ ((double) i / (double) 10 * taskNum) + ", No. System " + (k + 1) + " ---------------------");
+				long[] r = runOne(cores, taskNum, i, instanceNum, print, seed, rng);
 				res.get(index).add(r);
 				seed++;
 			}
@@ -136,7 +78,7 @@ public class Exploration {
 			index++;
 		}
 
-		getAllResults("tasks", res);
+		getAllResults("utils", res);
 
 	}
 
@@ -167,24 +109,8 @@ public class Exploration {
 		Utils.writeResult("result/real/" + fileName + ".txt", out);
 	}
 
-	public static void oneRun() {
-		print = true;
-		runOne(3, 5, 5, print, seed, rng);
-
-		System.out.println("\n\n\n\n\n***************************************************");
-		System.out.println("***************************************************");
-		System.out.println("***************************************************\n\n\n\n\n");
-
-		runOne(4, 5, 5, print, seed, rng);
-
-		System.out.println("\n\n\n\n\n***************************************************");
-		System.out.println("***************************************************");
-		System.out.println("***************************************************\n\n\n\n\n");
-
-		runOne(5, 5, 5, print, seed, rng);
-	}
-
-	public static long[] runOne(int cores, int taskNum, int instanceNum, boolean print, int seed, Random rng) {
+	public static long[] runOne(int cores, int taskNum, int util, int instanceNum, boolean print, int seed,
+			Random rng) {
 
 		List<String> taskName = new ArrayList<>();
 		for (int i = 0; i < taskNum; i++) {
@@ -194,7 +120,7 @@ public class Exploration {
 		CacheHierarchy cache = generateCache(cores);
 		List<RecencyProfileReal> crps = readCRP(crpFile, taskName, cache);
 
-		List<DirectedAcyclicGraph> dags = dagGenerator(crps.subList(0, taskNum), cache, cores, instanceNum, rng);
+		List<DirectedAcyclicGraph> dags = dagGenerator(crps.subList(0, taskNum), util, cache, cores, instanceNum, rng);
 
 		return simulate(taskNum, dags, cache, cores, print, rng);
 	}
@@ -206,20 +132,20 @@ public class Exploration {
 			// for (Node n : d.getFlatNodes())
 			// n.hasFaults = true;
 
-			d.releaseTime = 0;
+//			d.releaseTime = 0;
 		}
 
-		List<DirectedAcyclicGraph> tasks = new ArrayList<>();
-		for (int i = 0; i < instanceNum; i++) {
-			for (int j = 0; j < taskNum; j++) {
-				tasks.add(dags.get(j * instanceNum + i));
-			}
-			// tasks.add(dags.get(10 + i));
-			// tasks.add(dags.get(20 + i));
-			// tasks.add(dags.get(40 + i));
-			// tasks.add(dags.get(60 + i));
-			// tasks.add(dags.get(80 + i));
-		}
+		List<DirectedAcyclicGraph> tasks = new ArrayList<>(dags);
+//		for (int i = 0; i < instanceNum; i++) {
+//			for (int j = 0; j < taskNum; j++) {
+//				tasks.add(dags.get(j * instanceNum + i));
+//			}
+//			// tasks.add(dags.get(10 + i));
+//			// tasks.add(dags.get(20 + i));
+//			// tasks.add(dags.get(40 + i));
+//			// tasks.add(dags.get(60 + i));
+//			// tasks.add(dags.get(80 + i));
+//		}
 
 		rng = new Random(seed);
 		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
@@ -246,6 +172,10 @@ public class Exploration {
 		// System.out.println();
 		// pair2.getFirst().stream().forEach(c -> System.out.print(c.finishTime
 		// - c.startTime + " "));
+		
+		sim1.totalMakespan = pair1.getFirst().stream().mapToLong(c -> c.finishTime - c.startTime).sum();
+		sim2.totalMakespan = pair2.getFirst().stream().mapToLong(c -> c.finishTime - c.startTime).sum();
+		sim3.totalMakespan = pair3.getFirst().stream().mapToLong(c -> c.finishTime - c.startTime).sum();
 
 		System.out.println(sim1.totalMakespan + " " + sim2.totalMakespan + " " + sim3.totalMakespan);
 
@@ -272,9 +202,12 @@ public class Exploration {
 		return cache;
 	}
 
-	public static List<DirectedAcyclicGraph> dagGenerator(List<RecencyProfileReal> crps, CacheHierarchy cache,
+	public static List<DirectedAcyclicGraph> dagGenerator(List<RecencyProfileReal> crps, int util, CacheHierarchy cache,
 			int cores, int instanceNum, Random rng) {
-		long totoalDuration = 10000;
+		long totoalDuration = 20000;
+		double utilPerTask = (double) util / (double) 10;
+
+		System.out.println(utilPerTask * taskNum);
 
 		crps.stream().forEach(c -> c.WCET = c.WCET * (1 + rng.nextDouble() * 0.2 - 0.1));
 //		crps.stream().forEach(c -> c.medainET = c.WCET * (1 + rng.nextDouble() * 0.2 - 0.1 ));
@@ -282,7 +215,8 @@ public class Exploration {
 
 		List<Long> wcets = crps.stream().map(c -> (long) Math.round(c.WCET)).collect(Collectors.toList());
 		List<Integer> priorities = crps.stream().map(c -> 1000).collect(Collectors.toList());
-		List<Long> periods = crps.stream().map(c -> (long) Math.round(c.WCET) * 10).collect(Collectors.toList());
+		List<Long> periods = crps.stream().map(c -> (long) Math.round((double) c.WCET / utilPerTask))
+				.collect(Collectors.toList());
 
 		List<Integer> instances = new ArrayList<>();
 		for (Long t : periods) {
@@ -293,7 +227,7 @@ public class Exploration {
 		SystemGenerator gen = new SystemGenerator(cores, crps.size(), false, false, null, rng, false, false,
 				cache.level2);
 		List<DirectedAcyclicGraph> sys = gen.generatedForSteven(wcets, periods, priorities, crps, cache, instanceNum,
-				null);
+				instances);
 
 		return sys;
 	}
