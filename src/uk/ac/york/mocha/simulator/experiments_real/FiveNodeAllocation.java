@@ -24,8 +24,8 @@ public class FiveNodeAllocation {
 //	public static final String[] tasks = { "tacle/ndes", "tacle/h264_dec", "tacle/adpcm_dec", "tacle/adpcm_enc", "tacle/gsm_dec",
 //			"tacle/statemate", "tacle/g723_enc", "tacle/anagram", "tacle/gsm_enc", "tacle/mpeg2", "tacle/ammunition" };
 
-	public static final String[] tasks = { "tacle/ndes", "tacle/h264_dec", "tacle/gsm_enc", "tacle/adpcm_enc", "tacle/gsm_dec",
-			"tacle/statemate", "tacle/g723_enc", "tacle/anagram", "tacle/gsm_enc", "tacle/mpeg2", "tacle/ammunition" };
+	public static final String[] tasks = { "tacle/ndes", "tacle/h264_dec", "tacle/adpcm_dec", "tacle/adpcm_enc", "tacle/gsm_dec",
+			"tacle/mpeg2", "tacle/g723_enc", "tacle/anagram", "tacle/gsm_enc", "tacle/mpeg2", "tacle/ammunition" };
 
 	public static final String crpFile = "crp/profile.tacle.crp.json"; // "crp/test.profile_220311.crp.scaled.json";
 
@@ -67,7 +67,7 @@ public class FiveNodeAllocation {
 		List<long[]> res0 = new ArrayList<>();
 
 		cores = 3;
-		taskNum = 5;
+		taskNum = 6;
 
 		for (int i = 0; i < nos; i++) {
 			rng = new Random(seed);
