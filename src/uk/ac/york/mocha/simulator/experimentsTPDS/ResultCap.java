@@ -8,10 +8,13 @@ class ResultCap {
 	boolean finish = false;
 	
 	int counter = 0;
+	int total_counter = 0;
+	
 	
 	public int NoSched_our = 0;
 	public int NoSched_he = 0;
 	public int NoSched_seq = 0;
+	public int NoSched_fed = 0;
 
 	public List<List<long[]>> inter_delay = new ArrayList<>();
 	public List<List<long[]>> intra_delay = new ArrayList<>();
@@ -36,6 +39,10 @@ class ResultCap {
 	public synchronized void incrementSeq() {
 		NoSched_seq++;
 	}
+	
+	public synchronized void incrementFed() {
+		NoSched_fed++;
+	}
 
 	public synchronized void incrementHe() {
 		NoSched_he++;
@@ -48,6 +55,11 @@ class ResultCap {
 	public synchronized void addCounter() {
 		counter++;
 		System.out.println("counter: " + counter);
+	}
+	
+	public synchronized void addTotalCounter() {
+		total_counter++;
+		System.out.println(counter + " out of " + total_counter);
 	}
 	
 	public synchronized void checkFinish() {

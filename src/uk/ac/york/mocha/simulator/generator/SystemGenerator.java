@@ -358,7 +358,6 @@ public class SystemGenerator {
 			while (true) {
 
 				if (isHarmonic) {
-
 					/* harmonic period, same periods are not allowed */
 					List<Long> harmonicPeriods = new ArrayList<>();
 
@@ -374,6 +373,8 @@ public class SystemGenerator {
 					}
 
 					long period = harmonicPeriods.get(ran.nextInt(harmonicPeriods.size()));
+//					long period = SystemParameters.harmonic_periods[ran
+//							.nextInt(SystemParameters.harmonic_periods.length)];
 					if (!periods.contains(period))
 						periods.add(period);
 

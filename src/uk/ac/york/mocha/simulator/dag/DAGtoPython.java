@@ -123,7 +123,7 @@ public class DAGtoPython {
 			makespan = Long.parseLong(makespan_string);
 
 			// Read any errors from the attempted command
-//			System.out.println("Here is the standard error of the command (if any):\n");
+			// System.out.println("Here is the standard error of the command (if any): \n");
 			String error = null;
 			while ((error = stdError.readLine()) != null) {
 				System.out.println(error);

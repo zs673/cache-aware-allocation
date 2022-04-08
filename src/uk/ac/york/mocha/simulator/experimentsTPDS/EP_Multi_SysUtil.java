@@ -10,9 +10,10 @@ import uk.ac.york.mocha.simulator.dag.DAG;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
+import uk.ac.york.mocha.simulator.schedule.FederatedSchedule;
 import uk.ac.york.mocha.simulator.schedule.InfoCap;
-import uk.ac.york.mocha.simulator.schedule.RTSSOur;
-import uk.ac.york.mocha.simulator.schedule.SemiWorkConversing;
+import uk.ac.york.mocha.simulator.schedule.RTSSOurSingleDAG;
+import uk.ac.york.mocha.simulator.schedule.TPDSOurMultiDAG;
 import uk.ac.york.mocha.simulator.schedule.TPDSHe;
 
 public class EP_Multi_SysUtil {
@@ -32,6 +33,7 @@ public class EP_Multi_SysUtil {
 
 	public static void main(String args[]) {
 		int nopSever = 1;
+
 		SystemParameters.NoS = 1000;
 
 		try {
@@ -54,7 +56,7 @@ public class EP_Multi_SysUtil {
 	public static void changeUtil(int nopSever) {
 
 		int startingUtil = 1;
-		int endUtil = 6;
+		int endUtil = 12;
 
 		List<ResultCap> caps = new ArrayList<>();
 
@@ -69,13 +71,14 @@ public class EP_Multi_SysUtil {
 
 			caps.add(r);
 
-			for (int k = 0; k < 4; k++)
+			for (int k = 0; k <= endUtil - startingUtil; k++)
 				ResultCollector.writeSchedToSystem(r, index, k, expName, outFolder);
 		}
 
 		System.out.println("--------------------------------");
 		for (ResultCap cap : caps) {
-			System.out.println(cap.NoSched_our + " " + cap.NoSched_he + " " + cap.NoSched_seq);
+			System.out.println(cap.NoSched_our + " " + cap.NoSched_he + " " + cap.NoSched_seq + " " + cap.NoSched_fed
+					+ " in " + cap.total_counter + " systems.");
 		}
 		System.out.println("------------- DONE -------------");
 
@@ -101,13 +104,14 @@ public class EP_Multi_SysUtil {
 
 					for (int k = offset; k < offset + workload; k++) {
 						cap.checkFinish();
-						
-						if(cap.isFinish())
+
+						if (cap.isFinish())
 							return;
-						
+
 						boolean ourS = false;
 						boolean heS = false;
-						
+						boolean fedS = false;
+
 						System.out.println(
 								"Current system number: " + (k) + " --- system util: " + (utilPerTask * taskNum));
 
@@ -121,9 +125,10 @@ public class EP_Multi_SysUtil {
 						List<DAG> dagsInOneHP = p.getFirst();
 						List<DAG> dagTasks = p.getSecond();
 
-						List<InfoCap> seq = new RTSSOur().getResponseTime(dagsInOneHP, cores);
+						List<InfoCap> seq = new RTSSOurSingleDAG().getResponseTime(dagsInOneHP, cores);
 						List<InfoCap> he = new TPDSHe().getResponseTime(dagTasks, cores);
-						List<InfoCap> our = new SemiWorkConversing().getResponseTime(dagsInOneHP, cores);
+						List<InfoCap> our = new TPDSOurMultiDAG().getResponseTime(dagsInOneHP, cores);
+						List<InfoCap> fed = new FederatedSchedule().getResponseTime(dagsInOneHP, cores);
 
 						if (isSchedulable(dagsInOneHP, seq))
 							cap.incrementSeq();
@@ -138,19 +143,25 @@ public class EP_Multi_SysUtil {
 							ourS = true;
 						}
 
-						if (ourS && heS) {
+						if (isSchedulable(dagsInOneHP, fed)) {
+							cap.incrementFed();
+							fedS = true;
+						}
+
+						if (ourS && heS && fedS) {
 							cap.addCounter();
+
 							long[] interDelayHe = new long[dagTasks.size()];
 							long[] interDelayOur = new long[dagTasks.size()];
-//							long[] interDelaySeq = new long[dagTasks.size()];
+							long[] interDelayFed = new long[dagTasks.size()];
 
 							long[] intraDelayHe = new long[dagTasks.size()];
 							long[] intraDelayOur = new long[dagTasks.size()];
-//							long[] intraDelaySeq = new long[dagTasks.size()];
+							long[] intraDelayFed = new long[dagTasks.size()];
 
 							long[] responseTimeHe = new long[dagTasks.size()];
 							long[] responseTimeOur = new long[dagTasks.size()];
-//							long[] responseTimeSeq = new long[dagTasks.size()];
+							long[] responseTimeFed = new long[dagTasks.size()];
 
 							for (int j = 0; j < he.size(); j++) {
 								interDelayHe[j] = he.get(j).best_inter;
@@ -171,37 +182,39 @@ public class EP_Multi_SysUtil {
 									responseTimeOur[index] = our.get(j).best_response_time;
 							}
 
-//							for (int j = 0; j < seq.size(); j++) {
-//								int index = dagsInOneHP.get(j).id;
-//
-//								if (interDelaySeq[index] < seq.get(j).best_inter)
-//									interDelaySeq[index] = seq.get(j).best_inter;
-//
-//								if (intraDelaySeq[index] < seq.get(j).best_intra)
-//									intraDelaySeq[index] = seq.get(j).best_intra;
-//
-//								if (responseTimeSeq[index] < seq.get(j).best_response_time)
-//									responseTimeSeq[index] = seq.get(j).best_response_time;
-//							}
+							for (int j = 0; j < fed.size(); j++) {
+								int index = dagsInOneHP.get(j).id;
+
+								if (interDelayFed[index] < fed.get(j).best_inter)
+									interDelayFed[index] = fed.get(j).best_inter;
+
+								if (intraDelayFed[index] < fed.get(j).best_intra)
+									intraDelayFed[index] = fed.get(j).best_intra;
+
+								if (responseTimeFed[index] < fed.get(j).best_response_time)
+									responseTimeFed[index] = fed.get(j).best_response_time;
+							}
 
 							List<long[]> interDelays = new ArrayList<>();
 							interDelays.add(interDelayOur);
 							interDelays.add(interDelayHe);
-//							interDelays.add(interDelaySeq);
+							interDelays.add(interDelayFed);
 							cap.addInterDelay(interDelays);
 
 							List<long[]> intraDelays = new ArrayList<>();
 							intraDelays.add(intraDelayOur);
 							intraDelays.add(intraDelayHe);
-//							intraDelays.add(intraDelaySeq);
+							intraDelays.add(intraDelayFed);
 							cap.addIntraDelay(intraDelays);
 
 							List<long[]> response_times = new ArrayList<>();
 							response_times.add(responseTimeOur);
 							response_times.add(responseTimeHe);
-//							response_times.add(responseTimeSeq);
+							response_times.add(responseTimeFed);
 							cap.addResponseTime(response_times);
 						}
+
+						cap.addTotalCounter();
 
 						seed++;
 					}

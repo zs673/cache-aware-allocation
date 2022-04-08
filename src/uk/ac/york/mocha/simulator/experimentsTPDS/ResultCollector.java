@@ -15,11 +15,13 @@ public class ResultCollector {
 	public static void writeSchedToSystem(ResultCap cap, int variable, int mode, String expName, String folder) {
 		String our_file = "";
 		String he_file = "";
-		String seq_file = "";
+//		String seq_file = "";
+		String fed_file = "";
 
 		String our_out = "";
 		String he_out = "";
-		String seq_out = "";
+//		String seq_out = "";
+		String fed_out = "";
 
 		String file = "";
 		String out = "";
@@ -28,7 +30,8 @@ public class ResultCollector {
 		case 0: // intra-task interference
 			our_file = expName + "_" + variable + "_" + "intra" + "_" + "our" + ".txt";
 			he_file = expName + "_" + variable + "_" + "intra" + "_" + "he" + ".txt";
-			seq_file = expName + "_" + variable + "_" + "intra" + "_" + "seq" + ".txt";
+//			seq_file = expName + "_" + variable + "_" + "intra" + "_" + "seq" + ".txt";
+			fed_file = expName + "_" + variable + "_" + "intra" + "_" + "fed" + ".txt";
 
 			List<List<long[]>> intra = cap.intra_delay;
 			for (List<long[]> i : intra) {
@@ -58,17 +61,28 @@ public class ResultCollector {
 //						seq_out += seq[k];
 //				}
 //				seq_out += "\n";
+				
+				long[] fed = i.get(2);
+				for (int k = 0; k < fed.length; k++) {
+					if (k < fed.length - 1)
+						fed_out += fed[k] + ",";
+					else
+						fed_out += fed[k];
+				}
+				fed_out += "\n";
 			}
 
 			Utils.writeResult(folder, our_file, our_out);
 			Utils.writeResult(folder, he_file, he_out);
-			Utils.writeResult(folder, seq_file, seq_out);
+//			Utils.writeResult(folder, seq_file, seq_out);
+			Utils.writeResult(folder, fed_file, fed_out);
 
 			break;
 		case 1: // inter-task interference
 			our_file = expName + "_" + variable + "_" + "inter" + "_" + "our" + ".txt";
 			he_file = expName + "_" + variable + "_" + "inter" + "_" + "he" + ".txt";
-			seq_file = expName + "_" + variable + "_" + "inter" + "_" + "seq" + ".txt";
+//			seq_file = expName + "_" + variable + "_" + "inter" + "_" + "seq" + ".txt";
+			fed_file = expName + "_" + variable + "_" + "inter" + "_" + "fed" + ".txt";
 
 			List<List<long[]>> inter = cap.inter_delay;
 			for (List<long[]> i : inter) {
@@ -98,17 +112,28 @@ public class ResultCollector {
 //						seq_out += seq[k];
 //				}
 //				seq_out += "\n";
+				
+				long[] fed = i.get(2);
+				for (int k = 0; k < fed.length; k++) {
+					if (k < fed.length - 1)
+						fed_out += fed[k] + ",";
+					else
+						fed_out += fed[k];
+				}
+				fed_out += "\n";
 			}
 
 			Utils.writeResult(folder, our_file, our_out);
 			Utils.writeResult(folder, he_file, he_out);
-			Utils.writeResult(folder, seq_file, seq_out);
+//			Utils.writeResult(folder, seq_file, seq_out);
+			Utils.writeResult(folder, fed_file, fed_out);
 
 			break;
 		case 2: // response time
 			our_file = expName + "_" + variable + "_" + "response" + "_" + "our" + ".txt";
 			he_file = expName + "_" + variable + "_" + "response" + "_" + "he" + ".txt";
-			seq_file = expName + "_" + variable + "_" + "response" + "_" + "seq" + ".txt";
+//			seq_file = expName + "_" + variable + "_" + "response" + "_" + "seq" + ".txt";
+			fed_file = expName + "_" + variable + "_" + "response" + "_" + "fed" + ".txt";
 
 			List<List<long[]>> response = cap.response_time;
 			for (List<long[]> i : response) {
@@ -138,11 +163,21 @@ public class ResultCollector {
 //						seq_out += seq[k];
 //				}
 //				seq_out += "\n";
+				
+				long[] fed = i.get(2);
+				for (int k = 0; k < fed.length; k++) {
+					if (k < fed.length - 1)
+						fed_out += fed[k] + ",";
+					else
+						fed_out += fed[k];
+				}
+				fed_out += "\n";
 			}
 
 			Utils.writeResult(folder, our_file, our_out);
 			Utils.writeResult(folder, he_file, he_out);
-			Utils.writeResult(folder, seq_file, seq_out);
+//			Utils.writeResult(folder, seq_file, seq_out);
+			Utils.writeResult(folder, fed_file, fed_out);
 
 			break;
 		case 3: // sched info
@@ -150,7 +185,10 @@ public class ResultCollector {
 
 			out += cap.NoSched_our + ",";
 			out += cap.NoSched_he + ",";
-			out += cap.NoSched_seq;
+			out += cap.NoSched_seq + ",";
+			out += cap.NoSched_fed + "\n";
+			out += cap.total_counter + "\n";
+			
 
 			Utils.writeResult(folder, file, out);
 

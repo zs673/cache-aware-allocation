@@ -1,5 +1,9 @@
 package uk.ac.york.mocha.simulator.parameters;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class SystemParameters {
 
 	public static boolean david = false;
@@ -108,11 +112,27 @@ public class SystemParameters {
 	 */
 	public final static int MIN_PERIOD = 10;
 	public final static int MAX_PERIOD = 1440;
+	
+	public final static int[] harmonic_periods = {120000, 240000, 360000, 480000, 720000};
 
 	/*
 	 * Non-harmonic periods
 	 */
 	public final static int minT = 100;
 	public final static int maxT = 1000;
+	
+	public static void main(String args[]) {
+		/* harmonic period, same periods are not allowed */
+		List<Long> harmonicPeriods = new ArrayList<>();
+
+		for (long i = SystemParameters.MIN_PERIOD; i <= SystemParameters.MAX_PERIOD; ++i) {
+			if (SystemParameters.MAX_PERIOD % i == 0) {
+				harmonicPeriods.add(i * 1000);
+			}
+		}
+
+		
+		System.out.println(Arrays.toString(harmonicPeriods.toArray()));
+	}
 
 }

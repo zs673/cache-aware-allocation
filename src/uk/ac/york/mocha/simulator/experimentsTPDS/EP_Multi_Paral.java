@@ -11,8 +11,8 @@ import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
 import uk.ac.york.mocha.simulator.schedule.InfoCap;
-import uk.ac.york.mocha.simulator.schedule.RTSSOur;
-import uk.ac.york.mocha.simulator.schedule.SemiWorkConversing;
+import uk.ac.york.mocha.simulator.schedule.RTSSOurSingleDAG;
+import uk.ac.york.mocha.simulator.schedule.TPDSOurMultiDAG;
 import uk.ac.york.mocha.simulator.schedule.TPDSHe;
 
 public class EP_Multi_Paral {
@@ -118,9 +118,9 @@ public class EP_Multi_Paral {
 						List<DAG> dagsInOneHP = p.getFirst();
 						List<DAG> dagTasks = p.getSecond();
 
-						List<InfoCap> seq = new RTSSOur().getResponseTime(dagsInOneHP, cores);
+						List<InfoCap> seq = new RTSSOurSingleDAG().getResponseTime(dagsInOneHP, cores);
 						List<InfoCap> he = new TPDSHe().getResponseTime(dagTasks, cores);
-						List<InfoCap> our = new SemiWorkConversing().getResponseTime(dagsInOneHP, cores);
+						List<InfoCap> our = new TPDSOurMultiDAG().getResponseTime(dagsInOneHP, cores);
 
 						if (isSchedulable(dagsInOneHP, seq))
 							cap.incrementSeq();
