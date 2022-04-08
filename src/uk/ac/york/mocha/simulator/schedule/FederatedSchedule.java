@@ -73,7 +73,7 @@ public class FederatedSchedule {
 	}
 
 	private InfoCap getBestResponseTime(List<ExecutionBlock> system, DAG d, int totalcore) {
-		long best_core = -1;
+		long best_core = Integer.MAX_VALUE;
 		long best_response_time = Long.MAX_VALUE;
 		long best_delay = Long.MAX_VALUE;
 
@@ -92,13 +92,11 @@ public class FederatedSchedule {
 			else
 				response = delay + d.getFlatNodes().stream().mapToLong(c -> c.getWCET()).sum();
 
-			if (response <= d.getSchedParameters().getDeadline()) {
+			if (response <= d.getSchedParameters().getDeadline() && i < best_core) {
 				best_core = i;
 				best_response_time = response;
 				best_delay = delay;
 				deepCopyEBList(best_sys, sysMirror);
-				
-				break;
 			}
 		}
 
