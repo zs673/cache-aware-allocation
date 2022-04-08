@@ -55,7 +55,7 @@ public class EP_Multi_NOP_fixUtil {
 
 	public static void changeTaskNoP(int nopSever) {
 
-		int startingNoP = 2;
+		int startingNoP = 12;
 		int endNoP = 32;
 
 		List<ResultCap> caps = new ArrayList<>();

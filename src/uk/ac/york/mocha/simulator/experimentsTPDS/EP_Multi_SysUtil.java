@@ -56,7 +56,7 @@ public class EP_Multi_SysUtil {
 	public static void changeUtil(int nopSever) {
 
 		int startingUtil = 1;
-		int endUtil = 12;
+		int endUtil = 6;
 
 		List<ResultCap> caps = new ArrayList<>();
 
