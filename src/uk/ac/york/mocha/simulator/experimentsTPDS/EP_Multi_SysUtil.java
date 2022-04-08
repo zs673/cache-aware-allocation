@@ -71,7 +71,7 @@ public class EP_Multi_SysUtil {
 
 			caps.add(r);
 
-			for (int k = 0; k <= endUtil - startingUtil; k++)
+			for (int k = 0; k <= 4; k++)
 				ResultCollector.writeSchedToSystem(r, index, k, expName, outFolder);
 		}
 
