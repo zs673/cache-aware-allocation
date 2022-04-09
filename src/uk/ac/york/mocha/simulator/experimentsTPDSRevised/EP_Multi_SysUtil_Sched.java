@@ -42,7 +42,7 @@ public class EP_Multi_SysUtil_Sched {
 
 			if (Integer.parseInt(args[1]) == 1) {
 				SystemParameters.david = true;
-				outFolder = "result_multi_daivd";
+				outFolder = "result_multi_sched";
 				System.out.println("Using david's utilisation!");
 			}
 
