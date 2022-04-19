@@ -1,24 +1,17 @@
 
-%%%%%% Fixed parameters %%%%%%
-path_results = "../result_multi_daivd2/";
-path_figs = '../TPDS_figures/';
 
 wid = 800;
 len = 300;
 
-colors=[[0.8500 0.3250 0.0980]; [0 0.4470 0.7410];  [0.9290 0.6940 0.1250]; [0.4660, 0.6740, 0.1880]; [0.3010, 0.7450, 0.9330]; [0.6350, 0.0780, 0.1840]];
+colors=[[0.8500 0.3250 0.0980]; [0 0.4470 0.7410];  [0.4660, 0.6740, 0.1880]; [0.3010, 0.7450, 0.9330]; [0.6350, 0.0780, 0.1840]];
 
-
-file_name = ["our", "he"];
+file_name = ["our", "he","fed"];
 file_pre = "util";
 file_end = ["intra","inter"];
 
 startingVar = 1;
 endingVar = 6;
 space = 1;
-
-
-
 
 for j = 1: length(file_end)
     f=figure('Position', [100, 100, wid, len]);
@@ -37,24 +30,27 @@ for j = 1: length(file_end)
             if i==1
                 boxplot(mean, 'position', pos, 'widths', 0.65, 'symbol','.', 'color', colors(i,:),'symbol', '');
                 hold on;
-            else
+            elseif i == 2
                 boxplot(mean, 'position', pos+1, 'widths', 0.65, 'symbol','.', 'color', colors(i,:),'symbol', '');
+                hold on;
+            else
+                boxplot(mean, 'position', pos+2, 'widths', 0.65, 'symbol','.', 'color', colors(i,:),'symbol', '');
                 hold on;
             end
         end 
-        pos = pos + 2;
+        pos = pos + 3;
     end
     
-    xlim([0.5, 12.5]);
-%     if(j==1)
-%         ylim([-500, 100000]);
-%     else
-        ylim([-3000, 60000]);
-%     end
+    xlim([0.5, 18.5]);
+    if(j==1)
+        ylim([-1000, 60000]);
+    else
+        ylim([-1000, 60000]);
+    end
     
-    legends = ["mDAG-CA","He2019"];
+    legends = ["mDAG-CA","He2019","Baseline"];
 
-    coloums = 1.5: 2:20;
+    coloums = 2: 3:30;
     
     xticklabel = strings(1,endingVar/space);
     for n = startingVar:space:endingVar
@@ -72,12 +68,12 @@ for j = 1: length(file_end)
     end
     
     c = findall(gca,'Tag','Box');
-    hleg1 = legend(c(2:3),legends,'location','northwest','Orientation','vertical');
+    hleg1 = legend([c(3),c(2),c(1)],legends,'location','northwest','Orientation','vertical');
     set(hleg1,'FontSize',14);
     if(j==1)
-       saveas(gcf,strcat(path_figs, strcat("ep_intra_", file_pre, ".eps")),'epsc');
+       saveas(gcf,strcat(path_figs, strcat("ep_intra_", file_pre, "1.eps")),'epsc');
     else
-       saveas(gcf,strcat(path_figs, strcat("ep_inter_", file_pre, ".eps")),'epsc');
+       saveas(gcf,strcat(path_figs, strcat("ep_inter_", file_pre, "1.eps")),'epsc');
     end
 end
 

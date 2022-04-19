@@ -29,7 +29,7 @@ public class EP_Multi_NOT {
 	final static int maxParal = 10;
 	final static int seed = 1000;
 	final static int util = 3;
-	
+
 	public static void main(String args[]) {
 		int nopSever = 1;
 		SystemParameters.NoS = 1000;
@@ -61,7 +61,7 @@ public class EP_Multi_NOT {
 		for (int i = startingNOT; i <= endNOT; i++) {
 			final int index = i;
 
-			double utilPerTask = (double) 0.8 * (double) util / (double) index ;
+			double utilPerTask = (double) 0.8 * (double) util / (double) index;
 
 			ResultCap r = RunOneGroup(cores, index, intanceNum, hyperPeriodNum, true, null, seed, seed, null,
 					SystemParameters.NoS, Double.parseDouble(df.format(utilPerTask)), true, ExpName.taskNum, minParal,
@@ -80,7 +80,7 @@ public class EP_Multi_NOT {
 		System.out.println("------------- DONE -------------");
 
 	}
-	
+
 	public static ResultCap RunOneGroup(int cores, int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, double utilPerTask,
 			boolean randomC, ExpName name, int maxPara, int minPara, int nopSever) {
@@ -100,8 +100,7 @@ public class EP_Multi_NOT {
 					int seed = taskSeeds + offset;
 
 					for (int k = offset; k < offset + workload; k++) {
-						System.out.println(
-								"Current system number: " + (k) + " --- number of task: " + (taskNum));
+						System.out.println("Current system number: " + (k) + " --- number of task: " + (taskNum));
 
 						SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil,
 								util == null ? null : util.get(k), seed, randomC, SystemParameters.printGen,
@@ -223,7 +222,5 @@ public class EP_Multi_NOT {
 
 		return true;
 	}
-
-
 
 }

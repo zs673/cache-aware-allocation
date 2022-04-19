@@ -39,13 +39,13 @@ public class EP_Multi_NOP_fixUtil {
 		try {
 			nopSever = Integer.parseInt(args[0]);
 			System.out.println("Input received, Number of Sever Core: " + nopSever);
-			
-			if(Integer.parseInt(args[1]) == 1) {
+
+			if (Integer.parseInt(args[1]) == 1) {
 				SystemParameters.david = true;
-				outFolder = "result_multi_daivd";
+				outFolder = "result_multi";
 				System.out.println("Using david's utilisation!");
 			}
-			
+
 		} catch (Exception e) {
 			System.out.println("Default number of Sever Core: " + nopSever);
 		}
@@ -55,12 +55,12 @@ public class EP_Multi_NOP_fixUtil {
 
 	public static void changeTaskNoP(int nopSever) {
 
-		int startingNoP = 12;
+		int startingNoP = 8;
 		int endNoP = 32;
 
 		List<ResultCap> caps = new ArrayList<>();
 
-		for (int i = startingNoP; i <= endNoP; i=i+4) {
+		for (int i = startingNoP; i <= endNoP; i = i + 4) {
 			final int index = i;
 
 			double utilPerTask = (double) 8 / (double) 10 / (double) not * (double) util;
@@ -73,17 +73,15 @@ public class EP_Multi_NOP_fixUtil {
 			for (int k = 0; k < 4; k++)
 				ResultCollector.writeSchedToSystem(r, index, k, expName, outFolder);
 		}
-		
+
 		System.out.println("--------------------------------");
 		for (ResultCap cap : caps) {
 			System.out.println(cap.NoSched_our + " " + cap.NoSched_he + " " + cap.NoSched_seq + " " + cap.NoSched_fed
 					+ " in " + cap.total_counter + " systems.");
 		}
 		System.out.println("------------- DONE -------------");
-		
+
 	}
-
-
 
 	public static ResultCap RunOneGroup(int cores, int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, double utilPerTask,
@@ -104,16 +102,16 @@ public class EP_Multi_NOP_fixUtil {
 					int seed = taskSeeds + offset;
 
 					for (int k = offset; k < offset + workload; k++) {
-					
+
 						cap.checkFinish();
-						
-						if(cap.isFinish())
+
+						if (cap.isFinish())
 							return;
-						
+
 						boolean ourS = false;
 						boolean heS = false;
 						boolean fedS = false;
-						
+
 						System.out.println("Current system number: " + (k) + " --- number of cores: " + cores);
 
 						SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil,
@@ -130,10 +128,10 @@ public class EP_Multi_NOP_fixUtil {
 						List<InfoCap> he = new TPDSHe().getResponseTime(dagTasks, cores);
 						List<InfoCap> our = new TPDSOurMultiDAG().getResponseTime(dagsInOneHP, cores);
 						List<InfoCap> fed = new FederatedSchedule().getResponseTime(dagsInOneHP, cores);
-						
+
 						if (isSchedulable(dagsInOneHP, seq))
 							cap.incrementSeq();
-						
+
 						if (isSchedulable(dagTasks, he)) {
 							cap.incrementHe();
 							heS = true;
@@ -143,7 +141,7 @@ public class EP_Multi_NOP_fixUtil {
 							cap.incrementOur();
 							ourS = true;
 						}
-						
+
 						if (isSchedulable(dagsInOneHP, fed)) {
 							cap.incrementFed();
 							fedS = true;
@@ -181,7 +179,7 @@ public class EP_Multi_NOP_fixUtil {
 								if (responseTimeOur[index] < our.get(j).best_response_time)
 									responseTimeOur[index] = our.get(j).best_response_time;
 							}
-							
+
 							for (int j = 0; j < fed.size(); j++) {
 								int index = dagsInOneHP.get(j).id;
 
@@ -215,7 +213,7 @@ public class EP_Multi_NOP_fixUtil {
 						}
 
 						cap.addTotalCounter();
-						
+
 						seed++;
 					}
 
@@ -251,4 +249,3 @@ public class EP_Multi_NOP_fixUtil {
 	}
 
 }
-

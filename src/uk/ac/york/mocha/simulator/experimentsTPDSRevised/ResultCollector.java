@@ -61,7 +61,7 @@ public class ResultCollector {
 //						seq_out += seq[k];
 //				}
 //				seq_out += "\n";
-				
+
 				long[] fed = i.get(2);
 				for (int k = 0; k < fed.length; k++) {
 					if (k < fed.length - 1)
@@ -112,7 +112,7 @@ public class ResultCollector {
 //						seq_out += seq[k];
 //				}
 //				seq_out += "\n";
-				
+
 				long[] fed = i.get(2);
 				for (int k = 0; k < fed.length; k++) {
 					if (k < fed.length - 1)
@@ -163,7 +163,7 @@ public class ResultCollector {
 //						seq_out += seq[k];
 //				}
 //				seq_out += "\n";
-				
+
 				long[] fed = i.get(2);
 				for (int k = 0; k < fed.length; k++) {
 					if (k < fed.length - 1)
@@ -187,8 +187,6 @@ public class ResultCollector {
 			out += cap.NoSched_he + ",";
 			out += cap.NoSched_seq + ",";
 			out += cap.NoSched_fed + "\n";
-			out += cap.total_counter + "\n";
-			
 
 			Utils.writeResult(folder, file, out);
 

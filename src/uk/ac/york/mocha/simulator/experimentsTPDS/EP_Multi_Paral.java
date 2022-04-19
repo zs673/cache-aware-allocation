@@ -97,15 +97,15 @@ public class EP_Multi_Paral {
 					int seed = taskSeeds + offset;
 
 					for (int k = offset; k < offset + workload; k++) {
-						
+
 						cap.checkFinish();
-						
-						if(cap.isFinish())
+
+						if (cap.isFinish())
 							return;
-						
+
 						boolean ourS = false;
 						boolean heS = false;
-						
+
 						System.out.println("Current system number: " + (k) + " --- paral per task: " + maxPara);
 
 						SystemGenerator gen = new SystemGenerator(cores, taskNum, true, takeAllUtil,

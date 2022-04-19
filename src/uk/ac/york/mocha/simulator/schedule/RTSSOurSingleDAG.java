@@ -38,33 +38,33 @@ public class RTSSOurSingleDAG {
 
 	public List<InfoCap> getResponseTime(List<DAG> dags, int cores) {
 
-		return null;
-//		List<InfoCap> response_time = new ArrayList<>();
-//
-//		long systemTime = 0;
-//		for (DAG d : dags) {
-//
-//			long release = d.releaseTime;
-//			long response = -1;
-//
-//			long makespan = DAGtoPython.pharseDAGForPython(d, cores).getFirst();
-//
-//			if (release >= systemTime) {
-//
-//				response = release + makespan;
-//				systemTime = response;
-//			} else {
-//				response = systemTime + makespan;
-//				systemTime = response;
-//			}
-//
-//			response = response - release;
-//			InfoCap res = new InfoCap(cores, response, response - makespan, makespan);
-//
-//			response_time.add(res);
-//		}
-//
-//		return response_time;
+//		return null;
+		List<InfoCap> response_time = new ArrayList<>();
+
+		long systemTime = 0;
+		for (DAG d : dags) {
+
+			long release = d.releaseTime;
+			long response = -1;
+
+			long makespan = DAGtoPython.pharseDAGForPython(d, cores).getFirst()[0];
+
+			if (release >= systemTime) {
+
+				response = release + makespan;
+				systemTime = response;
+			} else {
+				response = systemTime + makespan;
+				systemTime = response;
+			}
+
+			response = response - release;
+			InfoCap res = new InfoCap(cores, response, response - makespan, makespan);
+
+			response_time.add(res);
+		}
+
+		return response_time;
 	}
 
 }

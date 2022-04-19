@@ -429,7 +429,12 @@ def rta_alphabeta_new(G_, C_, prio_, m, overide_prio=0, EOPA=False, TPDS=False):
     # II. providers and consumers
     # iterative all critical nodes
     # after this, all provides and consumers will be collected
+    t1_1 = round(time.time() * 1000000)
     providers, consumers = find_providers_consumers(G_dict, lamda, VN_array)
+    t1_2 = round(time.time() * 1000000)
+    t1 = t1_2 - t1_1
+    print(str(t1) + ",")
+    
     print_debug("Providers:", providers)
     print_debug("Consumers:", consumers)
 
@@ -466,7 +471,11 @@ def rta_alphabeta_new(G_, C_, prio_, m, overide_prio=0, EOPA=False, TPDS=False):
         C_dict_cp.pop(sink_node_idx)
 
         # assign prioirties
+        t2_1 = round(time.time() * 1000000)
         Prio = Eligiblity_Ordering_PA(G_dict_cp, C_dict_cp)
+        t2_2 = round(time.time() * 1000000)
+        t2 = t2_2 - t2_1
+        print(str(t2) + ",")
 
         Prio[sink_node_idx] = A_VERY_LARGE_NUMBER
 

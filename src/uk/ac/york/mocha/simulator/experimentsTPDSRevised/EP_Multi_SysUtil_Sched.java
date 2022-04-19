@@ -21,7 +21,7 @@ public class EP_Multi_SysUtil_Sched {
 	final static DecimalFormat df = new DecimalFormat("#.###");
 
 	final static String expName = "util";
-	static String outFolder = "result_multi";
+	static String outFolder = "result_multi_sched";
 
 	final static int cores = 8;
 	final static int not = 5;
@@ -103,7 +103,7 @@ public class EP_Multi_SysUtil_Sched {
 					int seed = taskSeeds + offset;
 
 					for (int k = offset; k < offset + workload; k++) {
-					
+
 						boolean ourS = false;
 						boolean heS = false;
 						boolean fedS = false;
@@ -145,7 +145,7 @@ public class EP_Multi_SysUtil_Sched {
 						}
 
 						if (ourS && heS && fedS) {
-							
+
 							long[] interDelayHe = new long[dagTasks.size()];
 							long[] interDelayOur = new long[dagTasks.size()];
 							long[] interDelayFed = new long[dagTasks.size()];

@@ -137,7 +137,8 @@ public class RecencyProfile {
 
 					speedUp = speedUp + speedUp * faultRange;
 				}
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 1);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 1);
 			}
 			break;
 
@@ -153,7 +154,8 @@ public class RecencyProfile {
 
 					speedUp = speedUp + speedUp * faultRange;
 				}
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 1);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 1);
 			}
 
 		case TIME_STEP:
@@ -170,7 +172,8 @@ public class RecencyProfile {
 
 					speedUp = speedUp + speedUp * faultRange;
 				}
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 1);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 1);
 			}
 		default:
 			break;
@@ -195,7 +198,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
 			}
 
 			if (SystemParameters.v2 <= level2Time && level2Time <= SystemParameters.v3) {
@@ -209,7 +213,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
 			}
 			break;
 
@@ -224,7 +229,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
 			}
 
 			if (SystemParameters.v2 <= level2Time && level2Time <= SystemParameters.v3) {
@@ -239,7 +245,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
 			}
 			break;
 		case TIME_STEP:
@@ -253,7 +260,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
 			}
 
 			if (SystemParameters.v2 <= level2Time && level2Time <= SystemParameters.v3) {
@@ -270,7 +278,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 2);
 			}
 
 		default:
@@ -296,7 +305,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
 			}
 
 			if (SystemParameters.v3 <= level3Time && level3Time <= SystemParameters.v4) {
@@ -310,7 +320,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
 			}
 
 			break;
@@ -326,7 +337,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
 			}
 
 			if (SystemParameters.v3 <= level3Time && level3Time <= SystemParameters.v4) {
@@ -341,7 +353,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
 			}
 
 		case TIME_STEP:
@@ -355,7 +368,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
 			}
 
 			if (SystemParameters.v3 <= level3Time && level3Time <= SystemParameters.v4) {
@@ -372,7 +386,8 @@ public class RecencyProfile {
 					speedUp = speedUp + speedUp * faultRange;
 				}
 
-				return new Pair<Long, Integer>((long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
+				return new Pair<Long, Integer>(
+						(long) Math.ceil((double) n.getET(SystemParameters.useWCET, inRanage) * speedUp), 3);
 			}
 
 		default:
@@ -634,8 +649,8 @@ public class RecencyProfile {
 		Utils.writeResult("result/recency_distance.txt", distance.toString());
 		Utils.writeResult("result/recency_value.txt", recency.toString());
 
-		for(double i=-2; i<=2;i=i+0.01) {
-			double d =Erf.erf(i);
+		for (double i = -2; i <= 2; i = i + 0.01) {
+			double d = Erf.erf(i);
 			System.out.println(d);
 		}
 

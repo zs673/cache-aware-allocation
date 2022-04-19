@@ -433,8 +433,8 @@ public class SimpleAllocationCompare {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults testOneCase(List<DAG> dags, int tasks, int[] NoInstances, int cores,
-			int taskSeed, int tableSeed, boolean fault) {
+	public static OneSystemResults testOneCase(List<DAG> dags, int tasks, int[] NoInstances, int cores, int taskSeed,
+			int tableSeed, boolean fault) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
@@ -495,8 +495,8 @@ public class SimpleAllocationCompare {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults RecencyFaultTestCase(List<DAG> dags, int tasks, int[] NoInstances,
-			int cores, int taskSeed, int tableSeed, boolean fault) {
+	public static OneSystemResults RecencyFaultTestCase(List<DAG> dags, int tasks, int[] NoInstances, int cores,
+			int taskSeed, int tableSeed, boolean fault) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, true, true);

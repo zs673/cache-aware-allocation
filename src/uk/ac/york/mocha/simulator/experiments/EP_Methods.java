@@ -211,8 +211,8 @@ public class EP_Methods {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults testOneCase(List<DAG> dags, int tasks, int[] NoInstances, int cores,
-			int taskSeed, int tableSeed) {
+	public static OneSystemResults testOneCase(List<DAG> dags, int tasks, int[] NoInstances, int cores, int taskSeed,
+			int tableSeed) {
 
 		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);

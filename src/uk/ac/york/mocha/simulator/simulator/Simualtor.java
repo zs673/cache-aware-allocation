@@ -103,8 +103,8 @@ public class Simualtor {
 
 	/********************* Runtime queues *********************************/
 
-	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
-			List<DAG> dags, int procNum, int recencySeed, boolean affinity, boolean recency_fault) {
+	public Simualtor(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency, List<DAG> dags,
+			int procNum, int recencySeed, boolean affinity, boolean recency_fault) {
 
 		this.type = type;
 		this.hardware = hardware;
@@ -147,14 +147,14 @@ public class Simualtor {
 	}
 
 	public Pair<List<DAG>, double[]> simulate(boolean printSim) {
-		
+
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
 		 */
 		for (DAG dag : dags) {
-				dag.reset();
+			dag.reset();
 		}
-		
+
 		boolean cacheAware = false;
 		OnelineAllocation allocM = null;
 
@@ -193,8 +193,6 @@ public class Simualtor {
 		default:
 			break;
 		}
-
-
 
 		while (sleepingDAGs.size() > 0 || readyDAGs.size() > 0) {
 
@@ -264,7 +262,7 @@ public class Simualtor {
 				break;
 			}
 		}
-		
+
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */

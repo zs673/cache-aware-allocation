@@ -42,7 +42,7 @@ public class AllSystemsResults {
 			SystemParameters.ExpName name) {
 
 		this(resPerSystem, instanceNo, systemNum, taskNum, name, "");
-		
+
 	}
 
 	public AllSystemsResults(List<OneSystemResults> resPerSystem, int[] instanceNo, int systemNum, int taskNum,
@@ -53,16 +53,14 @@ public class AllSystemsResults {
 		this.instanceNo = instanceNo;
 		this.recencyName = recencyName;
 
-		if(SystemParameters.useWCET) {
+		if (SystemParameters.useWCET) {
 			folder = "result_wcet/" + name + "/";
-		}
-		else if(SystemParameters.etType == ETDistruction.uniform) {
+		} else if (SystemParameters.etType == ETDistruction.uniform) {
 			folder = "result_uniform/" + name + "/";
-		}
-		else {
+		} else {
 			folder = "result_normal/" + name + "/";
 		}
-		
+
 		File theDir = new File(folder);
 		if (!theDir.exists()) {
 			theDir.mkdirs();
@@ -95,7 +93,7 @@ public class AllSystemsResults {
 			builder.append(dagsInfo);
 		}
 
-		String fileName = "taskparam" + "_" + taskNum + "_" + SystemParameters.utilPerTask + recencyName+ ".txt";
+		String fileName = "taskparam" + "_" + taskNum + "_" + SystemParameters.utilPerTask + recencyName + ".txt";
 		Utils.writeResult(folder + fileName, builder.toString());
 	}
 
@@ -119,7 +117,7 @@ public class AllSystemsResults {
 
 		}
 
-		String cacheFileName = "cache" + "_" + taskNum + "_" + SystemParameters.utilPerTask + recencyName+ ".txt";
+		String cacheFileName = "cache" + "_" + taskNum + "_" + SystemParameters.utilPerTask + recencyName + ".txt";
 		Utils.writeResult(folder + cacheFileName, builder.toString());
 	}
 

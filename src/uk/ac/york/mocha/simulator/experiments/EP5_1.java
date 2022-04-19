@@ -27,7 +27,7 @@ public class EP5_1 {
 	public static void main(String args[]) {
 
 		run();
-		
+
 	}
 
 	public static void run() {
@@ -38,7 +38,7 @@ public class EP5_1 {
 
 		changeTaskNumRunner(1, 4);
 	}
-	
+
 	public static void changeTaskNumRunner(int numMin, int numMax) {
 
 		int intanceNum = 10;
@@ -141,8 +141,8 @@ public class EP5_1 {
 
 	}
 
-	public static OneSystemResults testOneCaseThreePattern(List<DAG> dags, int tasks,
-			int[] NoInstances, int cores, int taskSeed, int tableSeed, RecencyType type) {
+	public static OneSystemResults testOneCaseThreePattern(List<DAG> dags, int tasks, int[] NoInstances, int cores,
+			int taskSeed, int tableSeed, RecencyType type) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT, type,
 				dags, cores, tableSeed, false, false);

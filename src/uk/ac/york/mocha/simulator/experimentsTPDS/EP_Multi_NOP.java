@@ -118,7 +118,7 @@ public class EP_Multi_NOP {
 
 						if (isSchedulable(dagsInOneHP, seq))
 							cap.incrementSeq();
-						
+
 						if (isSchedulable(dagTasks, he))
 							cap.incrementHe();
 
@@ -156,7 +156,7 @@ public class EP_Multi_NOP {
 								if (responseTimeOur[index] < our.get(j).best_response_time)
 									responseTimeOur[index] = our.get(j).best_response_time;
 							}
-							
+
 							for (int j = 0; j < seq.size(); j++) {
 								int index = dagsInOneHP.get(j).id;
 

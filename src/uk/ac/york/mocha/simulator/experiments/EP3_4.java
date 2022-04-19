@@ -108,8 +108,8 @@ public class EP3_4 {
 
 	}
 
-	public static OneSystemResults testOneCaseThreePattern(List<DAG> dags, int tasks,
-			int[] NoInstances, int cores, int taskSeed, int tableSeed, RecencyType type) {
+	public static OneSystemResults testOneCaseThreePattern(List<DAG> dags, int tasks, int[] NoInstances, int cores,
+			int taskSeed, int tableSeed, RecencyType type) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT, type,
 				dags, cores, tableSeed, false, false);
@@ -398,8 +398,8 @@ public class EP3_4 {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults oneTestCase(List<DAG> dags, int tasks, int[] NoInstances, int cores,
-			int taskSeed, int tableSeed) {
+	public static OneSystemResults oneTestCase(List<DAG> dags, int tasks, int[] NoInstances, int cores, int taskSeed,
+			int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
@@ -451,8 +451,8 @@ public class EP3_4 {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults RecencyFaultTestCase(List<DAG> dags, int tasks, int[] NoInstances,
-			int cores, int taskSeed, int tableSeed) {
+	public static OneSystemResults RecencyFaultTestCase(List<DAG> dags, int tasks, int[] NoInstances, int cores,
+			int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);
@@ -551,8 +551,8 @@ public class EP3_4 {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults testOneCaseThreeMethod(List<DAG> dags, int tasks, int[] NoInstances,
-			int cores, int taskSeed, int tableSeed) {
+	public static OneSystemResults testOneCaseThreeMethod(List<DAG> dags, int tasks, int[] NoInstances, int cores,
+			int taskSeed, int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);

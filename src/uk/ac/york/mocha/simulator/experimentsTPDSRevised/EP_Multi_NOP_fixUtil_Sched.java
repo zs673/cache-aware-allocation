@@ -21,7 +21,7 @@ public class EP_Multi_NOP_fixUtil_Sched {
 	final static DecimalFormat df = new DecimalFormat("#.###");
 
 	final static String expName = "nopF";
-	static String outFolder = "result_multi";
+	static String outFolder = "result_multi_sched";
 
 //	final static int cores = 8;
 	final static int minParal = 1;
@@ -61,8 +61,8 @@ public class EP_Multi_NOP_fixUtil_Sched {
 		List<ResultCap> caps = new ArrayList<>();
 
 		for (int i = startingNoP; i <= endNoP; i = i + 2) {
-			final int index = i;
 
+			final int index = i;
 			double utilPerTask = (double) 8 / (double) 10 / (double) not * (double) util;
 
 			ResultCap r = RunOneGroup(index, not, intanceNum, hyperPeriodNum, true, null, seed, seed, null,

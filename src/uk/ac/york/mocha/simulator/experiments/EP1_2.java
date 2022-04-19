@@ -60,7 +60,7 @@ public class EP1_2 {
 		int intanceNum = 10;
 		int hyperPeriodNum = -1;
 		int seed = 1000;
-		int NoS = SystemParameters.NoS * 10; //*5
+		int NoS = SystemParameters.NoS * 10; // *5
 
 		List<List<Long>> periods = new ArrayList<>();
 		for (int j = 0; j < NoS; j++) {
@@ -149,7 +149,7 @@ public class EP1_2 {
 
 		List<Double> manu_util = new ArrayList<>();
 		manu_util.add(1.0);
-		
+
 		taskSeed = 1000;
 		for (int i = 0; i < NoS; i++) {
 			System.out.println(
@@ -209,8 +209,8 @@ public class EP1_2 {
 	/**
 	 * This test case will generate two fixed DAG strcuture.
 	 */
-	public static OneSystemResults testOneCase(List<DAG> dags, int tasks, int[] NoInstances, int cores,
-			int taskSeed, int tableSeed) {
+	public static OneSystemResults testOneCase(List<DAG> dags, int tasks, int[] NoInstances, int cores, int taskSeed,
+			int tableSeed) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, dags, cores, tableSeed, false, false);

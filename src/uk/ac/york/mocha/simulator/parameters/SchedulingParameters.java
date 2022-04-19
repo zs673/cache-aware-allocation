@@ -55,7 +55,7 @@ public class SchedulingParameters implements Serializable {
 	public long getWCET() {
 		return WCET;
 	}
-	
+
 	public void setWCET(long WCET) {
 		this.WCET = WCET;
 	}

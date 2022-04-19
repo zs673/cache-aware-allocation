@@ -1,23 +1,21 @@
 close all
-%%%%%% Fixed parameters %%%%%%
-path_results = "../result_multi_daivd1/";
-path_figs = '../TPDS_figures/';
+
 
 wid = 800;
 len = 300;
 
 colors=[[0.8500 0.3250 0.0980]; [0 0.4470 0.7410];  [0.9290 0.6940 0.1250]; [0.4660, 0.6740, 0.1880]; [0.3010, 0.7450, 0.9330]; [0.6350, 0.0780, 0.1840]];
-markers=['o', '*','^'];
+markers=['o', '*','^','+'];
 systemNo = 1000;
-legends = ["mDAG-CA","He2019","Zhao2020"];
-xlabels = ["System Utilisation", "Parallel Degree of DAGs", "Number of Cores", "Number of Tasks"];
+legends = ["mDAG-CA","He2019","Zhao2020", "Baseline"];
+xlabels = ["System Utilisation", "Number of Cores"]; %
 
-file_pre = ["util","paral","nopF","not"];
+file_pre = ["util","nopF"]; %
 file_end = "sched";
 
-startingVar = [1,2,2,1];
-endingVar = [12,10,32,10];
-space = [1,1,2,1];
+startingVar = [1,2];
+endingVar = [12,32];
+space = [1,2];
 
 for k = 1:length(xlabels)
     coloums = 1: (endingVar(k))/space(k);
@@ -62,7 +60,10 @@ for k = 1:length(xlabels)
 
     h=legend(legends,'location','northeast','Orientation','vertical');
     if(k==2)
-        h=legend(legends,'location','northeast','Orientation','horizontal');
+        h=legend(legends,'location','best','Orientation','vertical');
+        rect = [0.805, 0.4, .0, .0];
+        set(h, 'Position', rect)
+%         h=legend(legends,'location','northeast','Orientation','vertical');
     end
     if(k==3)
         h=legend(legends,'location','best','Orientation','vertical');
@@ -74,18 +75,6 @@ for k = 1:length(xlabels)
     end
     set(h,'FontSize',14);
 
-    saveas(gcf,strcat(path_figs, strcat("ep_sched_", file_pre(k), ".eps")),'epsc');
+    saveas(gcf,strcat(path_figs, strcat("ep_sched_", file_pre(k), "1.eps")),'epsc');
 
 end
-
-
-
-
-
-
-
-
-
-
-
-

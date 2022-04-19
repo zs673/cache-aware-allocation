@@ -94,7 +94,7 @@ public class SystemGenerator {
 		List<DAG> dagTasks = null;
 		boolean schedulable = false;
 
-		Pair<Long, List<int[]>> res = null;
+		Pair<long[], List<int[]>> res = null;
 
 		if (hard) {
 			while (!schedulable) {
@@ -125,7 +125,7 @@ public class SystemGenerator {
 					}
 				}
 
-				long response_time = res.getFirst() + blocking;
+				long response_time = res.getFirst()[0] + blocking;
 				if (response_time > dag.getSchedParameters().getDeadline())
 					schedulable = false;
 				else
@@ -379,7 +379,7 @@ public class SystemGenerator {
 						periods.add(period);
 
 				} else {
-					/* log Uniform distrubtion */
+					/* log Uniform distribution */
 					double a1 = Math.log(SystemParameters.minT);
 					double a2 = Math.log(SystemParameters.maxT + 1);
 					double scaled = ran.nextDouble() * (a2 - a1);

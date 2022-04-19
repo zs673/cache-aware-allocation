@@ -17,22 +17,22 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.DagType;
 public class DAGtoPython {
 
 	public static void main(String args[]) {
+		int i = 0;
+//		for (i = 0; i < 10000; i++) {
+		SystemGenerator gen = new SystemGenerator(8, 1, true, true, null, i, true, true);
+		List<DAG> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true, DagType.Random).getFirst();
 
-		for (int i = 0; i < 10000; i++) {
-			SystemGenerator gen = new SystemGenerator(8, 1, true, true, null, i, true, true);
-			List<DAG> dags = gen.generatedDAGInstancesInOneHP(1, -1, null, true, DagType.Random).getFirst();
+		DAG dag = dags.get(0);
 
-			DAG dag = dags.get(0);
-
-			for (int j = 0; j < dag.getFlatNodes().size(); j++) {
-				dag.getFlatNodes().get(i).priority = dag.getFlatNodes().size() - j;
-			}
-
-			pharseDAGForPython(dag, 8);
+		for (int j = 0; j < dag.getFlatNodes().size(); j++) {
+			dag.getFlatNodes().get(i).priority = dag.getFlatNodes().size() - j;
 		}
+
+		pharseDAGForPython(dag, 8);
+//		}
 	}
 
-	public static Pair<Long, List<int[]>> pharseDAGForPython(DAG dag, int coreNum) {
+	public static Pair<long[], List<int[]>> pharseDAGForPython(DAG dag, int coreNum) {
 
 		List<Node> nodes = dag.getFlatNodes();
 
@@ -72,8 +72,10 @@ public class DAGtoPython {
 //		System.out.println(core);
 
 		long makespan = -1;
+		long t1 = -1;
+		long t2 = -1;
 		List<int[]> node_priority = new ArrayList<>();
-
+		
 		try {
 			/*
 			 * The final parameter is override priority passed to Python indicating the
@@ -96,10 +98,21 @@ public class DAGtoPython {
 				makespanS += s + "";
 			}
 
+			
+//			System.out.println(makespanS);
 			String[] out = makespanS.split("\n");
-
+			
+			
 			String priorityS = out[0];
-			List<String> priorityA = Arrays.asList(priorityS.split(","));
+			List<String> priorityA_Raw = Arrays.asList(priorityS.split(","));
+			t1 = Long.parseLong(priorityA_Raw.get(0));
+			t2 = Long.parseLong(priorityA_Raw.get(1));
+			
+			List<String> priorityA = new ArrayList<>();
+			for(int i = 2; i<priorityA_Raw.size();i++) {
+				priorityA.add(priorityA_Raw.get(i));
+			}
+			
 			String makespan_string = priorityA.get(priorityA.size() - 1);
 //			priorityA.remove(priorityA.size() - 1);
 
@@ -137,8 +150,10 @@ public class DAGtoPython {
 			System.err.println("DAGtoPython.pharseDAGForPython(): makespan <= 0.");
 			System.exit(-1);
 		}
+		
+		long[] times = {makespan, t1, t2};
 
-		return new Pair<>(makespan, node_priority);
+		return new Pair<>(times, node_priority);
 	}
 
 	private static NodeByTemplate nodeTemplate(Node n) {

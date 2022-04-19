@@ -12,9 +12,10 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 public class OnlineWFD extends OnelineAllocation {
 
 	@Override
-	public void allocate(List<DAG> dags, List<Node> readyNodes, List<Integer> availableProcs,
-			long[] procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-			List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity, boolean recency_fault) {
+	public void allocate(List<DAG> dags, List<Node> readyNodes, List<Integer> availableProcs, long[] procs,
+			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
+			List<List<Node>> allocHistory, RecencyProfile table, long currentTime, boolean affinity,
+			boolean recency_fault) {
 
 		if (readyNodes.size() == 0 || availableProcs.size() == 0)
 			return;

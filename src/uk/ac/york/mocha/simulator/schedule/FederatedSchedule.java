@@ -1,8 +1,8 @@
 package uk.ac.york.mocha.simulator.schedule;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -11,31 +11,33 @@ import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.ExecutionBlock;
 import uk.ac.york.mocha.simulator.dag.Node;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
-import uk.ac.york.mocha.simulator.parameters.SystemParameters.DagType;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class FederatedSchedule {
 
 	public static void main(String args[]) {
-		int coreNum = 8;
+
+		DecimalFormat df = new DecimalFormat("#.##");
+
 		for (int i = 0; i < 1; i++) {
-			SystemGenerator gen = new SystemGenerator(coreNum, 4, true, true, null, i, true, true);
-			List<DAG> dags = gen.generatedDAGInstancesInOneHP(-2, -2, null, false, DagType.Random).getFirst();
 
-			List<Long> response_time = new TPDSOurMultiDAG().getResponseTime(dags, coreNum).stream()
-					.map(c -> c.best_response_time).collect(Collectors.toList());
+			double utilPerTask = (double) 8 / (double) 10 / (double) 5 * (double) 7 / (double) 2;
 
-			System.out.println(response_time);
-
+			SystemGenerator gen = new SystemGenerator(8, 5, true, true, null, 1000, true, SystemParameters.printGen,
+					Double.parseDouble(df.format(utilPerTask)), 1, 10, SystemParameters.david);
+			Pair<List<DAG>, List<DAG>> p = gen.generatedDAGInstancesInOneHP(1, 1, null, false, SystemParameters.dagType);
+			
+			System.out.println("DAGs generated. in total " + p.getFirst().size());
+			for(DAG d : p.getFirst())
+				System.out.println(d.getName());
+					
+			List<InfoCap> fed = new FederatedSchedule().getResponseTime(p.getFirst(), 8);
+			
 			System.out.println("------------------------------------------------------------------------------------");
+			
+			List<InfoCap> our = new TPDSOurMultiDAG().getResponseTime(p.getFirst(), 8);
 
-			List<DAG> dags1 = new ArrayList<>();
-			for (int k = 0; k < 4; k++) {
-				dags1.add(dags.get(k));
-			}
-
-			List<Long> response_time1 = new FederatedSchedule().getResponseTime(dags1, coreNum).stream()
-					.map(c -> c.best_response_time).collect(Collectors.toList());
-			System.out.println(response_time1);
+			
 		}
 	}
 
@@ -47,8 +49,9 @@ public class FederatedSchedule {
 		List<ExecutionBlock> system = new ArrayList<>();
 
 		for (DAG d : dags) {
-			Pair<Long, List<int[]>> res = DAGtoPython.pharseDAGForPython(d, cores);
+			Pair<long[], List<int[]>> res = DAGtoPython.pharseDAGForPython(d, cores);
 			List<int[]> prio = res.getSecond();
+
 			for (Node n : d.getFlatNodes()) {
 				int id = n.getId();
 
@@ -88,17 +91,20 @@ public class FederatedSchedule {
 
 			long response = -1;
 			if (i > 1)
-				response = delay + DAGtoPython.pharseDAGForPython(d, i).getFirst();
+				response = delay + DAGtoPython.pharseDAGForPython(d, i).getFirst()[0];
 			else
 				response = delay + d.getFlatNodes().stream().mapToLong(c -> c.getWCET()).sum();
 
-			if (response <= d.getSchedParameters().getDeadline() && i < best_core) {
+			if (response <= d.getSchedParameters().getDeadline()) {
 				best_core = i;
 				best_response_time = response;
 				best_delay = delay;
 				deepCopyEBList(best_sys, sysMirror);
+				break;
 			}
 		}
+		
+//		System.out.println("best core: " + best_core);
 
 		deepCopyEBList(system, best_sys);
 
@@ -117,11 +123,8 @@ public class FederatedSchedule {
 			long totalDelay = 0;
 
 			for (ExecutionBlock eb : ebs) {
-
 				long start = startDAG + eb.start + totalDelay;
-
 				long delay = addEBtoSystem(eb, start, system, coreNum);
-
 				totalDelay += delay;
 			}
 

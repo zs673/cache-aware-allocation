@@ -7,13 +7,13 @@ import java.util.List;
 public class SystemParameters {
 
 	public static boolean david = false;
-	
+
 	public static DagType dagType = DagType.Random;
-	
+
 	public enum DagType {
 		Random, NFG, Huawei
 	}
-	
+
 	public static boolean useWCET = true;
 
 	public enum ETDistruction {
@@ -112,15 +112,15 @@ public class SystemParameters {
 	 */
 	public final static int MIN_PERIOD = 10;
 	public final static int MAX_PERIOD = 1440;
-	
-	public final static int[] harmonic_periods = {120000, 240000, 360000, 480000, 720000};
+
+	public final static int[] harmonic_periods = { 120000, 240000, 360000, 480000, 720000 };
 
 	/*
 	 * Non-harmonic periods
 	 */
 	public final static int minT = 100;
 	public final static int maxT = 1000;
-	
+
 	public static void main(String args[]) {
 		/* harmonic period, same periods are not allowed */
 		List<Long> harmonicPeriods = new ArrayList<>();
@@ -131,7 +131,6 @@ public class SystemParameters {
 			}
 		}
 
-		
 		System.out.println(Arrays.toString(harmonicPeriods.toArray()));
 	}
 

@@ -26,8 +26,6 @@ public class ExecutionBlock implements Serializable {
 		this.id = id;
 	}
 
-
-
 	@Override
 	public String toString() {
 		return "EB_" + id + "   Width: " + width + " Height: " + height + " Start: " + start + " End: " + end;

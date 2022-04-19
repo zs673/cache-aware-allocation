@@ -8,29 +8,27 @@ public class RunAll {
 
 	public static void main(String args[]) {
 		SystemParameters.dagType = DagType.Random;
-		
+
 		SystemParameters.utilPerTask = 2.0;
 		SystemParameters.useWCET = true;
-		
+
 		EP1_2.run();
 		EP3_4.run();
-		
+
 		SystemParameters.utilPerTask = 2.0;
 		SystemParameters.useWCET = false;
 		SystemParameters.etType = ETDistruction.uniform;
 
-		
 		EP1_2.run();
 		EP3_4.run();
-		
+
 		SystemParameters.utilPerTask = 2.0;
 		SystemParameters.useWCET = false;
 		SystemParameters.etType = ETDistruction.normal;
 
-		
 		EP1_2.run();
 		EP3_4.run();
-		
+
 //		EP5_1.run();
 //		EP5_2.run();
 	}

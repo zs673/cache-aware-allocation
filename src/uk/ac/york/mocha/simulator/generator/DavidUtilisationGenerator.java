@@ -11,10 +11,10 @@ public class DavidUtilisationGenerator {
 	public static void main(String args[]) {
 		int num = 100;
 		int sum = 1;
-		
+
 		List<Double> utils = getDavidUtilVector(num, sum);
-		
-		for(Double d : utils) {
+
+		for (Double d : utils) {
 			System.out.println(d);
 		}
 	}
@@ -49,7 +49,7 @@ public class DavidUtilisationGenerator {
 			while ((error = stdError.readLine()) != null) {
 				System.out.println(error);
 			}
-			
+
 			String resPre = resRaw.replaceAll("\\[", "").replaceAll("\\]", "").trim();
 			String[] resString = resPre.split(",");
 

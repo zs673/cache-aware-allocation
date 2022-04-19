@@ -79,12 +79,10 @@ public class Node implements Serializable {
 
 		this.successors = new ArrayList<>();
 		this.predecessors = new ArrayList<>();
-		
-		
 
 		this.rng = rng;
 	}
-	
+
 	public void constrcutRelations(List<Node> all) {
 		getAnc();
 		getDes();
@@ -99,7 +97,7 @@ public class Node implements Serializable {
 		while (sizeBefore != sizeAfter) {
 			sizeBefore = anc.size();
 
-			for (int i=0; i<anc.size();i++) {
+			for (int i = 0; i < anc.size(); i++) {
 				for (Node p : anc.get(i).predecessors) {
 					if (!anc.contains(p))
 						anc.add(p);
@@ -119,7 +117,7 @@ public class Node implements Serializable {
 		while (sizeBefore != sizeAfter) {
 			sizeBefore = des.size();
 
-			for (int i=0; i<des.size();i++) {
+			for (int i = 0; i < des.size(); i++) {
 				for (Node p : des.get(i).successors) {
 					if (!des.contains(p))
 						des.add(p);
@@ -137,17 +135,17 @@ public class Node implements Serializable {
 		con.removeAll(des);
 	}
 
-	public List<Node> getHighCon(){
+	public List<Node> getHighCon() {
 		List<Node> highCon = new ArrayList<>();
-		
-		for(Node n : con) {
-			if(n.priority > this.priority)
+
+		for (Node n : con) {
+			if (n.priority > this.priority)
 				highCon.add(n);
 		}
-		
+
 		return highCon;
 	}
-	
+
 	/*
 	 * Return the WORST-CASE execution time of the node
 	 */
@@ -235,8 +233,8 @@ public class Node implements Serializable {
 	public void addParent(Node n) {
 		predecessors.add(n);
 	}
-	
-	public List<Node> getCon(){
+
+	public List<Node> getCon() {
 		return con;
 	}
 

@@ -10,9 +10,9 @@ public abstract class OnelineAllocation {
 
 //	protected abstract int compareNode(List<DirectedAcyclicGraph> dags, Node c1, Node c2);
 
-	public abstract void allocate(List<DAG> dags, List<Node> readyNodes,
-			List<Integer> availableProcs, long[] procs, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocNodes, RecencyProfile table,
-			long currentTime, boolean affinity, boolean recency_fault);
+	public abstract void allocate(List<DAG> dags, List<Node> readyNodes, List<Integer> availableProcs, long[] procs,
+			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
+			List<List<Node>> allocNodes, RecencyProfile table, long currentTime, boolean affinity,
+			boolean recency_fault);
 
 }

@@ -72,7 +72,8 @@ public class DAG implements Serializable {
 	 */
 	public boolean hard = false;
 
-	public DAG(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed, boolean hard, DagType type) {
+	public DAG(SchedulingParameters sched_param, StructuralParameters dag_param, int id, int seed, boolean hard,
+			DagType type) {
 
 		this.id = id;
 		this.name = "DAG " + id;
@@ -127,8 +128,8 @@ public class DAG implements Serializable {
 	}
 
 	/*****************************************************************
-	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This
-	 * method can only be invoked once! ***********
+	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This method
+	 * can only be invoked once! ***********
 	 *****************************************************************/
 	public List<DAG> getInstances(long instanceNum) {
 
@@ -163,8 +164,8 @@ public class DAG implements Serializable {
 	}
 
 	/*******************************************************************
-	 ******************** Generate DAG structure *********************** This method does not
-	 * depend on external library! ********
+	 ******************** Generate DAG structure *********************** This method does not depend on
+	 * external library! ********
 	 *******************************************************************/
 	public void constructDAG() {
 		if (layeredNodes.size() > 0) {
@@ -335,7 +336,8 @@ public class DAG implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+						+ dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
@@ -445,7 +447,8 @@ public class DAG implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+						+ dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
@@ -797,7 +800,8 @@ public class DAG implements Serializable {
 			}
 		}
 
-		long start = n.getParent().size() == 0 ? 0 : n.getParent().stream().mapToLong(c -> c.finishWithNoP).max().getAsLong();
+		long start = n.getParent().size() == 0 ? 0
+				: n.getParent().stream().mapToLong(c -> c.finishWithNoP).max().getAsLong();
 
 		if (start < 0) {
 			System.err.println("start time less than 0!");
@@ -810,7 +814,8 @@ public class DAG implements Serializable {
 			n.finishWithNoP = finish;
 			return finish;
 		} else {
-			long intraInterference = (long) Math.ceil((double) n.getHighCon().stream().mapToLong(c -> c.getWCET()).sum() / (double) NoP);
+			long intraInterference = (long) Math
+					.ceil((double) n.getHighCon().stream().mapToLong(c -> c.getWCET()).sum() / (double) NoP);
 			long finish = start + n.getWCET() + intraInterference;
 
 			n.finishWithNoP = finish;
@@ -940,8 +945,9 @@ public class DAG implements Serializable {
 
 		for (int i = 0; i < 1; i++) {
 			SchedulingParameters sched_param = new SchedulingParameters(10, 100, 100, 50000, 1, 0);
-			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer, SystemParameters.minLayer,
-					SystemParameters.maxParal, SystemParameters.minParal, SystemParameters.connectProb, rng);
+			StructuralParameters dag_param = new StructuralParameters(SystemParameters.maxLayer,
+					SystemParameters.minLayer, SystemParameters.maxParal, SystemParameters.minParal,
+					SystemParameters.connectProb, rng);
 			DAG dag = new DAG(sched_param, dag_param, 0, seed, true, DagType.Huawei);
 
 			System.out.println(dag.toString());

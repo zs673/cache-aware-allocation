@@ -33,8 +33,8 @@ public class OneSystemByMethod {
 			switch (index) {
 			case 0:
 				List<Double> makespan = dags.stream()
-						.map(c -> Double.parseDouble(
-								df.format(((double) (c.finishTime - c.startTime)) ))) /// (double) maxValues[index][c.id]
+						.map(c -> Double.parseDouble(df.format(((double) (c.finishTime - c.startTime))))) /// (double)
+																											/// maxValues[index][c.id]
 						.collect(Collectors.toList());
 
 				resultsPerMethod.add(makespan);

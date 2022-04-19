@@ -29,7 +29,7 @@ public class EP5_2 {
 		run();
 
 	}
-	
+
 	public static void run() {
 //		changeTaskUtil();
 
@@ -138,8 +138,8 @@ public class EP5_2 {
 
 	}
 
-	public static OneSystemResults testOneCaseThreePattern(List<DAG> dags, int tasks,
-			int[] NoInstances, int cores, int taskSeed, int tableSeed, RecencyType type) {
+	public static OneSystemResults testOneCaseThreePattern(List<DAG> dags, int tasks, int[] NoInstances, int cores,
+			int taskSeed, int tableSeed, RecencyType type) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT, type,
 				dags, cores, tableSeed, false, false);

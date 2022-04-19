@@ -1,5 +1,11 @@
 package uk.ac.york.mocha.simulator.schedule;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,43 +15,44 @@ import uk.ac.york.mocha.simulator.dag.DAG;
 import uk.ac.york.mocha.simulator.dag.DAGtoPython;
 import uk.ac.york.mocha.simulator.dag.ExecutionBlock;
 import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.generator.SystemGenerator;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.DagType;
 
 public class TPDSOurMultiDAG {
 
-//	public static void main(String args[]) {
-//		int coreNum = 16;
-//		for (int i = 0; i < 1; i++) {
-//			SystemGenerator gen = new SystemGenerator(coreNum, 4, true, true, null, i, true, true);
-//			List<DirectedAcyclicGraph> dags = gen.generatedDAGInstancesInOneHP(-2, -2, null, false, DagType.Random)
-//					.getFirst();
-//
-//			List<Long> response_time = new SemiWorkConversing().getResponseTime(dags, coreNum);
-//
-//			System.out.println(response_time);
-//
-//			System.out.println("------------------------------------------------------------------------------------");
-//
-//			List<DirectedAcyclicGraph> dags1 = new ArrayList<>();
-//			for (int k = 0; k < 4; k++) {
-//				dags1.add(dags.get(k));
-//			}
-//			List<Long> response_time1 = new TPDSHe().getResponseTime(dags1, coreNum);
-//			System.out.println(response_time1);
-//		}
-//
-//	}
-
 	List<ExecutionBlock> systemEB = new ArrayList<>();
 
+	List<List<Long>> compuationCost = new ArrayList<>();
+
+	public static void main(String args[]) {
+		int coreNum = 8;
+
+		for (int i = 0; i < 1000; i++) {
+			SystemGenerator gen = new SystemGenerator(8, 5, true, true, null, i, true, true);
+			List<DAG> dags = gen.generatedDAGInstancesInOneHP(-1, -1, null, false, DagType.Random).getFirst();
+
+			dags.sort(
+					(c1, c2) -> Long.compare(c1.getSchedParameters().getPeriod(), c2.getSchedParameters().getPeriod()));
+
+			new TPDSOurMultiDAG().getResponseTime(dags, coreNum);
+			System.out.println("------------------------------------------------------------------------------------");
+		}
+
+	}
+
 	public List<InfoCap> getResponseTime(List<DAG> dags, int cores) {
+
+		for (int i = 0; i < 5; i++) {
+			compuationCost.add(new ArrayList<>());
+		}
 
 		List<InfoCap> response_time = new ArrayList<>();
 		List<ExecutionBlock> system = new ArrayList<>();
 
 		for (DAG d : dags) {
-			Pair<Long, List<int[]>> res = DAGtoPython.pharseDAGForPython(d, cores);
+			Pair<long[], List<int[]>> res = DAGtoPython.pharseDAGForPython(d, cores);
 			List<int[]> prio = res.getSecond();
-			
+
 			for (Node n : d.getFlatNodes()) {
 				int id = n.getId();
 
@@ -56,8 +63,11 @@ public class TPDSOurMultiDAG {
 					}
 				}
 			}
-			
+
+			long t5_1 = System.nanoTime();
 			InfoCap response = getBestResponseTime(system, d, cores);
+			long t5_2 = System.nanoTime();
+			compuationCost.get(4).add(t5_2 - t5_1);
 
 			if (response.best_response_time > d.getSchedParameters().getDeadline()) {
 				return null;
@@ -66,7 +76,34 @@ public class TPDSOurMultiDAG {
 			response_time.add(response);
 		}
 
+		for (int i = 0; i < compuationCost.size(); i++) {
+			String fileName = "time " + (i + 1) + ".txt";
+			String time = "";
+			for (int j = 0; j < compuationCost.get(i).size(); j++) {
+				time += compuationCost.get(i).get(j) + "\n";
+			}
+
+			writeResult(fileName, time);
+		}
+
 		return response_time;
+	}
+
+	public static void writeResult(String filename, String result) {
+
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter(new FileWriter(new File(filename), true));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		writer.println(result);
+		writer.close();
 	}
 
 	private InfoCap getBestResponseTime(List<ExecutionBlock> system, DAG d, int totalcore) {
@@ -74,7 +111,7 @@ public class TPDSOurMultiDAG {
 		long best_core = -1;
 		long best_response_time = Long.MAX_VALUE;
 		long best_delay = Long.MAX_VALUE;
-		
+
 		List<ExecutionBlock> best_sys = new ArrayList<>();
 
 		for (int i = totalcore; i > 0; i--) {
@@ -82,13 +119,27 @@ public class TPDSOurMultiDAG {
 			List<ExecutionBlock> sysMirror = new ArrayList<>();
 			deepCopyEBList(sysMirror, system);
 
-			long delay = addExecutionBlocksForOneDAG(sysMirror, d.getPWDM(i), d.releaseTime, totalcore);
+			long t3_1 = System.nanoTime();
+			List<ExecutionBlock> ebs_DAG = d.getPWDM(i);
+			long t3_2 = System.nanoTime();
+
+			compuationCost.get(2).add(t3_2 - t3_1);
+
+			long t4_1 = System.nanoTime();
+			long delay = addExecutionBlocksForOneDAG(sysMirror, ebs_DAG, d.releaseTime, totalcore);
+			long t4_2 = System.nanoTime();
+
+			compuationCost.get(3).add(t4_2 - t4_1);
 
 			long response = -1;
-			if (i > 1)
-				response = delay + DAGtoPython.pharseDAGForPython(d, i).getFirst();
-			else
+			if (i > 1) {
+				long[] times = DAGtoPython.pharseDAGForPython(d, i).getFirst();
+				response = times[0];
+				compuationCost.get(0).add(times[1]);
+				compuationCost.get(1).add(times[2]);
+			} else {
 				response = delay + d.getFlatNodes().stream().mapToLong(c -> c.getWCET()).sum();
+			}
 
 			if (response < best_response_time) {
 				best_core = i;
@@ -98,19 +149,21 @@ public class TPDSOurMultiDAG {
 			}
 		}
 
+//		System.out.println("best core: " + best_core);
+
 		deepCopyEBList(system, best_sys);
-		
-		return new InfoCap(best_core, best_response_time, best_delay, best_response_time-best_delay);
+
+		return new InfoCap(best_core, best_response_time, best_delay, best_response_time - best_delay);
 	}
 
 	private long addExecutionBlocksForOneDAG(List<ExecutionBlock> system, List<ExecutionBlock> ebs, long startDAG,
 			int coreNum) {
 
 		if (system.size() == 0) {
-			
+
 			deepCopyEBList(system, ebs);
 			addEmptyBlocksAndCheck(system);
-			
+
 			return 0;
 
 		} else {
