@@ -90,9 +90,9 @@ ax = gca;
 ax.FontSize = 12; 
 
 xlabel({'Recency distance'},'FontSize', 14);
-ylabel({'Percentage of WCET'},'FontSize', 14)
+ylabel({'Speedup over WCET (%)'},'FontSize', 14)
 
-h=legend("Recency for each core", "Recency for each cluster", "Recency for system",'location','southeast');
+h=legend("Recency for core", "Recency for cluster", "Recency for system",'location','southeast');
 set(h,'FontSize',14);
 
 saveas(gcf,strcat('figs/ep_recency.eps'), 'epsc');
@@ -164,9 +164,9 @@ ax = gca;
 ax.FontSize = 12; 
 
 xlabel({'Recency distance'},'FontSize', 14);
-ylabel({'Percentage of WCET'},'FontSize', 14)
+ylabel({'Speedup over WCET (%)'},'FontSize', 14)
 
-h=legend("Recency for each core", "Recency for each cluster", "Recency for system",'location','southeast');
+h=legend("Recency for core", "Recency for cluster", "Recency for system",'location','southeast');
 set(h,'FontSize',14);
 
 saveas(gcf,strcat('figs/ep_recency_curve.eps'), 'epsc');
@@ -176,26 +176,26 @@ saveas(gcf,strcat('figs/ep_recency_curve.eps'), 'epsc');
 f=figure('Position', [100, 100, wid, len]);
 set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
 
-factor = 00.4;
-
 x = linspace ( 0 ,1 ,10000);
+x_cal = rescale(x,-2,2);
 x_show = rescale(x,0,2);
-y=erf(x/10000);
+y=erf(x_cal);
 y_show = rescale(rescale(y,30,50),30,50);
 plot(x_show,y_show,'LineWidth',2,'color',colors(1,:))
 hold on
 
 x = linspace ( 10000 ,1 ,100000);
+x_cal = rescale(x,-2,2);
 x_show = rescale(x,2,6.5);
-y = erf(x/100000);
+y = erf(x_cal);
 y_show = rescale(y,50,80);
 plot(x_show,y_show,'LineWidth',2,'color',colors(2,:))
 hold on
 
 x = linspace ( 100000 ,1 ,500000);
-x_cal = rescale(x,0,200);
+x_cal = rescale(x,-2,2);
 x_show = rescale(x,6.5,14.5);
-y = erf(x_cal/500000);
+y = erf(x_cal);
 y_show = rescale(y,80,100);
 plot(x_show,y_show,'LineWidth',2,'color',colors(3,:))
 hold on
@@ -244,9 +244,9 @@ ax = gca;
 ax.FontSize = 12; 
 
 xlabel({'Recency distance'},'FontSize', 14);
-ylabel({'Percentage of WCET'},'FontSize', 14)
+ylabel({'Speedup over WCET (%)'},'FontSize', 14)
 
-h=legend("Recency for each core", "Recency for each cluster", "Recency for system",'location','southeast');
+h=legend("Recency for core", "Recency for cluster", "Recency for system",'location','southeast');
 set(h,'FontSize',14);
 
 saveas(gcf,strcat('figs/ep_recency_step.eps'), 'epsc');

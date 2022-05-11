@@ -105,7 +105,7 @@ public class DirectedAcyclicGraph implements Serializable {
 		this.crps = crps;
 
 		if (crps == null)
-			this.globalCRP = new RecencyProfileSyn(null, id, 100);
+			this.globalCRP = new RecencyProfileSyn(cache, id, 100);
 
 		if (real)
 			constructDAGForSteven();

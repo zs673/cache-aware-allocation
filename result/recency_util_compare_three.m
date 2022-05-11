@@ -46,26 +46,26 @@ for util = 1:5
         
          pos = zeros(1);
          for col = 1:methodNum
-             pos(col) = (util - 1) * methodNum + col;
+             pos(col) = (util - 1) * 2 + col;
          end
 
          if util == 5
-             boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
+%              boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
              hold on
-             boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
+             boxplot(data_per_util(:,2), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
              hold on
-             boxplot(data_per_util(:,3), 'position',pos(3), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
+             boxplot(data_per_util(:,3), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
              hold on
-              boxplot(data_per_util(:,4), 'position',pos(4), 'widths', 0.65, 'symbol','.', 'color', colors(4,:));
+%               boxplot(data_per_util(:,4), 'position',pos(4), 'widths', 0.65, 'symbol','.', 'color', colors(4,:));
              hold on
          else
-             boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
+%              boxplot(data_per_util(:,1), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(1,:));
              hold on
-             boxplot(data_per_util(:,2), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
+             boxplot(data_per_util(:,2), 'position',pos(1), 'widths', 0.65, 'symbol','.', 'color', colors(2,:));
              hold on
-             boxplot(data_per_util(:,3), 'position',pos(3), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
+             boxplot(data_per_util(:,3), 'position',pos(2), 'widths', 0.65, 'symbol','.', 'color', colors(3,:));
              hold on
-             boxplot(data_per_util(:,4), 'position',pos(4), 'widths', 0.65, 'symbol','.', 'color', colors(4,:));
+%              boxplot(data_per_util(:,4), 'position',pos(4), 'widths', 0.65, 'symbol','.', 'color', colors(4,:));
              hold on
          end
        
@@ -75,9 +75,9 @@ for util = 1:5
 %     set(findobj(gca,'type','line'),'linew',1.5)
 %     set(gca,'linew',1.5)
      
-    xlim([0 21]);
+    xlim([0 11]);
     ylim([0 1]);
-    xticks = 2.5 : 4 : 21;
+    xticks = 1.5 : 2 : 11;
     xticklables = ["10","20","30","40","50" ];
     
     set(gca,'xtick',xticks );
@@ -96,7 +96,7 @@ for util = 1:5
 
     
 
-    h = legend([c(3),c(2),c(1)],"v1.0 no error","v1.0 with error","v2.0 with error",'FontAngle','italic','location','southeast','Orientation','horizontal');
+    h = legend([c(2),c(1)],"v1.0 with error","v2.0 with error",'FontAngle','italic','location','southeast','Orientation','horizontal');
 %     h = legend([c(3),c(2),c(1)],"WF+EO","AJLR without deviations","AJLR with deviations",'FontAngle','italic','location','southeast','Orientation','horizontal');
     set(h,'FontSize',14);
 

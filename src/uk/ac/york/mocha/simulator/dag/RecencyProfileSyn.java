@@ -34,7 +34,7 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 				additionalTime);
 
 		if (n != null && error) {
-			double err = n.cvp.getVary(res.getSecond());
+			double err = n.cvp.rng.nextDouble() * 2 - 1;
 //			double err = n.cvp.getMedian();
 
 			if (err < -1 || err > 1) {
@@ -44,7 +44,7 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 
 //			System.out.println(n.getFullName() + "   :   err: " + err);
 
-			long ETwithErr = (long) Math.ceil((double) res.getFirst() * (1.0 + err));
+			long ETwithErr = (long) 0;//Math.ceil((double) res.getFirst() * (1.0 + err));
 
 			return new Pair<Long, Integer>(ETwithErr, res.getSecond());
 		} else

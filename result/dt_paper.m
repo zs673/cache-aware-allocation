@@ -9,7 +9,7 @@ data = readmatrix(strcat('real/real.txt'));
 
 normalizer = max(max(data(:,1:2)));
 
-boxplot([data(:,1)/normalizer, data(:,2)/normalizer],  'symbol' , '-'); % , 'Whisker', 5
+boxplot([data(:,1), data(:,2)],  'symbol' , '-'); % , 'Whisker', 5
 
 xticklables = ["AJLR","WFD"];
 set(gca,'xticklabel',xticklables,'FontSize', 12);

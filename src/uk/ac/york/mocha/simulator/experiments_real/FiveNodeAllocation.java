@@ -45,7 +45,7 @@ public class FiveNodeAllocation {
 		//
 		// runOne(3, 3, 20, true, seed, rng);
 
-		real();
+//		real();
 
 		issue();
 
@@ -64,10 +64,7 @@ public class FiveNodeAllocation {
 	}
 
 	public static void issue() {
-
-		
-
-//		oneGroup("issue_small");
+		oneGroup("issue_small");
 
 		tasks[5] = "tacle/mpeg2";
 
@@ -82,7 +79,7 @@ public class FiveNodeAllocation {
 		List<long[]> res0 = new ArrayList<>();
 
 		cores = 3;
-		taskNum = 6;
+		taskNum = 5;
 
 		for (int i = 0; i < nos; i++) {
 			rng = new Random(seed);
