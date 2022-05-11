@@ -95,6 +95,8 @@ public class Node implements Serializable {
 	 * The variability of the node
 	 */
 	public RecencyProfile crp;
+	public RecencyProfile crp_synth;
+	
 	public CacheVariabilityProfile cvp;
 
 	boolean isReal;
@@ -122,6 +124,7 @@ public class Node implements Serializable {
 		// 1000);
 
 		this.crp = crp;
+		this.crp_synth = new RecencyProfileSyn(crp.cache, crp.cache.coreNum, 1000);
 
 		this.cvp = new CacheVariabilityProfile(this, SystemParameters.err_median,
 				((double) this.rng.nextInt(SystemParameters.err_range + 1) / (double) 100) / 3.0, rng);

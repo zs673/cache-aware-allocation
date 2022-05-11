@@ -21,11 +21,9 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class FiveNodeAllocation {
 
-//	public static final String[] tasks = { "tacle/ndes", "tacle/h264_dec", "tacle/adpcm_dec", "tacle/adpcm_enc", "tacle/gsm_dec",
-//			"tacle/statemate", "tacle/g723_enc", "tacle/anagram", "tacle/gsm_enc", "tacle/mpeg2", "tacle/ammunition" };
-
-	public static final String[] tasks = { "tacle/ndes", "tacle/h264_dec", "tacle/gsm_enc", "tacle/adpcm_enc", "tacle/gsm_dec",
-			"tacle/statemate", "tacle/g723_enc", "tacle/anagram", "tacle/gsm_enc", "tacle/mpeg2", "tacle/ammunition" };
+	public static String[] tasks = { "tacle/ndes", "tacle/h264_dec", "tacle/adpcm_dec", "tacle/adpcm_enc",
+			"tacle/gsm_dec", "tacle/statemate", "tacle/g723_enc", "tacle/anagram", "tacle/gsm_enc", "tacle/mpeg2",
+			"tacle/ammunition" };
 
 	public static final String crpFile = "crp/profile.tacle.crp.json"; // "crp/test.profile_220311.crp.scaled.json";
 
@@ -47,7 +45,9 @@ public class FiveNodeAllocation {
 		//
 		// runOne(3, 3, 20, true, seed, rng);
 
-		 real();
+//		real();
+
+		issue();
 
 //		 changeTaskNum(3, 8);
 //		 changeCoreNum(3, 8);
@@ -63,7 +63,19 @@ public class FiveNodeAllocation {
 
 	}
 
+	public static void issue() {
+		oneGroup("issue_small");
+
+		tasks[5] = "tacle/mpeg2";
+
+		oneGroup("issue_big");
+	}
+
 	public static void real() {
+		oneGroup("real");
+	}
+
+	public static void oneGroup(String filename) {
 		List<long[]> res0 = new ArrayList<>();
 
 		cores = 3;
@@ -71,8 +83,8 @@ public class FiveNodeAllocation {
 
 		for (int i = 0; i < nos; i++) {
 			rng = new Random(seed);
-			System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum + ", No. System " + (i + 1)
-					+ " ---------------------");
+			System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum + ", No. System "
+					+ (i + 1) + " ---------------------");
 			long[] r = runOne(cores, taskNum, instanceNum, false, seed, rng);
 			res0.add(r);
 			seed++;
@@ -92,7 +104,7 @@ public class FiveNodeAllocation {
 			}
 		}
 
-		Utils.writeResult("result/real/" + "real" + ".txt", out);
+		Utils.writeResult("result/real/" + filename + ".txt", out);
 	}
 
 	public static void changeUtilization(int startUtil, int endUtil) {
@@ -112,7 +124,8 @@ public class FiveNodeAllocation {
 			for (int k = 0; k < nos; k++) {
 				rng = new Random(seed);
 				System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum + ", Util: "
-						+ ((double) util / (double) 10 * taskNum) + ", No. System " + (k + 1) + " ---------------------");
+						+ ((double) util / (double) 10 * taskNum) + ", No. System " + (k + 1)
+						+ " ---------------------");
 				long[] r = runOne(cores, taskNum, i, instanceNum, print, seed, rng);
 				res.get(index).add(r);
 				seed++;
@@ -140,8 +153,8 @@ public class FiveNodeAllocation {
 
 			for (int k = 0; k < nos; k++) {
 				rng = new Random(seed);
-				System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum + ", No. System " + (k + 1)
-						+ " ---------------------");
+				System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum
+						+ ", No. System " + (k + 1) + " ---------------------");
 				long[] r = runOne(cores, taskNum, instanceNum, print, seed, rng);
 				res.get(index).add(r);
 				seed++;
@@ -169,8 +182,8 @@ public class FiveNodeAllocation {
 
 			for (int k = 0; k < nos; k++) {
 				rng = new Random(seed);
-				System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum + ", No. System " + (k + 1)
-						+ " ---------------------");
+				System.out.println("--------------------- " + " Core: " + cores + ", TaskNum: " + taskNum
+						+ ", No. System " + (k + 1) + " ---------------------");
 				long[] r = runOne(cores, taskNum, instanceNum, print, seed, rng);
 				res.get(index).add(r);
 				seed++;
@@ -232,7 +245,8 @@ public class FiveNodeAllocation {
 		return runOne(cores, taskNum, util, instanceNum, print, seed, rng);
 	}
 
-	public static long[] runOne(int cores, int taskNum, int util, int instanceNum, boolean print, int seed, Random rng) {
+	public static long[] runOne(int cores, int taskNum, int util, int instanceNum, boolean print, int seed,
+			Random rng) {
 
 		List<String> taskName = new ArrayList<>();
 		for (int i = 0; i < taskNum; i++) {
@@ -247,8 +261,8 @@ public class FiveNodeAllocation {
 		return simulate(taskNum, dags, cache, cores, print, rng);
 	}
 
-	public static long[] simulate(int taskNum, List<DirectedAcyclicGraph> dags, CacheHierarchy cache, int cores, boolean print,
-			Random rng) {
+	public static long[] simulate(int taskNum, List<DirectedAcyclicGraph> dags, CacheHierarchy cache, int cores,
+			boolean print, Random rng) {
 
 		for (DirectedAcyclicGraph d : dags) {
 			// for (Node n : d.getFlatNodes())
@@ -270,18 +284,18 @@ public class FiveNodeAllocation {
 		// }
 
 		rng = new Random(seed);
-		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE, RecencyType.TIME_DEFAULT, tasks,
-				cache, cores, seed, licf);
+		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
 
 		rng = new Random(seed);
-		Simualtor sim2 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT, RecencyType.TIME_DEFAULT, tasks,
-				cache, cores, seed, licf);
+		Simualtor sim2 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
+				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
 		rng = new Random(seed);
-		Simualtor sim3 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.SIMPLE, RecencyType.TIME_DEFAULT, tasks, cache,
-				cores, seed, licf);
+		Simualtor sim3 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.SIMPLE,
+				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = sim3.simulate(print);
 
 		// rng = new Random(seed);
@@ -330,8 +344,8 @@ public class FiveNodeAllocation {
 		return cache;
 	}
 
-	public static List<DirectedAcyclicGraph> dagGenerator(List<RecencyProfileReal> crps, CacheHierarchy cache, int cores, int instanceNum,
-			Random rng) {
+	public static List<DirectedAcyclicGraph> dagGenerator(List<RecencyProfileReal> crps, CacheHierarchy cache,
+			int cores, int instanceNum, Random rng) {
 
 		crps.stream().forEach(c -> c.WCET = c.WCET * (1 + rng.nextDouble() * 0.2 - 0.1) * 2);
 		// crps.stream().forEach(c -> c.medainET = c.WCET * (1 +
@@ -364,8 +378,10 @@ public class FiveNodeAllocation {
 			}
 		}
 
-		SystemGenerator gen = new SystemGenerator(cores, crps.size(), false, false, null, rng, false, false, cache.level2);
-		List<DirectedAcyclicGraph> sys = gen.generatedForSteven(wcets, periods, priorities, crps, cache, instanceNum, instances);
+		SystemGenerator gen = new SystemGenerator(cores, crps.size(), false, false, null, rng, false, false,
+				cache.level2);
+		List<DirectedAcyclicGraph> sys = gen.generatedForSteven(wcets, periods, priorities, crps, cache, instanceNum,
+				instances);
 
 		return sys;
 	}

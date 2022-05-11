@@ -12,6 +12,7 @@ import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareReverse;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareWithOrdering;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAware_ForCompare;
 import uk.ac.york.mocha.simulator.allocation.OnlineFFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineRandom;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
@@ -184,6 +185,9 @@ public class Simualtor {
 		case WORST_FIT_OUR:
 			Utils.assignPriorityOur(dags);
 			allocM = new OnlineWFWithOrdering();
+			break;
+		case CACHE_AWARE_COMPARE:
+			allocM = new OnlineCacheAware_ForCompare();
 			break;
 		default:
 			System.err.println("The simualtion method is NOT supported ! ");

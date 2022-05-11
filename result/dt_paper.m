@@ -6,7 +6,10 @@ set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
 data = readmatrix(strcat('real/real.txt'));
 
 % boxplot(data);
-boxplot([data(:,1), data(:,2) ],  'symbol' , '-'); % , 'Whisker', 5
+
+normalizer = max(max(data(:,1:2)));
+
+boxplot([data(:,1), data(:,2)],  'symbol' , '-'); % , 'Whisker', 5
 
 xticklables = ["AJLR","WFD"];
 set(gca,'xticklabel',xticklables,'FontSize', 12);

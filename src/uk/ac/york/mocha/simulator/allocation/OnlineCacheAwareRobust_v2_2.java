@@ -62,7 +62,7 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 		 *************************************************************************************************/
 		/* Sort ready nodes list by DAG priority and then node WCET */
 		// readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
-		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		readyNodes.sort((c1, c2) -> Utils.compareNodeByPriorityAndSensitivity(dags, c1, c2));
 
 		// for (List<Node> l : localRunqueue) {
 		// readyNodes.addAll(l);
