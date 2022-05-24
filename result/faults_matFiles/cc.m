@@ -7,7 +7,7 @@ subRows = 2;
 subCols = 3;
 
 for core = cores
-        
+    
     f = figure('Position', [100, 100, 1200, 800]);
     subplotIndex = 1;
     for percent = percents
@@ -41,7 +41,7 @@ for core = cores
         %         set(h,'FontSize',12,'color','none');
         
         saveas(gcf,strcat('../faults_figs/cc_',num2str(core),'_',num2str(percent),'_all.png'));
-      
+        
     end
     
     
@@ -61,7 +61,7 @@ for core = cores
         
         disp(cc_result)
     end
-
+    
 end
 
 percent = "0.4";

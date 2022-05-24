@@ -19,8 +19,8 @@ col = 3;
 effectsNum = 0:100:20000;
 effects = 0:100:20000;
 
-% cc1;
-scatter_faults_variation_hist;
+cc1;
+% scatter_faults_variation_hist;
 
 % faults_allNodes;
 % faults_variation_hist;

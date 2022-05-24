@@ -35,7 +35,7 @@ public class CorrelationCoefficient {
 		high_out_degree, high_in_out_degree, statSensitivity
 	}
 
-	static int nos = 1000;
+	static int nos = 100;
 	static int[] allCores = { 4 };
 	static boolean print = false;
 	static double[] allPercent = { 0.1, 0.2, 0.3, 0.4, 0.5 };

@@ -15,9 +15,9 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 
 	private static final long serialVersionUID = -6902741116934537381L;
-	
-//	public static Random rng = new Random(1000); 
-	
+
+	// public static Random rng = new Random(1000);
+
 	DecimalFormat df = new DecimalFormat("#.###");
 
 	public RecencyProfileSyn(CacheHierarchy cache, int procNum, int seed) {
@@ -31,38 +31,41 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 
 	}
 
-	public Pair<Pair<Long, Double>, Integer> computeET(long time, List<List<Node>> history_level1,
-			List<List<Node>> history_level2, List<Node> history_level3, Node n, int proc, boolean cacheAware,
-			long additionalTime, long variation, boolean error) {
+	public Pair<Pair<Long, Double>, Integer> computeET(long time, List<List<Node>> history_level1, List<List<Node>> history_level2,
+			List<Node> history_level3, Node n, int proc, boolean cacheAware, long additionalTime, long variation, boolean error) {
 
-		Pair<Long, Integer> res = computeET(time, history_level1, history_level2, history_level3, n, proc, cacheAware,
-				additionalTime);
+		Pair<Long, Integer> res = computeET(time, history_level1, history_level2, history_level3, n, proc, cacheAware, additionalTime);
 
 		if (n != null && error) {
-//			double err = n.cvp.rng.nextDouble() * 2 - 1;
+			// double err = n.cvp.rng.nextDouble() * 2 - 1;
 
-			/* nextDouble()*(max-min) + min; max-min = range * 2; min = meian - range */
-//			double err = n.cvp.rng.nextDouble() * n.cvp.getRange()*2 + n.cvp.getMedian() ;
-//			double err = n.cvp.getRange()*2 + n.cvp.getMedian();
-			
-//			double err = variation==-1? n.cvp.getRange():variation;
-			double err = Double.parseDouble(df.format(((double) variation / (double) 100)));
+			/*
+			 * nextDouble()*(max-min) + min; max-min = range * 2; min = meian -
+			 * range
+			 */
+			// double err = n.cvp.rng.nextDouble() * n.cvp.getRange()*2 +
+			// n.cvp.getMedian() ;
+			// double err = n.cvp.getRange()*2 + n.cvp.getMedian();
 
-//			double err = n.cvp.rng.nextDouble() + n.cvp.getRange() * 4;
+			double err = variation == -1 ? n.cvp.getRange() : variation;
+			// double err = Double.parseDouble(df.format(((double) variation /
+			// (double) 100)));
 
-//			if (err < -1 || err > 1) {
-//				System.out.println("Error Value: " + err);
-//				System.exit(-1);
-//			}
+			// double err = n.cvp.rng.nextDouble() + n.cvp.getRange() * 4;
 
+			// if (err < -1 || err > 1) {
+			// System.out.println("Error Value: " + err);
+			// System.exit(-1);
+			// }
 
-			long ETwithErr = (long) Math.ceil((double) res.getFirst() * (1.0 + err));
-//			long ETwithErr = (long) Math.ceil((double) res.getFirst() + err);
+			// long ETwithErr = (long) Math.ceil((double) res.getFirst() * (1.0
+			// + err));
+			long ETwithErr = (long) Math.ceil((double) res.getFirst() + err);
 
-			return new Pair<Pair<Long, Double>, Integer>(
-					new Pair<Long, Double>(ETwithErr, Math.ceil((double) res.getFirst() * err)), res.getSecond());
-//			return new Pair<Pair<Long, Double>, Integer>(
-//					new Pair<Long, Double>(ETwithErr, (double) err), res.getSecond());
+			// return new Pair<Pair<Long, Double>, Integer>(
+			// new Pair<Long, Double>(ETwithErr, Math.ceil((double)
+			// res.getFirst() * err)), res.getSecond());
+			return new Pair<Pair<Long, Double>, Integer>(new Pair<Long, Double>(ETwithErr, (double) err), res.getSecond());
 		} else
 			return new Pair<Pair<Long, Double>, Integer>(new Pair<Long, Double>(res.getFirst(), (double) 0), res.getSecond());
 
@@ -84,14 +87,13 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 		/**************************************************************************
 		 ************************* level 1 recency distance ************************
 		 ***************************************************************************/
-		long leve1Time = time != -1 ? time
-				: getTimeofLastIndex(history_level1.get(proc), n, SystemParameters.v2) + additionalTime;
+		long leve1Time = time != -1 ? time : getTimeofLastIndex(history_level1.get(proc), n, SystemParameters.v2) + additionalTime;
 
 		switch (type) {
 		case TIME_DEFAULT:
 			if (SystemParameters.v1 <= leve1Time && leve1Time <= SystemParameters.v2) {
-				double speedUp = (SystemParameters.delta2 - SystemParameters.delta1) / (double) SystemParameters.v2
-						* (double) leve1Time + SystemParameters.delta1;
+				double speedUp = (SystemParameters.delta2 - SystemParameters.delta1) / (double) SystemParameters.v2 * (double) leve1Time
+						+ SystemParameters.delta1;
 
 				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 1);
 			}
@@ -99,9 +101,8 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 
 		case TIME_CURVE:
 			if (SystemParameters.v1 <= leve1Time && leve1Time <= SystemParameters.v2) {
-				double speedUp = (SystemParameters.delta2 - SystemParameters.delta1)
-						* (Math.pow(leve1Time, 3) - SystemParameters.v1) / Math.pow(SystemParameters.v2, 3)
-						+ SystemParameters.delta1;
+				double speedUp = (SystemParameters.delta2 - SystemParameters.delta1) * (Math.pow(leve1Time, 3) - SystemParameters.v1)
+						/ Math.pow(SystemParameters.v2, 3) + SystemParameters.delta1;
 
 				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 1);
 			}
@@ -111,8 +112,8 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 				double timeNormalised = (double) (4 * (leve1Time - SystemParameters.v1))
 						/ (double) (SystemParameters.v2 - SystemParameters.v1) - 2;
 
-				double speedUp = (SystemParameters.delta2 - SystemParameters.delta1) * (Erf.erf(timeNormalised) - -1)
-						/ 2 + SystemParameters.delta1;
+				double speedUp = (SystemParameters.delta2 - SystemParameters.delta1) * (Erf.erf(timeNormalised) - -1) / 2
+						+ SystemParameters.delta1;
 
 				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 1);
 			}
@@ -124,8 +125,7 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 		 ************************* level 2 recency distance ************************
 		 ***************************************************************************/
 		int clusterID = proc / SystemParameters.Level2CoreNum;
-		long level2Time = time != -1 ? time
-				: getTimeofLastIndex(history_level2.get(clusterID), n, SystemParameters.v3) + additionalTime;
+		long level2Time = time != -1 ? time : getTimeofLastIndex(history_level2.get(clusterID), n, SystemParameters.v3) + additionalTime;
 
 		switch (type) {
 		case TIME_DEFAULT:
@@ -136,8 +136,8 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 			}
 
 			if (SystemParameters.v2 <= level2Time && level2Time <= SystemParameters.v3) {
-				double speedUp = (SystemParameters.delta3 - SystemParameters.delta2) / (double) SystemParameters.v3
-						* (double) level2Time + SystemParameters.delta2;
+				double speedUp = (SystemParameters.delta3 - SystemParameters.delta2) / (double) SystemParameters.v3 * (double) level2Time
+						+ SystemParameters.delta2;
 
 				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 2);
 			}
@@ -151,9 +151,8 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 			}
 
 			if (SystemParameters.v2 <= level2Time && level2Time <= SystemParameters.v3) {
-				double speedUp = (SystemParameters.delta3 - SystemParameters.delta2)
-						* (Math.pow(level2Time, 3) - SystemParameters.v2) / Math.pow(SystemParameters.v3, 3)
-						+ SystemParameters.delta2;
+				double speedUp = (SystemParameters.delta3 - SystemParameters.delta2) * (Math.pow(level2Time, 3) - SystemParameters.v2)
+						/ Math.pow(SystemParameters.v3, 3) + SystemParameters.delta2;
 
 				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 2);
 			}
@@ -169,8 +168,8 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 				double timeNormalised = (double) (4 * (leve1Time - SystemParameters.v2))
 						/ (double) (SystemParameters.v3 - SystemParameters.v2) - 2;
 
-				double speedUp = (SystemParameters.delta3 - SystemParameters.delta2) * (Erf.erf(timeNormalised) - -1)
-						/ 2 + SystemParameters.delta2;
+				double speedUp = (SystemParameters.delta3 - SystemParameters.delta2) * (Erf.erf(timeNormalised) - -1) / 2
+						+ SystemParameters.delta2;
 
 				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 2);
 			}
@@ -182,8 +181,7 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 		/**************************************************************************
 		 ************************* level 3 recency distance ************************
 		 ***************************************************************************/
-		long level3Time = time != -1 ? time
-				: getTimeofLastIndex(history_level3, n, SystemParameters.v4) + additionalTime;
+		long level3Time = time != -1 ? time : getTimeofLastIndex(history_level3, n, SystemParameters.v4) + additionalTime;
 
 		switch (type) {
 		case TIME_DEFAULT:
@@ -195,8 +193,8 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 			}
 
 			if (SystemParameters.v3 <= level3Time && level3Time <= SystemParameters.v4) {
-				double speedUp = (SystemParameters.delta4 - SystemParameters.delta3) / (double) SystemParameters.v4
-						* (double) level3Time + SystemParameters.delta3;
+				double speedUp = (SystemParameters.delta4 - SystemParameters.delta3) / (double) SystemParameters.v4 * (double) level3Time
+						+ SystemParameters.delta3;
 
 				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 3);
 			}
@@ -211,9 +209,8 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 			}
 
 			if (SystemParameters.v3 <= level3Time && level3Time <= SystemParameters.v4) {
-				double speedUp = (SystemParameters.delta4 - SystemParameters.delta3)
-						* (Math.pow(level3Time, 3) - SystemParameters.v3) / Math.pow(SystemParameters.v4, 3)
-						+ SystemParameters.delta3;
+				double speedUp = (SystemParameters.delta4 - SystemParameters.delta3) * (Math.pow(level3Time, 3) - SystemParameters.v3)
+						/ Math.pow(SystemParameters.v4, 3) + SystemParameters.delta3;
 
 				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 3);
 			}
@@ -229,8 +226,8 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 				double timeNormalised = (double) (4 * (leve1Time - SystemParameters.v3))
 						/ (double) (SystemParameters.v4 - SystemParameters.v3) - 2;
 
-				double speedUp = (SystemParameters.delta4 - SystemParameters.delta3) * (Erf.erf(timeNormalised) - -1)
-						/ 2 + SystemParameters.delta3;
+				double speedUp = (SystemParameters.delta4 - SystemParameters.delta3) * (Erf.erf(timeNormalised) - -1) / 2
+						+ SystemParameters.delta3;
 
 				return new Pair<Long, Integer>((long) Math.ceil((double) n.getWCET() * speedUp), 3);
 			}
@@ -323,15 +320,19 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 		// System.out.println(d);
 		// }
 
-//		RecencyProfileSyn rp = new RecencyProfileSyn(new CacheHierarchy(8, 3, 4), RecencyType.TIME_DEFAULT, 8, 1000);
-//
-//		Node n = new Node(1000000, -1, NodeType.NORMAL, -1, -1, rp, false, new Random(1000));
-//
-//		for (long i = SystemParameters.v1; i < SystemParameters.v4; i += 100) {
-//
-//			long a = rp.computeET(i, null, null, null, n, 8, true, 0, true).getFirst();
-//			System.out.println(a);
-//		}
+		// RecencyProfileSyn rp = new RecencyProfileSyn(new CacheHierarchy(8, 3,
+		// 4), RecencyType.TIME_DEFAULT, 8, 1000);
+		//
+		// Node n = new Node(1000000, -1, NodeType.NORMAL, -1, -1, rp, false,
+		// new Random(1000));
+		//
+		// for (long i = SystemParameters.v1; i < SystemParameters.v4; i += 100)
+		// {
+		//
+		// long a = rp.computeET(i, null, null, null, n, 8, true, 0,
+		// true).getFirst();
+		// System.out.println(a);
+		// }
 
 		Random rng = new Random(1000);
 
