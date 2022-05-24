@@ -69,9 +69,9 @@ public class TPDSOurMultiDAG {
 			long t5_2 = System.nanoTime();
 			compuationCost.get(4).add(t5_2 - t5_1);
 
-			if (response.best_response_time > d.getSchedParameters().getDeadline()) {
-				return null;
-			}
+//			if (response.best_response_time > d.getSchedParameters().getDeadline()) {
+//				return null;
+//			}
 
 			response_time.add(response);
 		}
