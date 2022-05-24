@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.experiments_real.FiveNodeAllocation;
 import uk.ac.york.mocha.simulator.experiments_real.FiveNodeForCompare;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -67,12 +67,12 @@ public class OnlineCacheAware_ForCompare extends AllocationMethods {
 					long realET = 0;
 					if (useSynth) {
 						realET = n.crp_synth
-								.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, true)
-								.getFirst();
+								.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, 0,true)
+								.getFirst().getFirst();
 					} else {
 						realET = n.crp
-								.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, false)
-								.getFirst();
+								.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0,0, false)
+								.getFirst().getFirst();
 					}
 
 //					long realET = n.crp
@@ -223,14 +223,14 @@ public class OnlineCacheAware_ForCompare extends AllocationMethods {
 
 						if (useSynth) {
 							affectedTimeOneNode = affected.crp_synth.computeET(-1, history_level1, history_level2,
-									history_level3, affected, affected.partition, true, et_n, true).getFirst()
+									history_level3, affected, affected.partition, true, et_n, 0,true).getFirst().getFirst()
 									- affected.crp_synth.computeET(-1, history_level1, history_level2, history_level3,
-											affected, affected.partition, true, 0, true).getFirst();
+											affected, affected.partition, true, 0, 0,true).getFirst().getFirst();
 						} else {
 							affectedTimeOneNode = affected.crp.computeET(-1, history_level1, history_level2,
-									history_level3, affected, affected.partition, true, et_n, false).getFirst()
+									history_level3, affected, affected.partition, true, et_n, 0,false).getFirst().getFirst()
 									- affected.crp.computeET(-1, history_level1, history_level2, history_level3,
-											affected, affected.partition, true, 0, false).getFirst();
+											affected, affected.partition, true, 0, 0,false).getFirst().getFirst();
 						}
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;

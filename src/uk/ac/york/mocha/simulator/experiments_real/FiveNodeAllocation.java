@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.RecencyProfileReal;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.RecencyProfileReal;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;

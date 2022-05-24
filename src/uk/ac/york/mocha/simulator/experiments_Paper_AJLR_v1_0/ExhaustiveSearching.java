@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.entity.Node;
 
 public class ExhaustiveSearching {
 

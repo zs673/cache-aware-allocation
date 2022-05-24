@@ -19,9 +19,9 @@ import uk.ac.york.mocha.simulator.allocation.OnlineWFD;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFWithOrdering;
 import uk.ac.york.mocha.simulator.allocation.SimpleAllocationConversing;
 import uk.ac.york.mocha.simulator.allocation.onlineBFD;
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.Node.NodeType;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.entity.Node.NodeType;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
@@ -85,9 +85,8 @@ public class Simualtor {
 	long[] cachePerformance;
 	int totalAccess = 0;
 
-
 	DecimalFormat df = new DecimalFormat("#.###");
-	
+
 	public long totalMakespan = -1;
 
 	/********************* Runtime queues *********************************/
@@ -131,7 +130,7 @@ public class Simualtor {
 		}
 
 		this.cachePerformance = new long[4];
-		
+
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, double[]> simulate(boolean printSim) {
@@ -196,7 +195,7 @@ public class Simualtor {
 		}
 
 		switch (hardware) {
-		case PROC_ONLY:
+		case PROC:
 			cacheAware = false;
 			break;
 		case PROC_CACHE:
@@ -224,9 +223,9 @@ public class Simualtor {
 			 */
 			ExecuteReadyNodes(availableProc, allocM, cacheAware, onlyCritical, printSim);
 
-			if(sleepingDAGs.size() == 0 && readyDAGs.size() == 0)
+			if (sleepingDAGs.size() == 0 && readyDAGs.size() == 0)
 				totalMakespan = systemTime;
-			
+
 			/*
 			 * advance to next time unit.
 			 */
@@ -308,10 +307,10 @@ public class Simualtor {
 			allocNodes.get(n.partition).add(n);
 			n.start = systemTime;
 
-			Pair<Long, Integer> ETWithCache = n.crp.computeET(-1, history_level1, history_level2, history_level3, n,
-					n.partition, cacheAware, 0, n.hasFaults);
+			Pair<Pair<Long, Double>, Integer> ETWithCache = n.crp.computeET(-1, history_level1, history_level2,
+					history_level3, n, n.partition, cacheAware, 0, 0, n.hasFaults);
 
-			long realET = ETWithCache.getFirst();
+			long realET = ETWithCache.getFirst().getFirst();
 			int cacheEffects = ETWithCache.getSecond();
 			totalAccess++;
 
@@ -425,7 +424,7 @@ public class Simualtor {
 				i--;
 			}
 		}
-		
+
 	}
 
 	/****************************************************************

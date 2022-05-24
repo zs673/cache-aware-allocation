@@ -17,10 +17,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import uk.ac.york.mocha.simulator.dag.DAGtoPython;
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.RecencyProfileReal;
+import uk.ac.york.mocha.simulator.entity.DAGtoPython;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.entity.RecencyProfileReal;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
@@ -282,6 +282,8 @@ public class Utils {
 		return dp;
 	}
 
+
+	
 	public static void writeResult(String path, String file, String result) {
 		writeResult(path, file, result, false);
 	}

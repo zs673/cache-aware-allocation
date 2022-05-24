@@ -7,8 +7,8 @@ import java.util.Random;
 
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -246,7 +246,7 @@ public class Test {
 
 //			System.out.println(dags.get(0).toString());
 
-			Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_ONLY, Allocation.FIRST_FIT,
+			Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC, Allocation.FIRST_FIT,
 					RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), 16, seed, true);
 			cacheCASim.simulate(false, 0);
 

@@ -9,11 +9,11 @@ import java.util.stream.Collectors;
 import org.apache.commons.math3.util.Pair;
 
 import jnr.ffi.annotations.In;
-import uk.ac.york.mocha.simulator.dag.DAGtoPython;
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.RecencyProfile;
-import uk.ac.york.mocha.simulator.dag.RecencyProfileReal;
+import uk.ac.york.mocha.simulator.entity.DAGtoPython;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.entity.RecencyProfile;
+import uk.ac.york.mocha.simulator.entity.RecencyProfileReal;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -66,6 +66,12 @@ public class SystemGenerator {
 			List<Double> assignedUtils, int seed, boolean randomC, boolean print) {
 
 		this(total_partitions, totalTasks, isHarmonic, takeAllUtil, assignedUtils, new Random(seed), randomC, print, null);
+	}
+	
+	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
+			List<Double> assignedUtils, Random rng, boolean randomC, boolean print) {
+
+		this(total_partitions, totalTasks, isHarmonic, takeAllUtil, assignedUtils, rng, randomC, print, null);
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, CacheHierarchy> generatedDAGInstancesInOneHP(int forceInstanceNum,

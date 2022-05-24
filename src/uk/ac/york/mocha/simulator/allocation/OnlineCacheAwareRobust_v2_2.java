@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -61,8 +61,8 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 		 ************************************ Initialize the dispatcher ***********************************
 		 *************************************************************************************************/
 		/* Sort ready nodes list by DAG priority and then node WCET */
-		// readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
-		readyNodes.sort((c1, c2) -> Utils.compareNodeByPriorityAndSensitivity(dags, c1, c2));
+		 readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+//		readyNodes.sort((c1, c2) -> Utils.compareNodeByPriorityAndSensitivity(dags, c1, c2));
 
 		// for (List<Node> l : localRunqueue) {
 		// readyNodes.addAll(l);
@@ -208,11 +208,11 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 					for (Node affected : affectedNodes) {
 
 						long affectedTimeOneNode = affected.crp
-								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, et_n,
+								.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, et_n,0,
 										false)
-								.getFirst()
-								- affected.crp.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, 0,
-										false).getFirst();
+								.getFirst().getFirst()
+								- affected.crp.computeET(-1, history_level1, history_level2, history_level3, affected, affected.partition, true, 0,0,
+										false).getFirst().getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 
@@ -260,10 +260,10 @@ public class OnlineCacheAwareRobust_v2_2 extends AllocationMethods {
 
 				long WCET = n.getWCET();
 
-				Pair<Long, Integer> cacheRes = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true,
-						localRunqueue.get(core).stream().mapToLong(c -> c.expectedETPerCore[k]).sum(), false);
+				Pair<Pair<Long, Double>, Integer> cacheRes = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true,
+						localRunqueue.get(core).stream().mapToLong(c -> c.expectedETPerCore[k]).sum(),0, false);
 
-				long estimatedET = cacheRes.getFirst();
+				long estimatedET = cacheRes.getFirst().getFirst();
 				// long cacheLevel = cacheRes.getSecond();
 
 				long speedup = WCET - estimatedET;

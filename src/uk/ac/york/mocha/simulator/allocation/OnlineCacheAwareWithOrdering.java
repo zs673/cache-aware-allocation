@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.Node;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -126,8 +126,8 @@ public class OnlineCacheAwareWithOrdering extends AllocationMethods {
 					 */
 					long WCET = n.getWCET();
 					long realET = n.crp
-							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, false)
-							.getFirst();
+							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0,0, false)
+							.getFirst().getFirst();
 					long speedup = WCET - realET;
 
 					/*
@@ -271,9 +271,9 @@ public class OnlineCacheAwareWithOrdering extends AllocationMethods {
 
 					for (Node affected : affectedNodes) {
 						long affectedTimeOneNode = affected.crp.computeET(-1, history_level1, history_level2,
-								history_level3, affected, affected.partition, true, et_n, false).getFirst()
+								history_level3, affected, affected.partition, true, et_n, 0,false).getFirst().getFirst()
 								- affected.crp.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, 0, false).getFirst();
+										affected.partition, true, 0,0, false).getFirst().getFirst();
 
 						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
 

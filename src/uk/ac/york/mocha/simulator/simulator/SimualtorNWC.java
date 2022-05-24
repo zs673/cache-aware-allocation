@@ -11,9 +11,9 @@ import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_2;
 import uk.ac.york.mocha.simulator.allocation.SimpleAllocation;
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
-import uk.ac.york.mocha.simulator.dag.Node;
-import uk.ac.york.mocha.simulator.dag.Node.NodeType;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.entity.Node.NodeType;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -87,10 +87,20 @@ public class SimualtorNWC {
 	DecimalFormat df = new DecimalFormat("#.###");
 
 	public long noCalls = 0;
+	
+	public long variation = -1;
 
 	/********************* Runtime queues *********************************/
 
-	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency, 
+	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
+			List<DirectedAcyclicGraph> dags, CacheHierarchy cache, int procNum, int recencySeed, long variation, boolean lcif) {
+
+		this(type, hardware, alloc, recency, dags, cache, procNum, recencySeed, lcif);
+		this.variation = variation;
+
+	}
+	
+	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
 			List<DirectedAcyclicGraph> dags, CacheHierarchy cache, int procNum, int recencySeed, boolean lcif) {
 
 		this.cache = cache;
@@ -149,6 +159,7 @@ public class SimualtorNWC {
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
 		 */
+		//TODO: 
 		for (DirectedAcyclicGraph dag : dags) {
 			dag.reset();
 		}
@@ -202,7 +213,7 @@ public class SimualtorNWC {
 		}
 
 		switch (hardware) {
-		case PROC_ONLY:
+		case PROC:
 			cacheAware = false;
 			break;
 		case PROC_CACHE:
@@ -418,10 +429,11 @@ public class SimualtorNWC {
 				 * computeET is inside each cache-aware allocation method, which reflects the
 				 * value we got from the MODEL.
 				 */
-				Pair<Long, Integer> ETWithCache = n.crp.computeET(-1, history_level1, history_level2, history_level3,
-						n, n.partition, cacheAware, 0, n.hasFaults);
+				Pair<Pair<Long, Double>, Integer> ETWithCache = n.crp.computeET(-1, history_level1, history_level2,
+						history_level3, n, n.partition, cacheAware, 0, variation, n.hasFaults);
 
-				long realET = ETWithCache.getFirst();
+				long realET = ETWithCache.getFirst().getFirst();
+				n.variation = ETWithCache.getFirst().getSecond();
 
 				n.start = systemTime;
 				coreTime[n.partition] = n.finishAt = systemTime + realET;
@@ -602,7 +614,7 @@ public class SimualtorNWC {
 			// System.out.println("The " + i + "th system FINISHED!");
 			//
 			SimualtorNWC cacheBFSim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.SIMPLE,
-					RecencyType.TIME_DEFAULT, res.getFirst(), res.getSecond(),  SystemParameters.coreNum, i, true);
+					RecencyType.TIME_DEFAULT, res.getFirst(), res.getSecond(), SystemParameters.coreNum, i, true);
 			cacheBFSim1.simulate(true);
 		}
 

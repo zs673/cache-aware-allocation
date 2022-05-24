@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import uk.ac.york.mocha.simulator.dag.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults.ResultType;
 
 public class OneSystemResults {
