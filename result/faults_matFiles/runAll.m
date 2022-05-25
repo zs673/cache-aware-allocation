@@ -16,11 +16,11 @@ instanceNums = [1,3,5,10];
 row = 2;
 col = 3;
 
-effectsNum = 0:100:20000;
-effects = 0:100:20000;
+effectsNum = 0:5:1000;
+effects = 0:5:1000;
 
-cc1;
-% scatter_faults_variation_hist;
+% cc1;
+scatter_faults_variation_hist;
 
 % faults_allNodes;
 % faults_variation_hist;

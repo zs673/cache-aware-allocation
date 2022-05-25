@@ -46,7 +46,7 @@ public class VariabilityChaing {
 	public static void main(String args[]) {
 
 		allEffect = new ArrayList<Double>();
-		for (int i = 0; i <= 20000; i+=100) {
+		for (int i = 0; i <= 5000; i+=25) {
 			allEffect.add( (double) i );
 		}
 

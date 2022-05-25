@@ -15,7 +15,7 @@ for core = cores
         minY = 0;
         
         for effect = effects
-            data = readmatrix(strcat('../faults_new/out_',num2str(core),'_',num2str(percent),'_',num2str(effect),'.0_',num2str(1),'.txt'));
+            data = readmatrix(strcat('../faults_new/out_',num2str(core),'_',num2str(percent),'_',num2str(effect),'_',num2str(1),'.txt'));
            
             data = data(1:10,:);
             [row, col] = size(data);
@@ -57,8 +57,8 @@ for core = cores
             
             ylim([minY maxY]);
             set(gca,'xtick',xticksNum );
-            set(gca,'xticklabel',xticksNum);
-            xlabel('variation of ET on chosen nodes','FontSize', 12)
+            set(gca,'xticklabel',xticksNum  / 10);
+            xlabel('variation (%) on ET of chosen nodes','FontSize', 12)
             ylabel('makespan','FontSize', 12)
             title(types(i),'FontSize', 12);
             
