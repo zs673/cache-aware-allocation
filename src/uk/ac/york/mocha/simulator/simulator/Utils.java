@@ -98,7 +98,7 @@ public class Utils {
 			if (ins != 0)
 				return ins;
 			else
-				return -compareNodeBySensitivity(c1, c2);
+				return compareNodeBySensitivity(c1, c2);
 		}
 	}
 

@@ -58,6 +58,8 @@ public class Node implements Serializable {
 	public double gmpETNorm = -1;
 	public double gmpNumNorm = -1;
 	public double nodeETNorm = -1;
+	public double nodeInDegreeNorm = -1;
+	public double nodeoutDegreeNorm = -1;
 	public double nodeInOutDegreeNorm = -1;
 	
 

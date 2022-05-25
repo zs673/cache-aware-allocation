@@ -65,7 +65,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	public long startTime = Long.MAX_VALUE;
 	public long finishTime = Long.MAX_VALUE;
 	public List<Node> allocNodes = new ArrayList<>();
-	
+
 	public long variation = 0;
 
 	/*
@@ -79,13 +79,13 @@ public class DirectedAcyclicGraph implements Serializable {
 	RecencyProfile globalCRP;
 	List<RecencyProfile> crps;
 
-	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, CacheHierarchy cache,
-			int id, Random rng, boolean hard) {
+	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, CacheHierarchy cache, int id, Random rng,
+			boolean hard) {
 		this(sched_param, dag_param, null, cache, id, rng, hard, false);
 	}
 
-	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param,
-			List<RecencyProfile> crps, CacheHierarchy cache, int id, Random rng, boolean hard, boolean real) {
+	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, List<RecencyProfile> crps,
+			CacheHierarchy cache, int id, Random rng, boolean hard, boolean real) {
 
 		this.id = id;
 		this.name = "DAG " + id;
@@ -118,9 +118,9 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	public void reset() {
-		
-		//TODO
-//		Random rng = new Random(1000);
+
+		// TODO
+		// Random rng = new Random(1000);
 
 		this.startTime = Long.MAX_VALUE;
 		this.finishTime = Long.MAX_VALUE;
@@ -144,8 +144,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/*****************************************************************
-	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This method
-	 * can only be invoked once! ***********
+	 ******* Get Mutliple instances of one sporadic DAG task ********* NOTE: This
+	 * method can only be invoked once! ***********
 	 *****************************************************************/
 	public List<DirectedAcyclicGraph> getInstances(long instanceNum) {
 
@@ -180,8 +180,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/******************************************************************
-	 ******************** Generate DAG structure ********************** This method does not depend on
-	 * external library! *********
+	 ******************** Generate DAG structure ********************** This method does not depend
+	 * on external library! *********
 	 ******************************************************************/
 	public void constructDAG() {
 		if (layeredNodes.size() > 0) {
@@ -224,8 +224,7 @@ public class DirectedAcyclicGraph implements Serializable {
 			/*
 			 * generate nodes for this layer
 			 */
-			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
-					+ dag_param.parallelism_min;
+			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
 			// int nodeNum = rng.nextInt(dag_param.getParallelism()) + 1;
 			// System.out.println(nodeNum);
 			List<Node> nodePerLayer = new ArrayList<>();
@@ -322,8 +321,8 @@ public class DirectedAcyclicGraph implements Serializable {
 	}
 
 	/******************************************************************
-	 ******************** Generate DAG structure ********************** This method does not depend on
-	 * external library! *********
+	 ******************** Generate DAG structure ********************** This method does not depend
+	 * on external library! *********
 	 ******************************************************************/
 	public void constructDAGForSteven() {
 
@@ -373,8 +372,7 @@ public class DirectedAcyclicGraph implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
-						+ dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
@@ -512,6 +510,8 @@ public class DirectedAcyclicGraph implements Serializable {
 		long maxPathET = -1;
 		long maxET = -1;
 		long maxInOutDegree = -1;
+		long maxInDegree = -1;
+		long matOutDegree = -1;
 
 		for (Node n : flatNodes) {
 			int count = 0;
@@ -526,6 +526,12 @@ public class DirectedAcyclicGraph implements Serializable {
 
 			if (maxET < n.getWCET())
 				maxET = n.getWCET();
+
+			if (maxInDegree < n.getParent().size())
+				maxInDegree = n.getParent().size();
+
+			if (matOutDegree < n.getChildren().size())
+				matOutDegree = n.getChildren().size();
 
 			if (maxInOutDegree < n.getParent().size() + n.getChildren().size())
 				maxInOutDegree = n.getParent().size() + n.getChildren().size();
@@ -552,14 +558,15 @@ public class DirectedAcyclicGraph implements Serializable {
 			n.gmpETNorm = Double.parseDouble(df.format((double) n.pathET / (double) maxPathET));
 			n.gmpNumNorm = Double.parseDouble(df.format((double) n.pathNum / (double) maxpathNum));
 			n.nodeETNorm = Double.parseDouble(df.format((double) n.getWCET() / (double) maxET));
-			n.nodeInOutDegreeNorm = Double.parseDouble(
-					df.format((double) n.getParent().size() + n.getChildren().size() / (double) maxInOutDegree));
+			n.nodeInDegreeNorm = Double.parseDouble(df.format((double) n.getParent().size() / (double) maxInDegree));
+			n.nodeoutDegreeNorm = Double.parseDouble(df.format((double) n.getChildren().size() / (double) matOutDegree));
+			n.nodeInOutDegreeNorm = Double
+					.parseDouble(df.format((double) (n.getParent().size() + n.getChildren().size()) / (double) maxInOutDegree));
 
 			n.sensitivity = n.gmpETNorm + n.gmpNumNorm + n.nodeETNorm + n.nodeInOutDegreeNorm;
 
 			n.statSensitivity = SystemParameters.norPathET * n.gmpETNorm + SystemParameters.norPathNum * n.gmpNumNorm
-					+ SystemParameters.norNodeET * n.nodeETNorm
-					+ SystemParameters.norInOutDegree * n.nodeInOutDegreeNorm;
+					+ SystemParameters.norNodeET * n.nodeETNorm + SystemParameters.norInOutDegree * n.nodeInOutDegreeNorm;
 		}
 
 	}

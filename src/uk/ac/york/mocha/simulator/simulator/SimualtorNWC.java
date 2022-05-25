@@ -8,6 +8,7 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiabilityR;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_2;
 import uk.ac.york.mocha.simulator.allocation.SimpleAllocation;
@@ -171,21 +172,6 @@ public class SimualtorNWC {
 		case SIMPLE:
 			allocM = new SimpleAllocation();
 			break;
-//		case RANDOM:
-//			allocM = new OnlineRandom();
-//			break;
-//		case BEST_FIT:
-//			allocM = new onlineBFD();
-//			break;
-//		case WORST_FIT:
-//			allocM = new OnlineWFD();
-//			break;
-//		case FIRST_FIT:
-//			allocM = new OnlineFFD();
-//			break;
-//		case CACHE_AWARE:
-//			allocM = new OnlineCacheAware();
-//			break;
 		case CACHE_AWARE_NEW:
 			allocM = new OnlineCacheAwareNewSimu();
 			break;
@@ -195,17 +181,9 @@ public class SimualtorNWC {
 		case CACHE_AWARE_ROBUST_v2_2:
 			allocM = new OnlineCacheAwareRobust_v2_2();
 			break;
-//		case OFFLINE_CACHE_AWARE:
-//			allocM = new OnlineAndOffline();
-//			break;
-//		case CACHE_AWARE_OUR:
-//			Utils.assignPriorityOur(dags);
-//			allocM = new OnlineCacheAwareWithOrdering();
-//			break;
-//		case WORST_FIT_OUR:
-//			Utils.assignPriorityOur(dags);
-//			allocM = new OnlineWFWithOrdering();
-//			break;
+		case CACHE_AWARE_PREDICT_R:
+			allocM = new OnlineCacheAwarePredictiabilityR();
+			break;
 		default:
 			System.err.println("The simualtion method is NOT supported! ");
 			System.exit(-1);
