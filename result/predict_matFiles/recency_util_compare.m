@@ -79,7 +79,7 @@ c = findobj(gca,'Tag','Box');
 
 
 
-h = legend([c(2),c(1)],"AJLR v1.0","AJLR v2.0","AJLR v3.0",'FontAngle','italic','location','southeast','Orientation','horizontal');
+h = legend([c(3), c(2),c(1)],"AJLR v1.0","AJLR v2.0","AJLR v3.0",'FontAngle','italic','location','southeast','Orientation','horizontal');
 set(h,'FontSize',14);
 
 
