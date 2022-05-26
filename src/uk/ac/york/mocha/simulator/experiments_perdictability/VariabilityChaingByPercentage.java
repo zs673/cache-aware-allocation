@@ -2,6 +2,7 @@ package uk.ac.york.mocha.simulator.experiments_perdictability;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
@@ -46,10 +47,9 @@ public class VariabilityChaingByPercentage {
 	public static void main(String args[]) {
 
 		allEffect = new ArrayList<Long>();
-		for (int i = 0; i <= 1000; i+=5) {
-			allEffect.add( (long) i  );
+		for (int i = 0; i <= 1000; i += 5) {
+			allEffect.add((long) i);
 		}
-
 
 		start(nop);
 
@@ -85,8 +85,8 @@ public class VariabilityChaingByPercentage {
 				@Override
 				public void run() {
 					int startingSeed = initialSeed + id * workload;
-					List<List<Long>> result = runOneThread(cores,  percent, (double) effect  / (double) 1000, instanceNum, startingSeed, workload,
-							id);
+					List<List<Long>> result = runOneThread(cores, percent, (double) effect / (double) 1000, instanceNum,
+							startingSeed, workload, id);
 					addAll(allResult, result);
 				}
 			}));
@@ -149,10 +149,47 @@ public class VariabilityChaingByPercentage {
 			results.addAll(run(sys, cores, seed, faultType.high_in_out_degree, percent, effect, print));
 
 			results.addAll(run(sys, cores, seed, faultType.high_pathNum, percent, effect, print));
+			
+			for (DirectedAcyclicGraph d : sys.getFirst()) {
+				for (Node n : d.getFlatNodes()) {
+					n.sensitivity = 0;
+					for (int k = 0; k < n.weights.length; k++) {
+						n.sensitivity += n.weights[k];
+					}
+				}
+			}
 
 			results.addAll(run(sys, cores, seed, faultType.sensivitiy, percent, effect, print));
 
-			results.addAll(run(sys, cores, seed, faultType.statSensitivity, percent, effect, print));
+			double d_sens = 0;
+			double cc_sens = 0;
+
+			for (int k = 0; k < SystemParameters.cc_weights.length; k++) {
+				d_sens += SystemParameters.d_weights[k];
+				cc_sens += SystemParameters.cc_weights[k];
+			}
+
+			for (DirectedAcyclicGraph d : sys.getFirst()) {
+				for (Node n : d.getFlatNodes()) {
+					n.sensitivity = 0;
+					for (int k = 0; k < n.weights.length; k++) {
+						n.sensitivity += n.weights[k] * SystemParameters.d_weights[k] / d_sens;
+					}
+				}
+			}
+
+			results.addAll(run(sys, cores, seed, faultType.sensivitiy, percent, effect, print));
+			
+			for (DirectedAcyclicGraph d : sys.getFirst()) {
+				for (Node n : d.getFlatNodes()) {
+					n.sensitivity = 0;
+					for (int k = 0; k < n.weights.length; k++) {
+						n.sensitivity += n.weights[k] * SystemParameters.cc_weights[k] / cc_sens;
+					}
+				}
+			}
+
+			results.addAll(run(sys, cores, seed, faultType.sensivitiy, percent, effect, print));
 
 			res.add(results);
 			seed++;
@@ -390,9 +427,6 @@ public class VariabilityChaingByPercentage {
 		case high_in_out_degree:
 			return compareNodebyInAndOutDegree(c1, c2, oppsite);
 
-		case statSensitivity:
-			return compareNodebyStatSensitivity(dags, c1, c2, oppsite);
-
 		case sensivitiy:
 			return compareNodebySensitivity(dags, c1, c2, oppsite);
 
@@ -403,13 +437,6 @@ public class VariabilityChaingByPercentage {
 		}
 
 		return 0;
-	}
-
-	public static int compareNodebyStatSensitivity(List<DirectedAcyclicGraph> dags, Node c1, Node c2, boolean oppsite) {
-		if (oppsite)
-			return Double.compare(c1.statSensitivity, c2.statSensitivity);
-		else
-			return -Double.compare(c1.statSensitivity, c2.statSensitivity);
 	}
 
 	public static int compareNodebySensitivity(List<DirectedAcyclicGraph> dags, Node c1, Node c2, boolean oppsite) {

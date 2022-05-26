@@ -247,14 +247,6 @@ public class VaraibilityEffects50vs50 {
 				}
 				break;
 
-			case statSensitivity:
-				allNodes.sort((c1, c2) -> compareNodebyStatSensitivity(dags, c1, c2));
-				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
-
-				for (int i = 0; i < faultNodeNum; i++) {
-					faultNodes.add(allNodes.get(i));
-				}
-				break;
 			case sensivitiy:
 
 				/*
@@ -346,11 +338,7 @@ public class VaraibilityEffects50vs50 {
 		return dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime;
 	}
 
-	
-	public static int compareNodebyStatSensitivity(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
-		return -Double.compare(c1.statSensitivity, c2.statSensitivity);
-	}
-	
+		
 	public static int compareNodebySensitivity(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
 		return -Double.compare(c1.sensitivity, c2.sensitivity);
 	}

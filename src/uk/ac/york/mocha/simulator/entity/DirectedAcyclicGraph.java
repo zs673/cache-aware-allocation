@@ -555,18 +555,14 @@ public class DirectedAcyclicGraph implements Serializable {
 			// n.globalMaxPathET = maxPathET;
 			// n.globalMaxPathNum = maxpathNum;
 
-			n.gmpETNorm = Double.parseDouble(df.format((double) n.pathET / (double) maxPathET));
-			n.gmpNumNorm = Double.parseDouble(df.format((double) n.pathNum / (double) maxpathNum));
-			n.nodeETNorm = Double.parseDouble(df.format((double) n.getWCET() / (double) maxET));
-			n.nodeInDegreeNorm = Double.parseDouble(df.format((double) n.getParent().size() / (double) maxInDegree));
-			n.nodeoutDegreeNorm = Double.parseDouble(df.format((double) n.getChildren().size() / (double) matOutDegree));
-			n.nodeInOutDegreeNorm = Double
+			n.weights[0] = Double.parseDouble(df.format((double) n.getWCET() / (double) maxET));
+			n.weights[1] = Double.parseDouble(df.format((double) n.pathET / (double) maxPathET));
+			n.weights[2] = Double.parseDouble(df.format((double) n.getParent().size() / (double) maxInDegree));
+			n.weights[3] = Double.parseDouble(df.format((double) n.getChildren().size() / (double) matOutDegree));
+			n.weights[4] = Double
 					.parseDouble(df.format((double) (n.getParent().size() + n.getChildren().size()) / (double) maxInOutDegree));
-
-			n.sensitivity = n.gmpETNorm + n.gmpNumNorm + n.nodeETNorm + n.nodeInOutDegreeNorm;
-
-			n.statSensitivity = SystemParameters.norPathET * n.gmpETNorm + SystemParameters.norPathNum * n.gmpNumNorm
-					+ SystemParameters.norNodeET * n.nodeETNorm + SystemParameters.norInOutDegree * n.nodeInOutDegreeNorm;
+			n.weights[5] = Double.parseDouble(df.format((double) n.pathNum / (double) maxpathNum));
+			
 		}
 
 	}

@@ -347,9 +347,6 @@ public class CorrelationCoefficient {
 		case high_in_out_degree:
 			return compareNodebyInAndOutDegree(c1, c2, oppsite);
 
-		case statSensitivity:
-			return compareNodebyStatSensitivity(dags, c1, c2, oppsite);
-
 		case sensivitiy:
 			return compareNodebySensitivity(dags, c1, c2, oppsite);
 
@@ -360,13 +357,6 @@ public class CorrelationCoefficient {
 		}
 
 		return 0;
-	}
-
-	public static int compareNodebyStatSensitivity(List<DirectedAcyclicGraph> dags, Node c1, Node c2, boolean oppsite) {
-		if (oppsite)
-			return Double.compare(c1.statSensitivity, c2.statSensitivity);
-		else
-			return -Double.compare(c1.statSensitivity, c2.statSensitivity);
 	}
 
 	public static int compareNodebySensitivity(List<DirectedAcyclicGraph> dags, Node c1, Node c2, boolean oppsite) {

@@ -294,12 +294,6 @@ public class VariabilityRandom {
 		return dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime;
 	}
 
-	public static int compareNodebyStatSensitivity(Node c1, Node c2, boolean oppsite) {
-		if (oppsite)
-			return Double.compare(c1.statSensitivity, c2.statSensitivity);
-		else
-			return -Double.compare(c1.statSensitivity, c2.statSensitivity);
-	}
 
 	public static int compareNodebySensitivity(Node c1, Node c2, boolean oppsite) {
 		if (oppsite)

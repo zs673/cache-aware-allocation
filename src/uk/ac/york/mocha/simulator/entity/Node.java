@@ -55,17 +55,10 @@ public class Node implements Serializable {
 //	public long globalMaxPathET = -1;
 //	public long globalMaxPathNum = -1;
 
-	public double gmpETNorm = -1;
-	public double gmpNumNorm = -1;
-	public double nodeETNorm = -1;
-	public double nodeInDegreeNorm = -1;
-	public double nodeoutDegreeNorm = -1;
-	public double nodeInOutDegreeNorm = -1;
+	public double[] weights = new double[6];
 	
 
 	public double sensitivity = -1;
-	
-	public double statSensitivity = -1;
 
 	/*
 	 * The priority of the node

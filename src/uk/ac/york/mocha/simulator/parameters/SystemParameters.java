@@ -2,18 +2,12 @@ package uk.ac.york.mocha.simulator.parameters;
 
 public class SystemParameters {
 
-	public static double dnorNodeET = 0.3521;
-	public static double dnorPathET = 0.2848;
-	public static double dnorPathNum = 0.2011;
-	public static double dnorInOutDegree = 0.1621;
-	
-	public static double norNodeET = 0.2465;
-	public static double norPathET = 0.3465;
-	public static double norInDegree = 0.1691;
-	public static double norOutDegree = 0.1175;
-	public static double norInOutDegree = 0.168;
-	public static double norPathNum = 0.1776;
-	
+//	public static double[] d_weights = { 0.120, 0.097, 0.010, 0.014, 0.055, 0.069 };
+//	public static double[] cc_weights = { 0.2465, 0.3465, 0.1691, 0.1175, 0.168, 0.1776 };
+
+	public static double[] d_weights = { 0.120, 0.097, 0, 0, 0.055, 0.069 };
+	public static double[] cc_weights = { 0.2465, 0.3465, 0, 0, 0.168, 0.1776 };
+
 	/**********************************************************************
 	 ********************** Simualtor Configuration ***********************
 	 **********************************************************************/
@@ -28,7 +22,7 @@ public class SystemParameters {
 	public enum Allocation {
 		SIMPLE, RANDOM, BEST_FIT, FIRST_FIT, WORST_FIT, WORST_FIT_OUR, CACHE_AWARE, CACHE_AWARE_NEW,
 		CACHE_AWARE_ROBUST_v2_1, CACHE_AWARE_ROBUST_v2_2, OFFLINE_CACHE_AWARE, CACHE_AWARE_OUR, CACHE_AWARE_RESERVE,
-		CACHE_AWARE_COMPARE,CACHE_AWARE_PREDICT_R
+		CACHE_AWARE_COMPARE, CACHE_AWARE_PREDICT_R
 
 	};
 
