@@ -53,7 +53,10 @@ for core = cores
             
             
            [r,p] = corrcoef(allData);
-           r
+           [coeff,score,latent,tsquared,explained,mu] = pca(allData(:,1:6));
+           
+           anova1(allData);
+           explained
         end
     end
 end
