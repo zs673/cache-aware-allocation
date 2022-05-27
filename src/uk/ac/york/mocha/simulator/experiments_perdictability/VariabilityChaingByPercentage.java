@@ -105,12 +105,10 @@ public class VariabilityChaingByPercentage {
 		String out = "";
 		for (List<Long> ll : allResult) {
 			for (int k = 0; k < ll.size(); k++) {
-//				System.out.print(ll.get(k) + " ");
 				out += ll.get(k);
 				if (k != ll.size() - 1)
 					out += " ";
 			}
-//			System.out.println();
 			out += "\n";
 		}
 
