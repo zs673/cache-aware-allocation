@@ -2,11 +2,11 @@ package uk.ac.york.mocha.simulator.parameters;
 
 public class SystemParameters {
 
-//	public static double[] d_weights = { 0.120, 0.097, 0.010, 0.014, 0.055, 0.069 };
-//	public static double[] cc_weights = { 0.2465, 0.3465, 0.1691, 0.1175, 0.168, 0.1776 };
+	public static double[] d_weights = { 0.120, 0.097, 0.010, 0.014, 0.055, 0.069 };
+	public static double[] cc_weights = { 0.2465, 0.3465, 0.1691, 0.1175, 0.168, 0.1776 };
 
-	public static double[] d_weights = { 0.120, 0.097, 0, 0, 0.055, 0.069 };
-	public static double[] cc_weights = { 0.2465, 0.3465, 0, 0, 0.168, 0.1776 };
+//	public static double[] d_weights = { 0.120, 0.097, 0, 0, 0.055, 0.069 };
+//	public static double[] cc_weights = { 0.2465, 0.3465, 0, 0, 0.168, 0.1776 };
 
 	/**********************************************************************
 	 ********************** Simualtor Configuration ***********************

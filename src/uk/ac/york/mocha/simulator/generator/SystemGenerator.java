@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Pair;
 
-import jnr.ffi.annotations.In;
 import uk.ac.york.mocha.simulator.entity.DAGtoPython;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
@@ -65,9 +64,10 @@ public class SystemGenerator {
 	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
 			List<Double> assignedUtils, int seed, boolean randomC, boolean print) {
 
-		this(total_partitions, totalTasks, isHarmonic, takeAllUtil, assignedUtils, new Random(seed), randomC, print, null);
+		this(total_partitions, totalTasks, isHarmonic, takeAllUtil, assignedUtils, new Random(seed), randomC, print,
+				null);
 	}
-	
+
 	public SystemGenerator(int total_partitions, int totalTasks, boolean isHarmonic, boolean takeAllUtil,
 			List<Double> assignedUtils, Random rng, boolean randomC, boolean print) {
 
@@ -266,14 +266,14 @@ public class SystemGenerator {
 		}
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
-		for (int i=0; i< dagTemplates.size();i++) {
+		for (int i = 0; i < dagTemplates.size(); i++) {
 			DirectedAcyclicGraph d = dagTemplates.get(i);
-			
-			if(instances != null)
+
+			if (instances != null)
 				d.totalInstNum = instances.get(i);
 			else
 				d.totalInstNum = instanceNum;
-			
+
 			dags.addAll(d.getInstances(d.totalInstNum));
 
 		}
@@ -384,6 +384,47 @@ public class SystemGenerator {
 			System.out.println("-----------------------------------------------------------------------------");
 	}
 
+	public static void generateWCET(DirectedAcyclicGraph d, Random rng, boolean randomC, boolean print) {
+
+		if (print) {
+			System.out.println("Assigned and generated WCET (in us):");
+			System.out.println("-----------------------------------------------------------------------------");
+		}
+
+		long totalWCET = d.getSchedParameters().getWCET();
+		List<Node> node = d.getFlatNodes();
+
+		long[] c = new long[d.getNodeNum()];
+		long sumC = 0;
+		long sum = 0;
+
+		for (int i = 0; i < c.length; i++) {
+			c[i] = randomC ? rng.nextInt(100) : 100;
+			sumC += c[i];
+		}
+
+		double ratio = (double) sumC / (double) totalWCET;
+
+		for (int i = 0; i < c.length; i++) {
+			long cNode = (long) Math.ceil((double) c[i] / ratio);
+			sum += cNode;
+			if (cNode == 0)
+				cNode = 1;
+			node.get(i).setWCET(cNode);
+		}
+
+		d.getSchedParameters().setWCET(sum);
+		if (print) {
+			System.out.printf("|    DAG_%2d   |   Assigned WCET: %10d   |   Actual WCET: %10d   |\n", d.id, totalWCET,
+					sum);
+			for (Node n : d.getFlatNodes())
+				System.out.println(n.toString());
+		}
+
+		if (print)
+			System.out.println("-----------------------------------------------------------------------------");
+	}
+
 	public static void generateWCETs(List<DirectedAcyclicGraph> dags, Random rng, boolean randomC, boolean print) {
 
 		if (print) {
@@ -416,9 +457,11 @@ public class SystemGenerator {
 			}
 
 			d.getSchedParameters().setWCET(sum);
-			if (print)
+			if (print) {
 				System.out.printf("|    DAG_%2d   |   Assigned WCET: %10d   |   Actual WCET: %10d   |\n", d.id,
 						totalWCET, sum);
+
+			}
 
 		}
 

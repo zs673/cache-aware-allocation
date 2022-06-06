@@ -17,7 +17,7 @@ for core = cores
         for effect = effects
             data = readmatrix(strcat('../faults_new/out_',num2str(core),'_',num2str(percent),'_',num2str(effect),'_',num2str(1),'.txt'));
            
-            data = data(1:10,:);
+            data = data(1,:);
             [row, col] = size(data);
             allData = [allData; data];
             

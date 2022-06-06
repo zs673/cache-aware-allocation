@@ -5,9 +5,9 @@ colors=["b"; "r"];
 types = ["all","nodeET","pathET","in_degree","out_degree","in_out_degree","pathNum","sensivitiy","sensivitiy*"];
 % types = ["nodeET","pathET","in\_degree","out\_degree","in\_out\_degree","pathNum"];
 
-sens_types = ["all","nodeET","pathET","in_degree","out_degree","in_out_degree","pathNum","basic sensivitity","K-S based sensivitiy","C-C based sensivitiy*"];
+types = ["all","nodeET","pathET","in_degree","out_degree","in_out_degree","pathNum","basic sensivitity","K-S based sensivitiy","C-C based sensivitiy*"];
 
-ignoredType = [1, 8, 9];
+ignoredType = [1,2,3,4];
 
 cores = [4];
 percents = [0.1,0.2,0.3,0.4,0.5];
@@ -18,11 +18,15 @@ instanceNums = [1,3,5,10];
 row = 2;
 col = 3;
 
-effectsNum = 0:5:1000;
-effects = 0:5:1000;
+effectsNum = 200:200:1000;
+effects = 200:200:1000;
 
 % cc1;
-sens_scatter_faults_variation_hist;
+
+% sens_scatter_faults_variation_hist
+% scatter_faults_variation_hist;
+
+faults_variation_hist
 
 % faults_allNodes;
 % faults_variation_hist;

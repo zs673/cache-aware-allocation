@@ -16,6 +16,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.python.modules.synchronize;
 
 import uk.ac.york.mocha.simulator.entity.Node.NodeType;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
@@ -678,7 +679,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	/*****************************************************************
 	 ************** A good way to deep copy an object ****************
 	 *****************************************************************/
-	public DirectedAcyclicGraph deepCopy() {
+	public synchronized DirectedAcyclicGraph deepCopy() {
 
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -8,7 +8,7 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
-import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiabilityR;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiability_R;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_2;
 import uk.ac.york.mocha.simulator.allocation.SimpleAllocation;
@@ -182,7 +182,7 @@ public class SimualtorNWC {
 			allocM = new OnlineCacheAwareRobust_v2_2();
 			break;
 		case CACHE_AWARE_PREDICT_R:
-			allocM = new OnlineCacheAwarePredictiabilityR();
+			allocM = new OnlineCacheAwarePredictiability_R();
 			break;
 		default:
 			System.err.println("The simualtion method is NOT supported! ");
@@ -439,7 +439,7 @@ public class SimualtorNWC {
 				///////////////// Debug Output //////////////////////
 				// oneSched[n.partition] = n.getDagID() + "_" + n.getDagInstNo()
 				// + "_" + n.getId() + ":" + n.finishAt;
-				oneSched[n.partition] = n.getDagID() + "_" + n.getDagInstNo() + "_" + n.getId();
+				oneSched[n.partition] = n.getDagID() + "_" + n.getDagInstNo() + "_" + n.getId() + "_" + n.expectedET;
 				add = true;
 				///////////////// Debug Output //////////////////////
 			}

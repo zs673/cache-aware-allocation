@@ -1,6 +1,9 @@
+close all
 
 len = 600;
 wid = 1200;
+
+percents = [0.3];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -16,7 +19,7 @@ for core = cores
         
         count =1;
         for effect = effects
-            data = {readmatrix(strcat('../faults_new/out_',num2str(core),'_',num2str(percent),'_',num2str(effect),'.0_',num2str(1),'.txt'))};
+            data = {readmatrix(strcat('../faults_new/out_',num2str(core),'_',num2str(percent),'_',num2str(effect),'_',num2str(1),'.txt'))};
             allData(count) = data;
             count = count + 1;
             maxY = max(maxY,max(max(data{1})));
@@ -52,10 +55,10 @@ for core = cores
             
             xticksNum = strings(length(effects),1);
             for k = 1:length(effects)
-                xticksNum(k) = strcat(num2str(str2num(effects(k)) * 200),"%");
+                xticksNum(k) = strcat(num2str(str2num(num2str(effects(k))) / 10), '%');
             end
             
-            ylim([minY-5000 maxY+10000])
+%             ylim([minY-5000 maxY+10000])
             set(gca,'xtick',1.5:2:length(effects)*2);
             set(gca,'xticklabel',xticksNum);
             xlabel('variation of ET on chosen nodes','FontSize', 12)
@@ -67,7 +70,7 @@ for core = cores
             if i==1
                 h = legend([c(2),c(1)],"vary no node", "vary all nodes",'location','northwest','Orientation','vertical');
             else
-                h = legend([c(2),c(1)],strcat("low ", types(i)), strcat("high ", types(i)),'location','northwest','Orientation','vertical');
+                h = legend([c(2),c(1)],strcat("low "), strcat("high "),'location','northwest','Orientation','vertical');
             end
             legend boxoff
             
