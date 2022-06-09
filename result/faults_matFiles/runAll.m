@@ -18,15 +18,18 @@ instanceNums = [1,3,5,10];
 row = 2;
 col = 3;
 
-effectsNum = 200:200:1000;
-effects = 200:200:1000;
+% effectsNum = 200:200:1000;
+% effects = 200:200:1000;
+
+effectsNum = 0:5:1000;
+effects = 0:5:1000;
 
 % cc1;
 
 % sens_scatter_faults_variation_hist
-% scatter_faults_variation_hist;
+scatter_faults_variation_hist;
 
-faults_variation_hist
+% faults_variation_hist
 
 % faults_allNodes;
 % faults_variation_hist;

@@ -395,8 +395,8 @@ public class VariabilityChaingByPercentage_oneDAG {
 
 	public static long oneRun(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed,
 			boolean print) {
-		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST_v2_2, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
+		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC,
+				Allocation.SIMPLE, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
 				seed, true);
 		no_fault.simulate(print);
 

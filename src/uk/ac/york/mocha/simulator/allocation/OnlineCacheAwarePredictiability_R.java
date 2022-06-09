@@ -10,7 +10,7 @@ import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
-	
+
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> cores, long[] availableTimeAllProcs, List<List<Node>> history_level1,
@@ -25,9 +25,6 @@ public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
 
 		readyNodes.stream().forEach(c -> c.partition = -1);
 
-		/*
-		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.
-		 */
 		readyNodes.sort((c1, c2) -> Utils.compareNodeByPriorityAndSensitivity(dags, c1, c2));
 
 		List<Node> preEligible = new ArrayList<>();
@@ -52,7 +49,7 @@ public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
 					 */
 					long WCET = n.getWCET();
 					long realET = n.crp
-							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, 0,false)
+							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, 0, false)
 							.getFirst().getFirst();
 					long speedup = WCET - realET;
 
@@ -114,10 +111,10 @@ public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
 		int row = -1;
 		int col = -1;
 		long max = Long.MIN_VALUE;
-		
+
 		for (int i = 0; i < speedUpTable.size(); i++) {
 			if (!allocNodes.contains(i)) {
-				
+
 				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 					if (!allocProcs.contains(j)) {
 						if (max < speedUpTable.get(i).get(j)) {
@@ -127,6 +124,7 @@ public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
 						}
 					}
 				}
+
 				break;
 			}
 		}
@@ -139,5 +137,5 @@ public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
 
 		return new Pair<Integer, Integer>(row, col);
 	}
-	
+
 }
