@@ -104,6 +104,10 @@ public class Node implements Serializable {
 	boolean isReal;
 
 	Random rng;
+	
+	public long standardET = 0;
+	
+//	public List<Long> speeds = new ArrayList<>();
 
 	public Node(int layer, NodeType type, int id, int dagID, RecencyProfile crp, Random rng) {
 		this(-1, layer, type, id, dagID, crp, false, rng);

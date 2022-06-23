@@ -1,12 +1,15 @@
 package uk.ac.york.mocha.simulator.allocation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
@@ -15,7 +18,7 @@ public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> cores, long[] availableTimeAllProcs, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
-			boolean lcif) {
+			boolean lcif, List<Node> etHist) {
 
 		List<Integer> availableCores = new ArrayList<>();
 		for (int i = 0; i < cores.size(); i++) {
@@ -81,7 +84,7 @@ public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
 
 			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory,
 					preEligible, availableP, availableTimeAllProcs, currentTime, lcif, history_level1, history_level2,
-					history_level3);
+					history_level3, etHist);
 
 			Node n = preEligible.get(p.getFirst().intValue());
 
@@ -106,19 +109,84 @@ public class OnlineCacheAwarePredictiability_R extends AllocationMethods {
 	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
 			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
-			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
+			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
+			List<Node> etHist) {
 
+		/**
+		 * The native version: speed-up the sensitive nodes as much as I can.
+		 */
+//		int row = -1;
+//		int col = -1;
+//		long max = Long.MIN_VALUE;
+//
+//		for (int i = 0; i < speedUpTable.size(); i++) {
+//			if (!allocNodes.contains(i)) {
+//
+//				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
+//					if (!allocProcs.contains(j)) {
+//						if (max < speedUpTable.get(i).get(j)) {
+//							max = speedUpTable.get(i).get(j);
+//							row = i;
+//							col = j;
+//						}
+//					}
+//				}
+//
+//				break;
+//			}
+//		}
+
+		/********************************************************************************************************************************/
+
+		/**
+		 * The new version: maintain a stable speed-up.
+		 */
 		int row = -1;
 		int col = -1;
-		long max = Long.MIN_VALUE;
 
 		for (int i = 0; i < speedUpTable.size(); i++) {
 			if (!allocNodes.contains(i)) {
+				long minDiff = Long.MAX_VALUE;
+				long standardET = 0;
+
+				Node n = preEligible.get(i);
+				if (n.getDagInstNo() > SystemParameters.instNo_x2) { //
+					List<Long> etHistOneNode = Utils.getETHistroy(n, etHist);
+
+					/**
+					 * max
+					 */
+//					standardET = etHistOneNode.stream().mapToLong(a -> a).max().getAsLong();
+
+					/**
+					 * Average
+					 */
+//					standardET = (long) Math.round(etHistOneNode.stream().mapToLong(a -> a).average().getAsDouble());
+
+					/**
+					 * Median
+					 */
+					double[] values = new double[etHistOneNode.size()];
+					for (int k = 0; k < etHistOneNode.size(); k++) {
+						values[k] = etHistOneNode.get(k);
+					}
+
+					Median med = new Median();
+					standardET = (long) Math.round(med.evaluate(values));
+
+//					System.out.println("***(set) Node inst number: " + n.getFullName() + "    observed ET: " + Arrays.toString(etHistOneNode.toArray()));
+//					System.out.println("***(set) Node inst number: " + n.getFullName() + "    reference ET: " + standardET);
+				}
+
+//				System.out.println("Node inst number: " + n.getFullName() + "    reference ET: " + standardET);
 
 				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 					if (!allocProcs.contains(j)) {
-						if (max < speedUpTable.get(i).get(j)) {
-							max = speedUpTable.get(i).get(j);
+
+						long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
+
+						if (minDiff > Math.abs(standardET - expectedET)) {
+							minDiff = Math.abs(standardET - expectedET);
 							row = i;
 							col = j;
 						}

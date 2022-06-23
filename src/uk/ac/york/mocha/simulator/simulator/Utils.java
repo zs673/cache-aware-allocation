@@ -27,6 +27,23 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 
 public class Utils {
 
+	public static List<Long> getETHistroy(Node n, List<Node> hist) {
+		List<Long> etHist = new ArrayList<>();
+		List<Node> sameNodes = new ArrayList<>();
+
+		for (Node ln : hist) {
+			if (ln.getDagID() == n.getDagID() && ln.getId() == n.getId())
+				sameNodes.add(ln);
+		}
+
+		sameNodes.sort((c1, c2) -> Integer.compare(c1.getDagInstNo(), c2.getDagInstNo()));
+
+		for (Node ln : sameNodes)
+			etHist.add(ln.expectedET);
+
+		return etHist;
+	}
+
 	public static List<List<Node>> getAllocHistoryByLevel2Cache(List<List<Node>> allocHis) {
 
 		List<List<Node>> level2 = new ArrayList<>();
@@ -282,8 +299,6 @@ public class Utils {
 		return dp;
 	}
 
-
-	
 	public static void writeResult(String path, String file, String result) {
 		writeResult(path, file, result, false);
 	}
@@ -347,13 +362,11 @@ public class Utils {
 			@SuppressWarnings("unchecked")
 			Set<String> names = jsonObj.keySet();
 
-			
 			List<String> nameList = new ArrayList<String>();
-			if(taskNames == null) {
+			if (taskNames == null) {
 				for (String x : names)
 					nameList.add(x);
-			}
-			else {
+			} else {
 				nameList = taskNames;
 			}
 
@@ -362,7 +375,7 @@ public class Utils {
 				JSONObject job = (JSONObject) jsonObj.get(key);
 
 				double WCET = ((Number) job.get("median_timing")).doubleValue();
-				
+
 //				double highWaterMark = ((Number) job.get("hwm")).doubleValue();
 				double medianET = ((Number) job.get("median_timing")).doubleValue();
 
@@ -382,8 +395,8 @@ public class Utils {
 
 				id++;
 
-				RecencyProfileReal crp = new RecencyProfileReal(cache, RecencyType.REAL, key, id, -1, WCET, medianET, breaks, slopes,
-						intercepts);
+				RecencyProfileReal crp = new RecencyProfileReal(cache, RecencyType.REAL, key, id, -1, WCET, medianET,
+						breaks, slopes, intercepts);
 				crps.add(crp);
 			}
 

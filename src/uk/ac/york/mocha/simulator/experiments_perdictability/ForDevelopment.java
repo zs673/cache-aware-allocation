@@ -22,28 +22,28 @@ import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OneTaskUtilCompare {
+public class ForDevelopment {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	static int cores = 4;
 	static int nos = 1;
 	static int biggerTimes = 1;
-	static int intanceNum = 1000;
+	static int intanceNum = 50;
 
 	static int startUtil = 4;
 	static int incrementUtil = 4;
-	static int endUtil = 40;
+	static int endUtil = 4;
 	static boolean hasFaults = false;
 
 	static boolean print = true;
 
+	static long baseDagWCET = 0;
+	static long[] baseNodeWCET;
+
 	public static void main(String args[]) {
 		oneTaskWithFaults();
 	}
-
-	static long baseDagWCET = 0;
-	static long[] baseNodeWCET;
 
 	public static void oneTaskWithFaults() {
 
@@ -74,8 +74,8 @@ public class OneTaskUtilCompare {
 				d.releaseTime = d.releaseTime * biggerTimes;
 
 				baseNodeWCET = new long[d.getFlatNodes().size()];
-				for (int k=0; k< d.getFlatNodes().size();k++) {
-					baseNodeWCET[k]=d.getFlatNodes().get(k).getWCET();
+				for (int k = 0; k < d.getFlatNodes().size(); k++) {
+					baseNodeWCET[k] = d.getFlatNodes().get(k).getWCET();
 
 					d.getFlatNodes().get(k).hasFaults = hasFaults;
 					d.getFlatNodes().get(k).cvp.median = 0;
@@ -94,13 +94,7 @@ public class OneTaskUtilCompare {
 					d.getSchedParameters().setWCET((long) Math
 							.ceil((double) d.getSchedParameters().getPeriod() * (double) SystemParameters.utilPerTask));
 					SystemGenerator.generateWCET(d, new Random(seed), true, print);
-					
-//					d.getSchedParameters().setWCET(baseDagWCET * (i / incrementUtil));
-//					
-//					for (int k = 0; k < d.getFlatNodes().size(); k++) {
-//						d.getFlatNodes().get(k).setWCET(baseNodeWCET[k] * (i / incrementUtil));
-//					}
-					
+
 				}
 
 			}
@@ -159,30 +153,9 @@ public class OneTaskUtilCompare {
 
 		boolean lcif = false;
 
-		SimualtorNWC cacheWFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-				lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(print);
-
-		for (DirectedAcyclicGraph d : sys.getFirst()) {
-			for (Node n : d.getFlatNodes()) {
-				n.sensitivity = 0;
-				for (int k = 0; k < n.weights.length; k++) {
-					n.sensitivity += n.weights[k];
-				}
-			}
-		}
-
-		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
-				tableSeed, lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(print);
-
-		double d_sens = 0;
 		double cc_sens = 0;
 
 		for (int k = 0; k < SystemParameters.cc_weights.length; k++) {
-			d_sens += SystemParameters.d_weights[k];
 			cc_sens += SystemParameters.cc_weights[k];
 		}
 
@@ -200,33 +173,14 @@ public class OneTaskUtilCompare {
 				tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
 
-//		for (DirectedAcyclicGraph d : sys.getFirst()) {
-//			for (Node n : d.getFlatNodes()) {
-//				n.sensitivity = 0;
-//				for (int k = 0; k < n.weights.length; k++) {
-//					n.sensitivity += n.weights[k] * SystemParameters.cc_weights[k] / cc_sens;
-//				}
-//			}
-//		}
-//		
-//		SimualtorNWC cacheCASim4 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-//				Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
-//				tableSeed, lcif);
-//		Pair<List<DirectedAcyclicGraph>, double[]> pair4 = cacheCASim4.simulate(SystemParameters.printSim);
-
-		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
-		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 		List<DirectedAcyclicGraph> m3 = pair3.getFirst();
-//		List<DirectedAcyclicGraph> m4 = pair4.getFirst();
 
 		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
 
-		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method3 = new ArrayList<>();
-//		List<DirectedAcyclicGraph> method4 = new ArrayList<>();
 
 		List<DirectedAcyclicGraph> dags = sys.getFirst();
+
 		/*
 		 * get a number of instances from each DAG based on long[] NoInstances.
 		 */
@@ -240,24 +194,15 @@ public class OneTaskUtilCompare {
 			}
 
 			if (count < NoInstances[dags.get(i).id]) {
-				method1.add(m1.get(i));
-				method2.add(m2.get(i));
 				method3.add(m3.get(i));
-//				method4.add(m4.get(i));
 				count++;
 			}
 		}
 
-		allMethods.add(method1);
-		allMethods.add(method2);
 		allMethods.add(method3);
-//		allMethods.add(method4);
 
 		List<double[]> cachePerformance = new ArrayList<>();
-		cachePerformance.add(pair1.getSecond());
-		cachePerformance.add(pair2.getSecond());
 		cachePerformance.add(pair3.getSecond());
-//		cachePerformance.add(pair4.getSecond());
 
 		OneSystemResults result = new OneSystemResults(allMethods, cachePerformance);
 

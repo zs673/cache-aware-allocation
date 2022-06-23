@@ -282,7 +282,7 @@ public class Simualtor {
 		 * get ready nodes to execute by the specified allocation method
 		 */
 		allocM.allocate(dags, readyNodes, null, availableProc, allProcs, history_level1, history_level2, history_level3,
-				allocNodes, systemTime, lcif);
+				allocNodes, systemTime, lcif, null);
 
 		///////////////// Debug Output //////////////////////
 		String[] oneSched = new String[allProcs.length];

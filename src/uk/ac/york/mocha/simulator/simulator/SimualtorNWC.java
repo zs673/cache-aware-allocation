@@ -85,22 +85,26 @@ public class SimualtorNWC {
 	List<List<Node>> history_level2;
 	List<Node> history_level3;
 
+	List<Node> etHist = new ArrayList<>();
+//	List<List<List<Long>>> et_history = new ArrayList<>();
+
 	DecimalFormat df = new DecimalFormat("#.###");
 
 	public long noCalls = 0;
-	
+
 	public long variation = -1;
 
 	/********************* Runtime queues *********************************/
 
 	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
-			List<DirectedAcyclicGraph> dags, CacheHierarchy cache, int procNum, int recencySeed, long variation, boolean lcif) {
+			List<DirectedAcyclicGraph> dags, CacheHierarchy cache, int procNum, int recencySeed, long variation,
+			boolean lcif) {
 
 		this(type, hardware, alloc, recency, dags, cache, procNum, recencySeed, lcif);
 		this.variation = variation;
 
 	}
-	
+
 	public SimualtorNWC(SimuType type, Hardware hardware, Allocation alloc, RecencyType recency,
 			List<DirectedAcyclicGraph> dags, CacheHierarchy cache, int procNum, int recencySeed, boolean lcif) {
 
@@ -160,7 +164,7 @@ public class SimualtorNWC {
 		/*
 		 * Reset Run-time parameters of DAGs and their nodes
 		 */
-		//TODO: 
+		// TODO:
 		for (DirectedAcyclicGraph dag : dags) {
 			dag.reset();
 		}
@@ -364,7 +368,7 @@ public class SimualtorNWC {
 			} else {
 				noCalls++;
 				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
-						history_level3, allocHistory, systemTime, lcif);
+						history_level3, allocHistory, systemTime, lcif, etHist);
 			}
 
 		} else {
@@ -372,7 +376,7 @@ public class SimualtorNWC {
 			} else {
 				noCalls++;
 				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
-						history_level3, allocHistory, systemTime, lcif);
+						history_level3, allocHistory, systemTime, lcif, etHist);
 			}
 		}
 
@@ -412,6 +416,10 @@ public class SimualtorNWC {
 
 				long realET = ETWithCache.getFirst().getFirst();
 				n.variation = ETWithCache.getFirst().getSecond();
+
+				if (n.getDagInstNo() >= SystemParameters.instNo_x1) { // && n.getDagInstNo() < SystemParameters.endInstNo
+					etHist.add(n);
+				}
 
 				n.start = systemTime;
 				coreTime[n.partition] = n.finishAt = systemTime + realET;
