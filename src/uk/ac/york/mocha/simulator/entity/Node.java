@@ -88,6 +88,7 @@ public class Node implements Serializable {
 
 	public int delayed = -1;
 	public long expectedET = -1;
+	public long expectedCache = -1;
 	public long[] expectedETPerCore;
 	public boolean isDelayed = false;
 	
@@ -105,7 +106,6 @@ public class Node implements Serializable {
 
 	Random rng;
 	
-	public long standardET = 0;
 	
 //	public List<Long> speeds = new ArrayList<>();
 

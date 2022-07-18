@@ -27,8 +27,8 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 
 public class Utils {
 
-	public static List<Long> getETHistroy(Node n, List<Node> hist) {
-		List<Long> etHist = new ArrayList<>();
+	public static List<long[]> getETHistroy(Node n, List<Node> hist) {
+		List<long[]> etHist = new ArrayList<>();
 		List<Node> sameNodes = new ArrayList<>();
 
 		for (Node ln : hist) {
@@ -36,10 +36,17 @@ public class Utils {
 				sameNodes.add(ln);
 		}
 
-		sameNodes.sort((c1, c2) -> Integer.compare(c1.getDagInstNo(), c2.getDagInstNo()));
+		sameNodes.sort((c1, c2) -> -Integer.compare(c1.getDagInstNo(), c2.getDagInstNo()));
 
-		for (Node ln : sameNodes)
-			etHist.add(ln.expectedET);
+		for (int i = 0; i < SystemParameters.etHist_length; i++) {
+			if (sameNodes.size() == i)
+				break;
+
+			long[] res = new long[2];
+			res[0] = sameNodes.get(i).expectedET;
+			res[1] = sameNodes.get(i).expectedCache;
+			etHist.add(res);
+		}
 
 		return etHist;
 	}

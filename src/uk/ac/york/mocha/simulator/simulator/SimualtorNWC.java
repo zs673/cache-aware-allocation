@@ -9,6 +9,7 @@ import org.apache.commons.math3.util.Pair;
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiability_R;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_2;
 import uk.ac.york.mocha.simulator.allocation.SimpleAllocation;
@@ -187,6 +188,9 @@ public class SimualtorNWC {
 			break;
 		case CACHE_AWARE_PREDICT_R:
 			allocM = new OnlineCacheAwarePredictiability_R();
+			break;
+		case CACHE_AWARE_PREDICT_WCET:
+			allocM = new OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare();
 			break;
 		default:
 			System.err.println("The simualtion method is NOT supported! ");
@@ -417,14 +421,15 @@ public class SimualtorNWC {
 				long realET = ETWithCache.getFirst().getFirst();
 				n.variation = ETWithCache.getFirst().getSecond();
 
-				if (n.getDagInstNo() >= SystemParameters.instNo_x1) { // && n.getDagInstNo() < SystemParameters.endInstNo
+				if (n.getDagInstNo() >= SystemParameters.etHist_start) { // && n.getDagInstNo() < SystemParameters.endInstNo
 					etHist.add(n);
 				}
 
 				n.start = systemTime;
 				coreTime[n.partition] = n.finishAt = systemTime + realET;
 				n.expectedET = realET;
-
+				n.expectedCache = ETWithCache.getSecond();
+				
 				int cacheEffects = ETWithCache.getSecond();
 				cachePerformance[cacheEffects - 1] = cachePerformance[cacheEffects - 1] + 1;
 

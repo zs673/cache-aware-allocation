@@ -18,6 +18,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
+import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -106,27 +107,8 @@ public class TaskUtilCompare {
 	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys,
 			int tasks, int[] NoInstances, int cores, int taskSeed, int tableSeed, int not) {
 
-		boolean lcif = false;
-
-		SimualtorNWC cacheWFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-				lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(print);
-
-//		for (DirectedAcyclicGraph d : sys.getFirst()) {
-//			for (Node n : d.getFlatNodes()) {
-//				n.sensitivity = 0;
-//				for (int k = 0; k < n.weights.length; k++) {
-//					n.sensitivity += n.weights[k];
-//				}
-//			}
-//		}
-//
-//		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-//				Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
-//				tableSeed, lcif);
-//		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(print);
-
+		boolean lcif = true;
+		
 		double cc_sens = 0;
 
 		for (int k = 0; k < SystemParameters.cc_weights.length; k++) {
@@ -142,9 +124,36 @@ public class TaskUtilCompare {
 			}
 		}
 
+		SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+				lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
+		
+//		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+//				Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+//				lcif);
+//		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
+
+
+//		for (DirectedAcyclicGraph d : sys.getFirst()) {
+//			for (Node n : d.getFlatNodes()) {
+//				n.sensitivity = 0;
+//				for (int k = 0; k < n.weights.length; k++) {
+//					n.sensitivity += n.weights[k];
+//				}
+//			}
+//		}
+//
+//		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+//				Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
+//				tableSeed, lcif);
+//		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(print);
+
+
+
 		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 				Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
-				tableSeed, lcif);
+				tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
 
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
