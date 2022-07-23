@@ -7,7 +7,7 @@ types = ["all","nodeET","pathET","in_degree","out_degree","in_out_degree","pathN
 
 % types = ["all","nodeET","pathET","in_degree","out_degree","in_out_degree","pathNum","basic sensivitity","K-S based sensivitiy","C-C based sensivitiy*"];
 
-ignoredType = [1,2,3,4];
+ignoredType = [];
 
 cores = [4];
 percents = [0.1,0.2,0.3,0.4,0.5];
@@ -21,16 +21,16 @@ col = 3;
 % effectsNum = 200:200:1000;
 % effects = 200:200:1000;
 
-% effectsNum = 0:5:1000;
-% effects = 0:5:1000;
+effectsNum = 0:5:1000;
+effects = 0:5:1000;
 
 % cc1;
 
 % sens_scatter_faults_variation_hist
-% scatter_faults_variation_hist;
+scatter_faults_variation_hist;
 
 % faults_variation_hist
 
 % faults_allNodes;
-faults_variation_hist;
+% faults_variation_hist;
 % faults_sensitivity;

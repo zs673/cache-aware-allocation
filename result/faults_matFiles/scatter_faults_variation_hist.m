@@ -40,7 +40,7 @@ for core = cores
                 continue;
             end
             
-            subplot(2,3,subplotIndex);
+            subplot(3,3,subplotIndex);
             subplotIndex = subplotIndex + 1;
             
             col1 = (i-1) * 2 + 1;

@@ -37,7 +37,7 @@ public class SystemParameters {
 	 **********************************************************************/
 	public enum ExpName {
 		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, offline_multi, methods, periods,
-		tasks, sysUtil, sysUtilOneDAG, util_compare, util_compare_three, predict
+		tasks, sysUtil, sysUtilOneDAG, util_compare, util_compare_three, predict, predict_rule1, predict_rule2
 	}
 
 	public static int NoS = 1000;
