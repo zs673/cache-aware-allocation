@@ -1,9 +1,8 @@
-package uk.ac.york.mocha.simulator.experiments_perdictability;
+package uk.ac.york.mocha.simulator.experiments_CARVB;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -26,7 +25,7 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
  * is higher than the threshold then it will impact the makespan?
  */
 
-public class CorrelationCoefficient {
+public class VariabilityChaing {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
@@ -35,44 +34,44 @@ public class CorrelationCoefficient {
 		high_out_degree, high_in_out_degree, statSensitivity
 	}
 
-	static int nos = 100;
+	static int nop = 4;
+	static int nos = 10;
 	static int[] allCores = { 4 };
 	static boolean print = false;
 	static double[] allPercent = { 0.1, 0.2, 0.3, 0.4, 0.5 };
-//	static double[] allEffect = { 0.1, 0.2, 0.3, 0.4, 0.5 };
+//	static double[] allEffect = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 };
 	static List<Double> allEffect;
 	static int[] allInstanceNum = { 1, 3, 5, 10 };
 
-	static Random rng = new Random(1000);
-
-	static int nop = 4;
-
 	public static void main(String args[]) {
 
+		allEffect = new ArrayList<Double>();
+		for (int i = 0; i <= 5000; i+=25) {
+			allEffect.add( (double) i );
+		}
+
+
 		start(nop);
+
 	}
 
 	public static void start(int nop) {
 
-		for (int i = 0; i < allPercent.length; i++) {
-			String folderName = "result/" + "faults_new/";
-			String fileName = "/cc" + "_" + allCores[0] + "_" + allPercent[i] + "_" + allInstanceNum[0] + ".txt";
-			Utils.writeResult(folderName, fileName, "", false);
+		for (int j = 0; j < allPercent.length; j++) {
+			for (int i = 0; i < allEffect.size(); i++) {
+				faults(allCores[0], allPercent[j], allEffect.get(i), allInstanceNum[0], nop);
+			}
 		}
-
-		for (int i = 0; i < allPercent.length; i++) {
-			faults(allCores[0], allPercent[i], allInstanceNum[0], nop);
-		}
-
 	}
 
-	public static synchronized void addAll(List<List<Pair<Double, Long>>> res, List<List<Pair<Double, Long>>> add) {
+	public static synchronized void addAll(List<List<Long>> res, List<List<Long>> add) {
 		res.addAll(add);
 	}
 
-	public static void faults(int cores, double percent, int instanceNum, int nop) {
+	public static void faults(int cores, double percent, double effect, int instanceNum, int nop) {
+		final int initialSeed = 1000;
 
-		List<List<Pair<Double, Long>>> allResult = new ArrayList<>();
+		List<List<Long>> allResult = new ArrayList<>();
 
 		List<Thread> runners = new ArrayList<>();
 
@@ -85,8 +84,8 @@ public class CorrelationCoefficient {
 
 				@Override
 				public void run() {
-
-					List<List<Pair<Double, Long>>> result = runOneThread(null, cores, percent, instanceNum, workload,
+					int startingSeed = initialSeed + id * workload;
+					List<List<Long>> result = runOneThread(cores, percent, effect, instanceNum, startingSeed, workload,
 							id);
 					addAll(allResult, result);
 				}
@@ -103,77 +102,85 @@ public class CorrelationCoefficient {
 				e.printStackTrace();
 			}
 
+		String out = "";
+		for (List<Long> ll : allResult) {
+			for (int k = 0; k < ll.size(); k++) {
+//				System.out.print(ll.get(k) + " ");
+				out += ll.get(k);
+				if (k != ll.size() - 1)
+					out += " ";
+			}
+//			System.out.println();
+			out += "\n";
+		}
+
+		String folderName = "result/" + "faults_new/";
+		String fileName = "/out" + "_" + cores + "_" + percent + "_" + effect + "_" + instanceNum + ".txt";
+		Utils.writeResult(folderName, fileName, out);
 	}
 
-	public static List<List<Pair<Double, Long>>> runOneThread(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys,
-			int cores, double percent, int instanceNum, int workload, int id) {
+	public static List<List<Long>> runOneThread(int cores, double percent, double effect, int instanceNum,
+			int startingSeed, int workload, int id) {
 
-		List<List<Pair<Double, Long>>> res = new ArrayList<>();
+		int seed = startingSeed;
+
+		List<List<Long>> res = new ArrayList<>();
 
 		for (int i = 0; i < workload; i++) {
-
 			System.out.println("No. of system: " + (i + id * workload) + " --- " + "cores: " + cores + ", percent: "
-					+ percent + ", No. instance: " + instanceNum);
+					+ percent + ", effect: " + effect + ", No. instance: " + instanceNum);
 
-			for (int j = 1; j <= 50001; j += 500) {
+			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true, print);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(instanceNum, -1,
+					null, false);
 
-//				rng = new Random(1000);
-				SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, rng, true,
-						print);
-				sys = gen.generatedDAGInstancesInOneHP(instanceNum, -1, null, false);
+			List<Long> results = new ArrayList<>();
 
-				int k = j;
+			results.addAll(run(sys, cores, seed, faultType.all_nodes, percent, effect, print));
 
-				List<Pair<Double, Long>> results = new ArrayList<>();
+			results.addAll(run(sys, cores, seed, faultType.high_et, percent, effect, print));
 
-				results.addAll(run(sys, cores, faultType.high_et, percent, k, print));
+			results.addAll(run(sys, cores, seed, faultType.high_pathET, percent, effect, print));
 
-				results.addAll(run(sys, cores, faultType.high_pathET, percent, k, print));
+			results.addAll(run(sys, cores, seed, faultType.high_in_degree, percent, effect, print));
 
-				results.addAll(run(sys, cores, faultType.high_in_degree, percent, k, print));
+			results.addAll(run(sys, cores, seed, faultType.high_out_degree, percent, effect, print));
 
-				results.addAll(run(sys, cores, faultType.high_out_degree, percent, k, print));
+			results.addAll(run(sys, cores, seed, faultType.high_in_out_degree, percent, effect, print));
 
-				results.addAll(run(sys, cores, faultType.high_in_out_degree, percent, k, print));
+			results.addAll(run(sys, cores, seed, faultType.high_pathNum, percent, effect, print));
 
-				results.addAll(run(sys, cores, faultType.high_pathNum, percent, k, print));
+			results.addAll(run(sys, cores, seed, faultType.sensivitiy, percent, effect, print));
 
-				writeToSystem(results, cores, percent, instanceNum, true);
-			}
+			results.addAll(run(sys, cores, seed, faultType.statSensitivity, percent, effect, print));
+
+			res.add(results);
+			seed++;
 		}
 
 		return res;
 	}
 
-	public synchronized static void writeToSystem(List<Pair<Double, Long>> ll, int cores, double percent, int instanceNum,
-			boolean append) {
+	public static List<Long> run(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed,
+			faultType type, double percent, double effect, boolean print) {
 
-		String out = "";
-
-		for (int k = 0; k < ll.size(); k++) {
-//				System.out.print(ll.get(k) + " ");
-			out += ll.get(k).getFirst() + " " + ll.get(k).getSecond();
-			if (k != ll.size() - 1)
-				out += " ";
-		}
-//			System.out.println();
-		out += "\n";
-
-		String folderName = "result/" + "faults_new/";
-		String fileName = "/cc" + "_" + cores + "_" + percent + "_" + instanceNum + ".txt";
-		Utils.writeResult(folderName, fileName, out, append);
-	}
-
-	public static List<Pair<Double, Long>> run(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores,
-			faultType type, double percent, long id, boolean print) {
-
-		List<Pair<Double, Long>> makespans = new ArrayList<>();
+		List<Long> makespans = new ArrayList<>();
 
 		if (print)
 			System.out.println("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " + type.toString()
 					+ "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		setUpSpecificFaults(sys.getFirst(), type, percent, false, print);
-		Pair<Double, Long> makespan = oneRun(sys, cores, id, print);
+		setUpSpecificFaults(sys.getFirst(), type, percent, effect, true, print);
+		long makespan_opposite = oneRun(sys, cores, seed, print);
+		makespans.add(makespan_opposite);
+		if (print)
+			System.out.println(
+					"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+
+		if (print)
+			System.out.println("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " + type.toString()
+					+ "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+		setUpSpecificFaults(sys.getFirst(), type, percent, effect, false, print);
+		long makespan = oneRun(sys, cores, seed, print);
 		makespans.add(makespan);
 		if (print)
 			System.out.println(
@@ -183,7 +190,7 @@ public class CorrelationCoefficient {
 	}
 
 	public static List<List<Node>> setUpSpecificFaults(List<DirectedAcyclicGraph> dags, faultType type, double percent,
-			boolean opposite, boolean print) {
+			double faultEfect, boolean opposite, boolean print) {
 
 		List<List<Node>> faultNodesinDAGs = new ArrayList<>();
 
@@ -277,12 +284,37 @@ public class CorrelationCoefficient {
 				/*
 				 * Here we normalise the three major factors into one.
 				 */
+
 				allNodes.sort((c1, c2) -> compareNodes(dags, c1, c2, opposite, type));
 				faultNodeNum = (int) Math.ceil(percent * (double) allNodes.size());
 
 				for (int i = 0; i < faultNodeNum; i++) {
 					faultNodes.add(allNodes.get(i));
 				}
+
+//				allNodes.sort((c1, c2) -> compareNodebyPathET(dags, c1, c2));
+//				faultNodeNum = (int) Math.ceil(percent / 3.0 * (double) allNodes.size());
+//
+//				for (int i = 0; i < faultNodeNum; i++) {
+//					if (!faultNodes.contains(allNodes.get(i)))
+//						faultNodes.add(allNodes.get(i));
+//				}
+//
+//				allNodes.sort((c1, c2) -> compareNodebyPath(dags, c1, c2));
+//				faultNodeNum = (int) Math.ceil(percent / 3.0 * (double) allNodes.size());
+//
+//				for (int i = 0; i < faultNodeNum; i++) {
+//					if (!faultNodes.contains(allNodes.get(i)))
+//						faultNodes.add(allNodes.get(i));
+//				}
+//
+//				allNodes.sort((c1, c2) -> compareNodebyET(c1, c2));
+//				faultNodeNum = (int) Math.ceil(percent / 3.0 * (double) allNodes.size());
+//
+//				for (int i = 0; i < faultNodeNum; i++) {
+//					if (!faultNodes.contains(allNodes.get(i)))
+//						faultNodes.add(allNodes.get(i));
+//				}
 
 				break;
 
@@ -293,37 +325,48 @@ public class CorrelationCoefficient {
 			if (print)
 				System.out.println("Fault nodes: ");
 
+//			if (!opposite) {
 			for (Node n : faultNodes) {
 				n.hasFaults = true;
 				n.cvp.median = 0;
-				n.cvp.range = -1; // ((double) rng.nextInt(effect +
-				// 1) / (double) 100) / 3.0;
+				n.cvp.range = faultEfect; // ((double) rng.nextInt(effect +
+											// 1) / (double) 100) / 3.0;
 				if (print)
 					System.out.println(n.toString() + ": " + n.cvp.median + ", " + n.cvp.range);
 			}
 
 			faultNodesinDAGs.add(faultNodes);
-
+//			} else {
+//				allNodes.removeAll(faultNodes);
+//
+//				for (Node n : allNodes) {
+//					n.hasFaults = true;
+//					n.cvp.median = 0;
+//					n.cvp.range = faultEfect; // ((double) rng.nextInt(effect +
+//												// 1) / (double) 100) / 3.0;
+//					if (print)
+//						System.out.println(n.toString() + ": " + n.cvp.median + ", " + n.cvp.range);
+//				}
+//
+//				faultNodesinDAGs.add(allNodes);
+//			}
 		}
 
 		return faultNodesinDAGs;
 	}
 
-	public static Pair<Double, Long> oneRun(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, long id,
+	public static long oneRun(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed,
 			boolean print) {
 		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_ROBUST_v2_2, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, 0,
-				id, true);
+				Allocation.CACHE_AWARE_ROBUST_v2_2, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
+				seed, true);
 		no_fault.simulate(print);
 
 		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		if (print)
 			System.out.println(dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime);
 
-		long makespan = dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime;
-//		long sumET = dags.get(dags.size() - 1).variation;
-		double sumET = dags.get(dags.size() - 1).getFlatNodes().stream().mapToDouble(c -> c.variation).sum();
-		return new Pair<Double, Long>(sumET, makespan);
+		return dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime;
 	}
 
 	public static int compareNodes(List<DirectedAcyclicGraph> dags, Node c1, Node c2, boolean oppsite, faultType type) {
@@ -358,6 +401,7 @@ public class CorrelationCoefficient {
 
 		return 0;
 	}
+
 
 	public static int compareNodebySensitivity(List<DirectedAcyclicGraph> dags, Node c1, Node c2, boolean oppsite) {
 		if (oppsite)

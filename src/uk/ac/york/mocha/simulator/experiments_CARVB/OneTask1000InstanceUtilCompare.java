@@ -1,8 +1,9 @@
-package uk.ac.york.mocha.simulator.experiments_perdictability;
+package uk.ac.york.mocha.simulator.experiments_CARVB;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -18,25 +19,24 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
-import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class CARVB_Rule1 {
+public class OneTask1000InstanceUtilCompare {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	static int cores = 4;
-	static int nos = 500;
+	static int nos = 1;
 	static int biggerTimes = 1;
 	static int intanceNum = 100;
 
-	static int startUtil = 4;
+	static int startUtil = 8;
 	static int incrementUtil = 4;
-	static int endUtil = 40;
+	static int endUtil = 8;
 	static boolean hasFaults = false;
 
-	static boolean print = false;
+	static boolean print = true;
 
 	static long baseDagWCET = 0;
 	static long[] baseNodeWCET;
@@ -50,9 +50,57 @@ public class CARVB_Rule1 {
 		int hyperPeriodNum = -1;
 		int seed = 1000;
 
+		SystemParameters.utilPerTask = Double.parseDouble(df.format((double) 20 / (double) 10));
+
+		List<Pair<List<DirectedAcyclicGraph>, CacheHierarchy>> allSys = new ArrayList<>();
+
+		for (int i = 0; i < nos; i++) {
+			SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, seed + i, true, print);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum,
+					hyperPeriodNum, null, false);
+
+			List<DirectedAcyclicGraph> dags = sys.getFirst();
+
+			for (DirectedAcyclicGraph d : dags) {
+				SystemParameters.utilPerTask = Double.parseDouble(df.format((double) 8 / (double) 10));
+
+				d.getSchedParameters().setWCET((long) Math
+						.ceil((double) d.getSchedParameters().getPeriod() * (double) SystemParameters.utilPerTask));
+				SystemGenerator.generateWCET(d, new Random(seed), true, print);
+
+				baseDagWCET = d.getSchedParameters().getWCET();
+
+				d.getSchedParameters().setPeriod(d.getSchedParameters().getPeriod() * biggerTimes);
+				d.releaseTime = d.releaseTime * biggerTimes;
+
+				baseNodeWCET = new long[d.getFlatNodes().size()];
+				for (int k = 0; k < d.getFlatNodes().size(); k++) {
+					baseNodeWCET[k] = d.getFlatNodes().get(k).getWCET();
+
+					d.getFlatNodes().get(k).hasFaults = hasFaults;
+					d.getFlatNodes().get(k).cvp.median = 0;
+					d.getFlatNodes().get(k).cvp.range = 1.0;
+				}
+			}
+
+			allSys.add(sys);
+		}
+
 		for (int i = startUtil; i <= endUtil; i = i + incrementUtil) {
 			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
-			RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict_rule1);
+
+			for (Pair<List<DirectedAcyclicGraph>, CacheHierarchy> p : allSys) {
+				for (DirectedAcyclicGraph d : p.getFirst()) {
+					d.getSchedParameters().setWCET((long) Math
+							.ceil((double) d.getSchedParameters().getPeriod() * (double) SystemParameters.utilPerTask));
+					SystemGenerator.generateWCET(d, new Random(seed), true, print);
+
+				}
+
+			}
+
+			RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict,
+					allSys);
 		}
 	}
 
@@ -60,7 +108,7 @@ public class CARVB_Rule1 {
 
 	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
-			ExpName name) {
+			ExpName name, List<Pair<List<DirectedAcyclicGraph>, CacheHierarchy>> allsystems) {
 
 		List<OneSystemResults> allSys = new ArrayList<>();
 
@@ -87,12 +135,8 @@ public class CARVB_Rule1 {
 			System.out.println(
 					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
 
-			SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, taskSeed + i, true, print);
-			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
-					null, false);
-
 			OneSystemResults res = null;
-			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed, i);
+			res = testOneCaseThreeMethod(allsystems.get(i), taskNum, instanceNo, cores, taskSeed, tableSeed, i);
 			allSys.add(res);
 
 			taskSeed++;
@@ -108,18 +152,26 @@ public class CARVB_Rule1 {
 			int tasks, int[] NoInstances, int cores, int taskSeed, int tableSeed, int not) {
 
 		boolean lcif = false;
-		
+
+		SimualtorNWC cacheWFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.CACHE_AWARE_NEW, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+				lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(print);
+
 		for (DirectedAcyclicGraph d : sys.getFirst()) {
 			for (Node n : d.getFlatNodes()) {
 				n.sensitivity = 0;
+				for (int k = 0; k < n.weights.length; k++) {
+					n.sensitivity += n.weights[k];
+				}
 			}
 		}
-		
-		SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_PREDICT_WCET, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-				lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
-		
+
+		SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
+				tableSeed, lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(print);
+
 		double cc_sens = 0;
 
 		for (int k = 0; k < SystemParameters.cc_weights.length; k++) {
@@ -136,18 +188,18 @@ public class CARVB_Rule1 {
 		}
 
 		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_PREDICT_WCET, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
-				tableSeed, false);
+				Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
+				tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
 
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
-//		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
+		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 		List<DirectedAcyclicGraph> m3 = pair3.getFirst();
 
 		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
 
 		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
-//		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method3 = new ArrayList<>();
 
 		List<DirectedAcyclicGraph> dags = sys.getFirst();
@@ -166,19 +218,19 @@ public class CARVB_Rule1 {
 
 			if (count < NoInstances[dags.get(i).id]) {
 				method1.add(m1.get(i));
-//				method2.add(m2.get(i));
+				method2.add(m2.get(i));
 				method3.add(m3.get(i));
 				count++;
 			}
 		}
 
 		allMethods.add(method1);
-//		allMethods.add(method2);
+		allMethods.add(method2);
 		allMethods.add(method3);
 
 		List<double[]> cachePerformance = new ArrayList<>();
 		cachePerformance.add(pair1.getSecond());
-//		cachePerformance.add(pair2.getSecond());
+		cachePerformance.add(pair2.getSecond());
 		cachePerformance.add(pair3.getSecond());
 
 		OneSystemResults result = new OneSystemResults(allMethods, cachePerformance);
