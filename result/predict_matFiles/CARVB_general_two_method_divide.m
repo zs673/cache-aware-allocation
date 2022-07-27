@@ -36,12 +36,15 @@ p2_ary = [100 99 95 ];
 colors=[[0 0.4470 0.7410]; [0.8500 0.3250 0.0980];  [0.9290 0.6940 0.1250]; [0.4940 0.1840 0.5560];[0.4660 0.6740 0.1880]; [0.3010 0.7450 0.9330];[0.6350 0.0780 0.1840]];
 
 
-alldata = [];
+alldata_median = [];
 
 %% boxplot_makespan_medain
 f=figure('Position', [100, 100, wid, len]);
 set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
 file_name = '../predict/';
+
+line([0 uEnd*methodToDisplay+1],[1.0 1.0],'Color','k','LineStyle',':','LineWidth',0.3);
+hold on;
 
 for util = uStart:uEnd
     read = util + 0;
@@ -80,7 +83,7 @@ for util = uStart:uEnd
         pos(col) = (util - 1) * methodToDisplay + col;
     end
     
-    alldata = [alldata data_per_util(:,2)./data_per_util(:,1)];
+    alldata_median = [alldata_median data_per_util(:,2)./data_per_util(:,1)];
     
     for c = 1:methodToDisplay
         boxplot(data_per_util(:,2)./data_per_util(:,1), 'position',pos(c), 'widths', 0.65, 'symbol','', 'color', colors(c,:));
@@ -94,6 +97,7 @@ xlim([0 uEnd*methodToDisplay+1]);
 ylim([0.6 1.7]);
 % ylim([13000 17000]);
 xticks = sum(1:methodToDisplay)/methodToDisplay : methodToDisplay : uEnd*methodToDisplay;
+
 
 
 set(gca,'xtick',xticks );
@@ -116,9 +120,9 @@ set(gcf, 'PaperSize', [25 25])
 saveas(gcf,strcat('../figs/ep_predict_compare_medain_divide.png'));
 saveas(gcf,strcat('../figs/ep_predict_compare_medain_divide.eps'), 'epsc');
 
-1 - mean(mean(alldata))
+1 - mean(mean(alldata_median))
 
-1 -  max(max(alldata))
+1 -  max(max(alldata_median))
 
 
 alldata = [];
@@ -129,9 +133,13 @@ p1 = p1_ary(p);
 p2 = p2_ary(p);
 
 
+
 f=figure('Position', [100, 100, wid, len]);
 set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
 file_name = '../predict/';
+
+line([0 uEnd*methodToDisplay+1],[1.0 1.0],'Color','k','LineStyle',':','LineWidth',0.3);
+hold on;
 
 for util = uStart:uEnd
     read = util + 0;

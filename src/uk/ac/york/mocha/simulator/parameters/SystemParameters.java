@@ -9,7 +9,11 @@ public class SystemParameters {
 //	public static final int instNo_x2 = 80;
 
 	public static double[] d_weights = { 0.120, 0.097, 0.010, 0.014, 0.055, 0.069 };
-	public static double[] cc_weights = { 0.2465, 0.3465, 0.1691, 0.1175, 0.168, 0.1776 };
+	// Delay enabled
+//	public static double[] cc_weights = { 0.2465, 0.3465, 0.1691, 0.1175, 0.168, 0.1776 };
+	// AJLR
+	public static double[] cc_weights = { 0.3584, 0.5480, 0.2919, 0.1937, 0.2778, 0.3029 };
+	
 
 //	public static double[] d_weights = { 0.120, 0.097, 0, 0, 0.055, 0.069 };
 //	public static double[] cc_weights = { 0.2465, 0.3465, 0, 0, 0.168, 0.1776 };

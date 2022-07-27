@@ -18,6 +18,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
+import uk.ac.york.mocha.simulator.simulator.Simualtor;
 import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -98,24 +99,24 @@ public class VariabilityRandomNew {
 //			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
 //		}
 		
-		rng = new Random(1000);
-		effectFactor = 0.5;
-		for (int i = 0; i < judgementLine.length; i++) {
-			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-		}
-		
-		rng = new Random(1000);
-		effectFactor = 0.8;
-		for (int i = 0; i < judgementLine.length; i++) {
-			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-		}
-		
 //		rng = new Random(1000);
-//		effectFactor = 1.0;
+//		effectFactor = 0.5;
 //		for (int i = 0; i < judgementLine.length; i++) {
 //			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
 //		}
 //		
+//		rng = new Random(1000);
+//		effectFactor = 0.8;
+//		for (int i = 0; i < judgementLine.length; i++) {
+//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
+//		}
+		
+		rng = new Random(1000);
+		effectFactor = 1.0;
+		for (int i = 0; i < judgementLine.length; i++) {
+			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
+		}
+		
 //		rng = new Random(1000);
 //		effectFactor = 2.0;
 //		for (int i = 0; i < judgementLine.length; i++) {
@@ -354,9 +355,13 @@ public class VariabilityRandomNew {
 
 	public static long oneRun(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed,
 			boolean print) {
-		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_ROBUST_v2_2,
+		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, seed, true);
 		no_fault.simulate(print);
+		
+//		Simualtor no_fault = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
+//				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, seed, true);
+//		no_fault.simulate(print);
 
 		List<DirectedAcyclicGraph> dags = sys.getFirst();
 		if (print)

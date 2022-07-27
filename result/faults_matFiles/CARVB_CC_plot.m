@@ -45,7 +45,8 @@ for core = cores
                 
                 histogram(y1,100);
                 xlim([-0.2 0.3])
-                ylim([0 4000])
+              ylim([0 4000])
+%                 ylim([0 600])
                 
                 ylabel('frequency', 'FontSize', 12);
                 xlabel(strcat('impact on makespan'), 'FontSize', 12);
