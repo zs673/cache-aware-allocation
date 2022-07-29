@@ -34,7 +34,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	public final String name;
 
 	/* Scheduling parameters of Sporadic DAG task */
-	private final SchedulingParameters sched_param;
+	public final SchedulingParameters sched_param;
 
 	/* Structural parameters of Sporadic DAG task */
 	private final StructuralParameters dag_param;
@@ -57,7 +57,7 @@ public class DirectedAcyclicGraph implements Serializable {
 	private List<Node> shortestPath;
 
 	private Random rng;
-	private boolean instantiated = false;
+	public boolean instantiated = false;
 
 	/*
 	 * Run-time parameters

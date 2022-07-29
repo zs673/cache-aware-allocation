@@ -60,10 +60,10 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 			// }
 
 			long ETwithErr = 0;
-			if (err <= 1.0) {
+//			if (err <= 1.0) {
 				ETwithErr = (long) Math.ceil((double) res.getFirst() * (1.0 + err));
-			} else
-				ETwithErr = (long) Math.ceil((double) res.getFirst() + err);
+//			} else
+//				ETwithErr = (long) Math.ceil((double) res.getFirst() + err);
 
 			if (err <= 1.0)
 				return new Pair<Pair<Long, Double>, Integer>(

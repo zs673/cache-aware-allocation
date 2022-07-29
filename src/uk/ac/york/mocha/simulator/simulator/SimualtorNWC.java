@@ -8,11 +8,15 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
-import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiability_R;
+import uk.ac.york.mocha.simulator.allocation.OnlineCARVB;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_2;
+import uk.ac.york.mocha.simulator.allocation.OnlineWFDNewSimu;
 import uk.ac.york.mocha.simulator.allocation.SimpleAllocation;
+import uk.ac.york.mocha.simulator.allocation.empricial.OnlineCacheAwareNewSimu_base;
+import uk.ac.york.mocha.simulator.allocation.empricial.OnlineWFDNewSimu_Base;
+import uk.ac.york.mocha.simulator.allocation.empricial.OnlineFixedScheduleAllocation;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.entity.Node.NodeType;
@@ -177,6 +181,15 @@ public class SimualtorNWC {
 		case SIMPLE:
 			allocM = new SimpleAllocation();
 			break;
+		case WORST_FIT_NEW:
+			allocM = new OnlineWFDNewSimu();
+			break;
+		case WORST_FIT_NEW_BASE:
+			allocM = new OnlineWFDNewSimu_Base();
+			break;
+		case FIXED_SCHEDULE_ALLOCATION_NEW:
+			allocM = new OnlineFixedScheduleAllocation();
+			break;
 		case CACHE_AWARE_NEW:
 			allocM = new OnlineCacheAwareNewSimu();
 			break;
@@ -186,11 +199,14 @@ public class SimualtorNWC {
 		case CACHE_AWARE_ROBUST_v2_2:
 			allocM = new OnlineCacheAwareRobust_v2_2();
 			break;
-		case CACHE_AWARE_PREDICT_R:
-			allocM = new OnlineCacheAwarePredictiability_R();
+		case CARVB:
+			allocM = new OnlineCARVB();
 			break;
 		case CACHE_AWARE_PREDICT_WCET:
 			allocM = new OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare();
+			break;
+		case CACHE_AWARE_NEW_BASE:
+			allocM = new OnlineCacheAwareNewSimu_base();
 			break;
 		default:
 			System.err.println("The simualtion method is NOT supported! ");

@@ -94,6 +94,12 @@ public class Node implements Serializable {
 	
 	public double variation = 0;
 	
+	public int fixed_order = -1;
+	public int fixed_allocation = -1;
+	
+	public int repeat_fixed_order = -1;
+	public int repeat_fixed_allocation = -1;
+	
 	/*
 	 * The variability of the node
 	 */
@@ -140,7 +146,7 @@ public class Node implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET;
+		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", Fixed Order: " + fixed_order + ", Fixed Alloc: " + fixed_allocation + ", has Fault: " + hasFaults;
 //		return "Node " + dagID + "_" + id + ", C:" + WCET + ", in: " + predecessors.size() + ", out: "
 //				+ successors.size() + ", in+out: " + predecessors.size() + successors.size() + ", pathNum: " + pathNum;
 //		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;

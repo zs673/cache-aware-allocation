@@ -11,8 +11,18 @@ public class SystemParameters {
 	public static double[] d_weights = { 0.120, 0.097, 0.010, 0.014, 0.055, 0.069 };
 	// Delay enabled
 //	public static double[] cc_weights = { 0.2465, 0.3465, 0.1691, 0.1175, 0.168, 0.1776 };
-	// AJLR
-	public static double[] cc_weights = { 0.3584, 0.5480, 0.2919, 0.1937, 0.2778, 0.3029 };
+	
+	// WFD + Top 10%
+//	public static double[] cc_weights = { 0.3584, 0.5480, 0.2919, 0.1937, 0.2778, 0.3029 };
+	
+	// WFD + Normalised Ranking
+//	public static double[] cc_weights = { 0.4949, 0.5186, 0.2906, 0.2161, 0.3591, 0.3705 };
+	
+	// No Schedule effects included + flag
+	public static double[] cc_weights = { 0.536, 0.385, 0.086, 0.109, 0.101, 0.096 };
+	
+	// No Schedule effects included + normalization
+//		public static double[] cc_weights = { 0.8241, 0.2973, 0.0643, 0.0897, 0.1238, 0.1110 };
 	
 
 //	public static double[] d_weights = { 0.120, 0.097, 0, 0, 0.055, 0.069 };
@@ -32,7 +42,7 @@ public class SystemParameters {
 	public enum Allocation {
 		SIMPLE, RANDOM, BEST_FIT, FIRST_FIT, WORST_FIT, WORST_FIT_OUR, CACHE_AWARE, CACHE_AWARE_NEW,
 		CACHE_AWARE_ROBUST_v2_1, CACHE_AWARE_ROBUST_v2_2, OFFLINE_CACHE_AWARE, CACHE_AWARE_OUR, CACHE_AWARE_RESERVE,
-		CACHE_AWARE_COMPARE, CACHE_AWARE_PREDICT_R, CACHE_AWARE_PREDICT_WCET
+		CACHE_AWARE_COMPARE, CARVB, CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW, CACHE_AWARE_NEW_BASE
 
 	};
 
@@ -64,7 +74,7 @@ public class SystemParameters {
 	 **********************************************************************/
 
 	/* parameters for generic DAGs */
-	public static final double connectProb = 0.2;
+	public static final double connectProb = 0.5;
 	public static final int minLayer = 5;
 	public static final int maxLayer = 10;
 	public static int minParal = 2;

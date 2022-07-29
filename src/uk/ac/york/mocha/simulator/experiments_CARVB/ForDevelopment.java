@@ -169,7 +169,7 @@ public class ForDevelopment {
 		}
 
 		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
+				Allocation.CARVB, RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores,
 				tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
 
