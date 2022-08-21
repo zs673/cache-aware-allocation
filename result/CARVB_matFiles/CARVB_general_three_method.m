@@ -1,3 +1,4 @@
+clc
 close all;
 
 startIns = 1;
@@ -44,11 +45,11 @@ file_name = '../predict/';
 for util = uStart:uEnd
     read = util + 0;
     if(read == 5)
-        data = readmatrix(strcat(file_name,metric_makespan ,'1', uSpec1, '.txt'));
+        data = readmatrix(strcat(file_name,metric ,'1', uSpec1, '.txt'));
     elseif(read == 10)
-        data = readmatrix(strcat(file_name,metric_makespan ,'1', uSpec2, '.txt'));
+        data = readmatrix(strcat(file_name,metric ,'1', uSpec2, '.txt'));
     else
-        data = readmatrix(strcat(file_name,metric_makespan ,'1', '_',num2str(read * uGap), '.txt'));
+        data = readmatrix(strcat(file_name,metric ,'1', '_',num2str(read * uGap), '.txt'));
     end
     
     rowsNum = size(data,1);
@@ -76,7 +77,7 @@ for util = uStart:uEnd
     end
     
     for c = 1:methodNum
-        boxplot(data_per_util(:,c), 'position',pos(c), 'widths', 0.65, 'symbol','', 'color', colors(c,:));
+        boxplot(data_per_util(:,c) / max(max(data_per_util)), 'position',pos(c), 'widths', 0.65, 'symbol','', 'color', colors(c,:));
         hold on
     end
 end
@@ -113,182 +114,182 @@ saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_medain.eps'), 'epsc');
 
 %% boxplot_makespan_upper
 % for p = 1:length(p1_ary)
-    p=2;
-    p1 = p1_ary(p);
-    p2 = p2_ary(p);
-    
-    
-    f=figure('Position', [100, 100, wid, len]);
-    set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
-    file_name = '../predict/';
-    
-    for util = uStart:uEnd
-        read = util + 0;
-        if(read == 5)
-            data = readmatrix(strcat(file_name,metric_makespan ,'1', uSpec1, '.txt'));
-        elseif(read == 10)
-            data = readmatrix(strcat(file_name,metric_makespan ,'1', uSpec2, '.txt'));
-        else
-            data = readmatrix(strcat(file_name,metric_makespan ,'1', '_',num2str(read * uGap), '.txt'));
-        end
-        
-        rowsNum = size(data,1);
-        
-        methodNum = rowsNum/systemNo;
-        dataByMethod = cell(1,methodNum);
-        
-        % get data by each method
-        for m = 1: methodNum
-            startIndex = 1 + (m-1) * systemNo;
-            endIndex = m * systemNo;
-            dataByMethod{m} = data(startIndex :endIndex,:);
-        end
-        
-        data_per_util = [];
-        for m=1:methodNum
-            datam = dataByMethod{m};
-            d = reshape(prctile(datam', p2,1),[],1);
-            data_per_util =[data_per_util d];
-        end
-        
-        pos = zeros(1);
-        for col = 1:methodNum
-            pos(col) = (util - 1) * methodNum + col;
-        end
-        
-        for c = 1:methodNum
-            boxplot(data_per_util(:,c), 'position',pos(c), 'widths', 0.65, 'symbol','', 'color', colors(c,:));
-            hold on
-        end
-    end
-    
-    xlim([0 uEnd*methodNum+1]);
-    % ylim([13000 17000]);
-    xticks = sum(1:methodNum)/methodNum : methodNum : uEnd*methodNum+1;
-    
-    
-    set(gca,'xtick',xticks );
-    set(gca,'xticklabel',xticklables(uStart:uEnd));
-    
-    
-    ax = gca();
-    ax.TickLabelInterpreter = 'tex';
-    ax.FontSize = 12;
-    
-    xlabel('System utilisation (%)','FontSize', 14)
-    if p==2
-        ylabel('$\mathcal{U}$','Interpreter','latex','FontSize', 14)
+p=2;
+p1 = p1_ary(p);
+p2 = p2_ary(p);
+
+
+f=figure('Position', [100, 100, wid, len]);
+set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
+file_name = '../predict/';
+
+for util = uStart:uEnd
+    read = util + 0;
+    if(read == 5)
+        data = readmatrix(strcat(file_name,metric ,'1', uSpec1, '.txt'));
+    elseif(read == 10)
+        data = readmatrix(strcat(file_name,metric ,'1', uSpec2, '.txt'));
     else
-        ylabel({'Normalised makespan';strcat("(the ",num2str(p2),"% percentile)")},'FontSize', 14)
+        data = readmatrix(strcat(file_name,metric ,'1', '_',num2str(read * uGap), '.txt'));
     end
     
+    rowsNum = size(data,1);
     
-    c = findobj(gca,'Tag','Box');
+    methodNum = rowsNum/systemNo;
+    dataByMethod = cell(1,methodNum);
     
+    % get data by each method
+    for m = 1: methodNum
+        startIndex = 1 + (m-1) * systemNo;
+        endIndex = m * systemNo;
+        dataByMethod{m} = data(startIndex :endIndex,:);
+    end
     
+    data_per_util = [];
+    for m=1:methodNum
+        datam = dataByMethod{m};
+        d = reshape(prctile(datam', p2,1),[],1);
+        data_per_util =[data_per_util d];
+    end
     
-    h = legend([c(3), c(2),c(1)],legend_labels,'FontAngle','italic','location',legend_position1,'Orientation',legend_position2);
-    set(h,'FontSize',12);
+    pos = zeros(1);
+    for col = 1:methodNum
+        pos(col) = (util - 1) * methodNum + col;
+    end
     
-    
-    set(gcf, 'PaperSize', [25 25])
-    saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_',num2str(p2),'.png'));
-    saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_',num2str(p2),'.eps'), 'epsc');
+    for c = 1:methodNum
+        boxplot(data_per_util(:,c) / max(max(data_per_util)), 'position',pos(c), 'widths', 0.65, 'symbol','', 'color', colors(c,:));
+        hold on
+    end
+end
+
+xlim([0 uEnd*methodNum+1]);
+% ylim([13000 17000]);
+xticks = sum(1:methodNum)/methodNum : methodNum : uEnd*methodNum+1;
+
+
+set(gca,'xtick',xticks );
+set(gca,'xticklabel',xticklables(uStart:uEnd));
+
+
+ax = gca();
+ax.TickLabelInterpreter = 'tex';
+ax.FontSize = 12;
+
+xlabel('System utilisation (%)','FontSize', 14)
+if p==2
+    ylabel('$\mathcal{U}$','Interpreter','latex','FontSize', 14)
+else
+    ylabel({'Normalised makespan';strcat("(the ",num2str(p2),"% percentile)")},'FontSize', 14)
+end
+
+
+c = findobj(gca,'Tag','Box');
+
+
+
+h = legend([c(3), c(2),c(1)],legend_labels,'FontAngle','italic','location',legend_position1,'Orientation',legend_position2);
+set(h,'FontSize',12);
+
+
+set(gcf, 'PaperSize', [25 25])
+saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_',num2str(p2),'.png'));
+saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_',num2str(p2),'.eps'), 'epsc');
 % end
 
 
 %% boxplot_variation
 % for p = 1:length(p1_ary)
-    p=2;
-    p1 = p1_ary(p);
-    p2 = p2_ary(p);
-  
-    f=figure('Position', [100, 100, wid, len]);
-    set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
-    file_name = '../predict/';
+p=2;
+p1 = p1_ary(p);
+p2 = p2_ary(p);
 
-    for util = uStart:uEnd
-        read = util + 0;
-        if(read == 5)
-            data = readmatrix(strcat(file_name,metric ,'1', uSpec1, '.txt'));
-        elseif(read == 10)
-            data = readmatrix(strcat(file_name,metric ,'1', uSpec2, '.txt'));
-        else
-            data = readmatrix(strcat(file_name,metric ,'1', '_',num2str(read * uGap), '.txt'));
-        end
+f=figure('Position', [100, 100, wid, len]);
+set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
+file_name = '../predict/';
 
-        rowsNum = size(data,1);
-
-        methodNum = rowsNum/systemNo;
-        dataByMethod = cell(1,methodNum);
-
-        % get data by each method
-        for m = 1: methodNum
-            startIndex = 1 + (m-1) * systemNo;
-            endIndex = m * systemNo;
-            dataByMethod{m} = data(startIndex :endIndex,:);
-        end
-
-        data_per_util = [];
-        for m=1:methodNum
-            datam = dataByMethod{m};
-            datam = datam(:,startIns:endIns);
-            %         datam = prctile(datam, percentile_range(1,:));
-
-            %         dataDiff = max(datam') - min(datam');
-            %         data_per_util =[data_per_util dataDiff'];
-
-            datam_std = std(datam');
-            data_per_util =[data_per_util prctile(datam_std', p1:p2,'all')];
-        end
-
-        pos = zeros(1);
-        for col = 1:methodNum
-            pos(col) = (util - 1) * methodNum + col;
-        end
-
-        for c = 1:methodNum
-            boxplot(data_per_util(:,c)/max(max(data_per_util)), 'position',pos(c), 'widths', 0.65, 'symbol','', 'color', colors(c,:));
-            hold on
-        end
+for util = uStart:uEnd
+    read = util + 0;
+    if(read == 5)
+        data = readmatrix(strcat(file_name,metric ,'1', uSpec1, '.txt'));
+    elseif(read == 10)
+        data = readmatrix(strcat(file_name,metric ,'1', uSpec2, '.txt'));
+    else
+        data = readmatrix(strcat(file_name,metric ,'1', '_',num2str(read * uGap), '.txt'));
     end
+    
+    rowsNum = size(data,1);
+    
+    methodNum = rowsNum/systemNo;
+    dataByMethod = cell(1,methodNum);
+    
+    % get data by each method
+    for m = 1: methodNum
+        startIndex = 1 + (m-1) * systemNo;
+        endIndex = m * systemNo;
+        dataByMethod{m} = data(startIndex :endIndex,:);
+    end
+    
+    data_per_util = [];
+    for m=1:methodNum
+        datam = dataByMethod{m};
+        datam = datam(:,startIns:endIns);
+        %         datam = prctile(datam, percentile_range(1,:));
+        
+        %         dataDiff = max(datam') - min(datam');
+        %         data_per_util =[data_per_util dataDiff'];
+        
+        datam_std = std(datam');
+        data_per_util =[data_per_util prctile(datam_std', p1:p2,'all')];
+    end
+    
+    pos = zeros(1);
+    for col = 1:methodNum
+        pos(col) = (util - 1) * methodNum + col;
+    end
+    
+    for c = 1:methodNum
+        boxplot(data_per_util(:,c)/max(max(data_per_util)), 'position',pos(c), 'widths', 0.65, 'symbol','', 'color', colors(c,:));
+        hold on
+    end
+end
 
-    xlim([0 uEnd*methodNum+1]);
+xlim([0 uEnd*methodNum+1]);
 
 %     if(p==1)
 %         ylim([0 3000]);
 %     end
 
-    xticks = sum(1:methodNum)/methodNum : methodNum : uEnd*methodNum+1;
-    set(gca,'xticklabel',xticklables(uStart:uEnd));
+xticks = sum(1:methodNum)/methodNum : methodNum : uEnd*methodNum+1;
+set(gca,'xticklabel',xticklables(uStart:uEnd));
 
-    set(gca,'xtick',xticks );
-    set(gca,'xticklabel',xticklables);
-
-
-    ax = gca();
-    ax.TickLabelInterpreter = 'tex';
-    ax.FontSize = 12;
-
-    xlabel('System utilisation (%)','FontSize', 14)
-
-    if p==2
-        ylabel('$\mathcal{V}$','Interpreter','latex','FontSize', 14)
-    else
-        ylabel('$\mathcal{V}$','Interpreter','latex','FontSize', 14)
-    end
-
-    c = findobj(gca,'Tag','Box');
+set(gca,'xtick',xticks );
+set(gca,'xticklabel',xticklables);
 
 
+ax = gca();
+ax.TickLabelInterpreter = 'tex';
+ax.FontSize = 12;
 
-    h = legend([c(3), c(2),c(1)],legend_labels,'FontAngle','italic','location','northeast','Orientation',legend_position2);
-    set(h,'FontSize',12);
+xlabel('System utilisation (%)','FontSize', 14)
+
+if p==2
+    ylabel('$\mathcal{V}$','Interpreter','latex','FontSize', 14)
+else
+    ylabel('$\mathcal{V}$','Interpreter','latex','FontSize', 14)
+end
+
+c = findobj(gca,'Tag','Box');
 
 
-    set(gcf, 'PaperSize', [25 25])
-    saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_diff_',num2str(p1),'_',num2str(p2),'.png'));
-    saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_diff_',num2str(p1),'_',num2str(p2),'.eps'), 'epsc');
+
+h = legend([c(3), c(2),c(1)],legend_labels,'FontAngle','italic','location','northeast','Orientation',legend_position2);
+set(h,'FontSize',12);
+
+
+set(gcf, 'PaperSize', [25 25])
+saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_diff_',num2str(p1),'_',num2str(p2),'.png'));
+saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_diff_',num2str(p1),'_',num2str(p2),'.eps'), 'epsc');
 % end
 
 % for p = 1:length(p1_ary)
@@ -492,12 +493,12 @@ saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_medain.eps'), 'epsc');
 % for p = 1:length(p1_ary)
 %     p1 = p1_ary(p);
 %     p2 = p2_ary(p);
-%     
-%    
+%
+%
 %     f=figure('Position', [100, 100, wid, len]);
 %     set(f,'defaultAxesColorOrder',[[0,60/255,255/255];[1,51/255,51/255]]);
 %     file_name = '../predict/';
-%     
+%
 %     for util = uStart:uEnd
 %         read = util + 0;
 %         if(read == 5)
@@ -507,34 +508,34 @@ saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_medain.eps'), 'epsc');
 %         else
 %             data = readmatrix(strcat(file_name,metric ,'1', '_',num2str(read * uGap), '.txt'));
 %         end
-%         
+%
 %         rowsNum = size(data,1);
-%         
+%
 %         methodNum = rowsNum/systemNo;
 %         dataByMethod = cell(1,methodNum);
-%         
+%
 %         % get data by each method
 %         for m = 1: methodNum
 %             startIndex = 1 + (m-1) * systemNo;
 %             endIndex = m * systemNo;
 %             dataByMethod{m} = data(startIndex :endIndex,:);
 %         end
-%         
+%
 %         data_per_util = [];
 %         for m=1:methodNum
 %             datam = dataByMethod{m};
 %             datam = datam(:,startIns:endIns);
 %             %         datam = prctile(datam, percentile_range(1,:));
-%             
+%
 %             %         dataDiff = max(datam') - min(datam');
 %             %         data_per_util =[data_per_util dataDiff'];
-%             
+%
 %             datam_std = rms(datam');
-%             
-%           
+%
+%
 %             med_v = median(datam');
 %             factor = med_v
-%             
+%
 %             rmsd_per_method = [];
 %             for k = 1: size(datam,1)
 %                 drow = datam(k,:);
@@ -544,20 +545,20 @@ saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_medain.eps'), 'epsc');
 %                     rmsd_one = (d-factor(k)) * (d-factor(k));
 %                     rmsd = rmsd + rmsd_one;
 %                 end
-%                 
+%
 %                 rmsd = sqrt(rmsd / (length(drow)-2));
 %                 rmsd_per_method = [rmsd_per_method rmsd];
 %             end
-% 
+%
 % %             data_per_util =[data_per_util prctile(datam_std', p1:p2,'all')];
 %             data_per_util =[data_per_util rmsd_per_method'];
 %         end
-%         
+%
 %         pos = zeros(1);
 %         for col = 1:methodNum
 %             pos(col) = (util - 1) * methodNum + col;
 %         end
-%         
+%
 % %         / max(max(data_per_util))
 %         for c = 1:methodNum
 %             boxplot(data_per_util(:,c), 'position',pos(c), 'widths', 0.65, 'symbol','', 'color', colors(c,:));
@@ -569,36 +570,36 @@ saveas(gcf,strcat('../CARVB_figs/ep_predict_compare_medain.eps'), 'epsc');
 % %     if(p==1)
 % %         ylim([0 80000]);
 % %     end
-%     
+%
 %     xticks = sum(1:methodNum)/methodNum : methodNum : uEnd*methodNum+1;
 %     set(gca,'xticklabel',xticklables(uStart:uEnd));
-%     
+%
 %     set(gca,'xtick',xticks );
 %     set(gca,'xticklabel',xticklables);
-%     
-%     
+%
+%
 %     ax = gca();
 %     ax.TickLabelInterpreter = 'tex';
 %     ax.FontSize = 12;
-%     
+%
 %     xlabel('System utilisation (%)','FontSize', 14)
-%     
+%
 %     if p==1
 %         ylabel('RMSD','Interpreter','latex','FontSize', 14)
 %     else
 %         ylabel({'RMSD' ; strcat("(",num2str(p1),"%", " to ", num2str(p2),"%"  , " percentile)")},'FontSize', 14)
 %     end
-%     
+%
 %     c = findobj(gca,'Tag','Box');
-%     
-%     
-%     
+%
+%
+%
 %     h = legend([c(2),c(1)],legend_labels,'FontAngle','italic','location','northoutside','Orientation','horizontal');
 %     set(h,'FontSize',12);
-%     
-%     
+%
+%
 %     set(gcf, 'PaperSize', [25 25])
 %     saveas(gcf,strcat('../figs/ep_predict_compare_rmsd_',num2str(p1),'_',num2str(p2),'.png'));
 %     saveas(gcf,strcat('../figs/ep_predict_compare_rmsd_',num2str(p1),'_',num2str(p2),'.eps'), 'epsc');
-%     
+%
 % end

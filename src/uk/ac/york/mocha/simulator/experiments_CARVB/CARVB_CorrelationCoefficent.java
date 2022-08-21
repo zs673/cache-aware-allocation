@@ -36,6 +36,8 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class CARVB_CorrelationCoefficent {
 
+	static int nos = 10;
+
 	static DecimalFormat df = new DecimalFormat("#.######");
 
 	public static enum faultType {
@@ -43,14 +45,13 @@ public class CARVB_CorrelationCoefficent {
 	}
 
 	static int nop = 1;
-	static int nos = 100000;
 	static int[] allCores = { 4 };
 	static boolean print = false;
 
 	static double effectFactor = 1.0;
 	static double[] judgementLine = { 0.1 };
 
-	static int[] allInstanceNum = { 1, 3, 5, 10 };
+	static int[] allInstanceNum = { 1 };
 
 	static Random rng = new Random(1000);
 
@@ -61,91 +62,12 @@ public class CARVB_CorrelationCoefficent {
 	}
 
 	public static void start(int nop) {
-
-//		rng = new Random(1000);
-//		effectFactor = 0.1;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-
-//		rng = new Random(1000);
-//		effectFactor = 0.2;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-
-//		rng = new Random(1000);
-//		effectFactor = 0.3;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-
-//		rng = new Random(1000);
-//		effectFactor = 0.4;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-
-//		rng = new Random(1000);
-//		effectFactor = 0.5;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-
-//		rng = new Random(1000);
-//		effectFactor = 0.6;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-
-//		rng = new Random(1000);
-//		effectFactor = 0.8;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-
-//		rng = new Random(1000);
-//		effectFactor = 0.5;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-//		
-//		rng = new Random(1000);
-//		effectFactor = 0.8;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-
 		rng = new Random(1000);
 		effectFactor = 1.0;
 		for (int i = 0; i < judgementLine.length; i++) {
 			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
 		}
 
-//		rng = new Random(1000);
-//		effectFactor = 2.0;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-//
-//
-//		rng = new Random(1000);
-//		effectFactor = 4.0;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-//		
-//		rng = new Random(1000);
-//		effectFactor = 5.0;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
-//		
-//		rng = new Random(1000);
-//		effectFactor = 10.0;
-//		for (int i = 0; i < judgementLine.length; i++) {
-//			faults(allCores[0], judgementLine[i], allInstanceNum[0], nop);
-//		}
 	}
 
 	public static void faults(int cores, double judgement, int instanceNum, int nop) {
@@ -162,10 +84,8 @@ public class CARVB_CorrelationCoefficent {
 
 				@Override
 				public void run() {
-
 					String folderName = "result/" + "faults_new/";
-					String fileName = "/random" + "_" + cores + "_" + judgement + "_" + effectFactor + "_" + id
-							+ ".txt";
+					String fileName = "/random" + "_" + cores + "_" + judgement + "_" + effectFactor + "_" + id + ".txt";
 					Utils.writeResult(folderName, fileName, "", false);
 
 					int startingSeed = initialSeed + id * workload;
@@ -186,18 +106,16 @@ public class CARVB_CorrelationCoefficent {
 			}
 	}
 
-	public static void runOneThread(int cores, double judgement, int instanceNum, int startingSeed, int workload,
-			int id) {
+	public static void runOneThread(int cores, double judgement, int instanceNum, int startingSeed, int workload, int id) {
 
 		int seed = startingSeed;
 
 		for (int i = 0; i < workload; i++) {
-			System.out.println("No. of system: " + (i + id * workload) + " --- " + "cores: " + cores + ", effect: "
-					+ effectFactor + ", No. instance: " + instanceNum);
+			System.out.println("No. of system: " + (i + id * workload) + " --- " + "cores: " + cores + ", effect: " + effectFactor
+					+ ", No. instance: " + instanceNum);
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, seed, true, print);
-			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(instanceNum, -1,
-					null, false);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(instanceNum, -1, null, false);
 
 			Pair<Pair<double[], double[]>, Double> r = run(sys, cores, judgement, seed, print);
 
@@ -208,8 +126,7 @@ public class CARVB_CorrelationCoefficent {
 
 	}
 
-	public static void write(Pair<Pair<double[], double[]>, Double> r, int cores, double judgement, int id,
-			boolean append) {
+	public static void write(Pair<Pair<double[], double[]>, Double> r, int cores, double judgement, int id, boolean append) {
 		String out = "";
 
 		double[] configNum = r.getFirst().getFirst();
@@ -227,24 +144,28 @@ public class CARVB_CorrelationCoefficent {
 		Utils.writeResult(folderName, fileName, out, append);
 	}
 
-	public static Pair<Pair<double[], double[]>, Double> run(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys,
-			int cores, double judgement, int seed, boolean print) {
+	public static Pair<Pair<double[], double[]>, Double> run(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores,
+			double judgement, int seed, boolean print) {
 
-//		System.out.println(Arrays.toString(sys.getFirst().get(0).getFlatNodes().stream().map(n -> n.fixed_order_counter).collect(Collectors.toList()).toArray()));
+		// System.out.println(Arrays.toString(sys.getFirst().get(0).getFlatNodes().stream().map(n
+		// -> n.fixed_order_counter).collect(Collectors.toList()).toArray()));
 
 		setUpSpecificFaults(sys.getFirst(), judgement, false);
 		long makespan1 = runOne(sys, cores, seed, print);
 
-//		List<Node> nodelist = new ArrayList<>(sys.getFirst().get(0).getFlatNodes());
-//		nodelist.sort((c1,c2)->Integer.compare(c1.fixed_order, c2.fixed_order));
-//		
-//		for(Node n : nodelist)
-//			System.out.println(n.toString());
+		// List<Node> nodelist = new
+		// ArrayList<>(sys.getFirst().get(0).getFlatNodes());
+		// nodelist.sort((c1,c2)->Integer.compare(c1.fixed_order,
+		// c2.fixed_order));
+		//
+		// for(Node n : nodelist)
+		// System.out.println(n.toString());
 
 		List<Pair<double[], double[]>> config = setUpSpecificFaults(sys.getFirst(), judgement, true);
 		long makespan = runTwo(sys, cores, seed, print);
 
-//		System.out.println(Arrays.toString(sys.getFirst().get(0).getFlatNodes().stream().map(n -> n.fixed_order_counter).collect(Collectors.toList()).toArray()));
+		// System.out.println(Arrays.toString(sys.getFirst().get(0).getFlatNodes().stream().map(n
+		// -> n.fixed_order_counter).collect(Collectors.toList()).toArray()));
 
 		for (Node n : sys.getFirst().get(0).getFlatNodes()) {
 			if (n.repeat_fixed_order != n.fixed_order || n.repeat_fixed_allocation != n.fixed_allocation) {
@@ -260,8 +181,7 @@ public class CARVB_CorrelationCoefficent {
 		return res;
 	}
 
-	public static List<Pair<double[], double[]>> setUpSpecificFaults(List<DirectedAcyclicGraph> dags, double judgement,
-			boolean fault) {
+	public static List<Pair<double[], double[]>> setUpSpecificFaults(List<DirectedAcyclicGraph> dags, double judgement, boolean fault) {
 
 		List<Pair<double[], double[]>> allConfigs = new ArrayList<>();
 
@@ -281,7 +201,8 @@ public class CARVB_CorrelationCoefficent {
 
 			Collections.shuffle(allNodes);
 
-			faultNodeNum = 1; // (int) math.ceil((double) percent * (double) allNodes.size());
+			faultNodeNum = 1; // (int) math.ceil((double) percent * (double)
+								// allNodes.size());
 			for (int i = 0; i < faultNodeNum; i++) {
 				faultNodes.add(allNodes.get(i));
 			}
@@ -321,15 +242,22 @@ public class CARVB_CorrelationCoefficent {
 		configNum[4] = (double) (n.getParent().size() + n.getChildren().size());
 		configNum[5] = (double) n.pathNum;
 
-//		configNum[0] = (double) n.getWCET() / (double) all.stream().mapToLong(c -> c.getWCET()).max().getAsLong();
-//		configNum[1] = (double) n.pathET / (double) all.stream().mapToLong(c -> c.pathET).max().getAsLong();
-//		configNum[2] = (double) n.getParent().size()
-//				/ (double) all.stream().mapToLong(c -> c.getParent().size()).max().getAsLong();
-//		configNum[3] = (double) n.getChildren().size()
-//				/ (double) all.stream().mapToLong(c -> c.getChildren().size()).max().getAsLong();
-//		configNum[4] = (double) (n.getParent().size() + n.getChildren().size())
-//				/ (double) all.stream().mapToLong(c -> c.getParent().size() + c.getChildren().size()).max().getAsLong();
-//		configNum[5] = (double) n.pathNum / (double) all.stream().mapToLong(c -> c.pathNum).max().getAsLong();
+		// configNum[0] = (double) n.getWCET() / (double)
+		// all.stream().mapToLong(c -> c.getWCET()).max().getAsLong();
+		// configNum[1] = (double) n.pathET / (double) all.stream().mapToLong(c
+		// -> c.pathET).max().getAsLong();
+		// configNum[2] = (double) n.getParent().size()
+		// / (double) all.stream().mapToLong(c ->
+		// c.getParent().size()).max().getAsLong();
+		// configNum[3] = (double) n.getChildren().size()
+		// / (double) all.stream().mapToLong(c ->
+		// c.getChildren().size()).max().getAsLong();
+		// configNum[4] = (double) (n.getParent().size() +
+		// n.getChildren().size())
+		// / (double) all.stream().mapToLong(c -> c.getParent().size() +
+		// c.getChildren().size()).max().getAsLong();
+		// configNum[5] = (double) n.pathNum / (double) all.stream().mapToLong(c
+		// -> c.pathNum).max().getAsLong();
 
 		return new Pair<double[], double[]>(configNum, configEffect);
 	}
@@ -381,29 +309,29 @@ public class CARVB_CorrelationCoefficent {
 				System.exit(-1);
 				break;
 			}
-			
+
 			int indexN = all.indexOf(n);
 
-//			configNum[i] = Double.parseDouble(df.format(1- ((double) indexN / (double) all.size())));
+			// configNum[i] = Double.parseDouble(df.format(1- ((double) indexN /
+			// (double) all.size())));
 			configNum[i] = Double.parseDouble(df.format(value / max));
-//			configEffect[i] = (double) n.getWCET() * (1 + effectFactor);
+			// configEffect[i] = (double) n.getWCET() * (1 + effectFactor);
 
-			
 			if (indexN <= (int) math.ceil((double) judgement * (double) all.size())) {
-//				configEffect[i] =   1;
-				configEffect[i] = 1; // (double) n.getWCET() * (1 + effectFactor);
+				// configEffect[i] = 1;
+				configEffect[i] = 1; // (double) n.getWCET() * (1 +
+										// effectFactor);
 			}
 		}
 
 		return new Pair<double[], double[]>(configNum, configEffect);
 	}
 
-	public static long runOne(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed,
-			boolean print) {
+	public static long runOne(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed, boolean print) {
 
 		OnlineWFDNewSimu_Base.based_order_counter = 0;
 
-		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT_NEW,
+		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, seed, true);
 		no_fault.simulate(print);
 
@@ -414,12 +342,11 @@ public class CARVB_CorrelationCoefficent {
 		return dags.get(dags.size() - 1).finishTime - dags.get(dags.size() - 1).startTime;
 	}
 
-	public static long runTwo(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed,
-			boolean print) {
+	public static long runTwo(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int cores, int seed, boolean print) {
 
 		OnlineFixedScheduleAllocation.execution_order_controller = 0;
 
-		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT_NEW,
+		SimualtorNWC no_fault = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, seed, true);
 		no_fault.simulate(print);
 
@@ -474,11 +401,9 @@ public class CARVB_CorrelationCoefficent {
 
 	public static int compareNodebyInAndOutDegree(Node c1, Node c2, boolean oppsite) {
 		if (oppsite)
-			return Integer.compare(c1.getParent().size() + c1.getChildren().size(),
-					c2.getParent().size() + c2.getChildren().size());
+			return Integer.compare(c1.getParent().size() + c1.getChildren().size(), c2.getParent().size() + c2.getChildren().size());
 		else
-			return -Integer.compare(c1.getParent().size() + c1.getChildren().size(),
-					c2.getParent().size() + c2.getChildren().size());
+			return -Integer.compare(c1.getParent().size() + c1.getChildren().size(), c2.getParent().size() + c2.getChildren().size());
 	}
 
 }

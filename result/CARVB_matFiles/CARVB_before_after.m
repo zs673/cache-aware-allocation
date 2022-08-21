@@ -23,68 +23,15 @@ for core = cores
                 allData = [allData; data];
             end
             
-            dataDis1 = allData(:,1:2:13);
-            dataDis2 = allData(:,[2:2:12,13]);
-            for i = 1:6
-                %%%%%%%%%%%%%%%% Scatter %%%%%%%%%%%%%%%%
-                figure('Position', [100, 100, 400, 200]);
-                scatter(dataDis1(:,i),dataDis1(:,7));
-                
-                ylabel('$\Delta{R_i}(\%)$', 'FontSize', 12 ,'Interpreter','latex');
-                xlabel('Normalised Ranking', 'FontSize', 12);
-                
-                set(gcf, 'PaperSize', [25 25])
-                saveas(gcf,strcat('../CARVB_figs/carvb_cc_ba_ajlr_scatter_',num2str(core),'_','0.1','_',types_names(i),'.eps'), 'epsc');
-                saveas(gcf,strcat('../CARVB_figs/carvb_cc_ba_ajlr_scatter_',num2str(core),'_','0.1','_',types_names(i),'.png'));
-                
-                
-                %%%%%%%%%%%%%%%% histogram %%%%%%%%%%%%%%%%
-                f=figure('Position', [100, 100, 400, 200]);
-                
-                y = dataDis2(dataDis2(:,i)==1,:);
-
-                y1 = y(:,7);
-                
-                histogram(y1,100);
-                
-                xlim([-0.05 0.3])
-                ylim([0 200])
-                
-                ylabel('Frequency', 'FontSize', 12);
-                xlabel(strcat('$\Delta{R_i}(\%)$'), 'FontSize', 12,'Interpreter','latex');
-                
-                set(gcf, 'PaperSize', [25 25])
-                saveas(gcf,strcat('../CARVB_figs/carvb_cc_ba_ajlr_hist_',num2str(core),'_','0.1','_',types_names(i),'.eps'), 'epsc');
-                saveas(gcf,strcat('../CARVB_figs/carvb_cc_ba_ajlr_hist_',num2str(core),'_','0.1','_',types_names(i),'.png'));
-                
-            end
-            
-            
+            dataDis1 = allData(:,[1:2:12,14]);
+            dataDis2 = allData(:,[2:2:12,14]);
             
             
             [r,p] = corrcoef(dataDis1);
-            r
-%             p
-            %             p
+            r(:,7)'
             
             [r,p] = corrcoef(dataDis2);
-            r
-%             p
-            %             p
-            
-            %            [coeff,score,latent,tsquared,explained,mu] = pca(allData(:,1:6));
-            %
-            %            anova1(allData);
-            %            explained
-        end
-    end
-end
-
-
-
-for core = cores
-    for judgement = judgements
-        for effect = effects
+            r(:,7)'
             
             allData = zeros(0);
             for thread = threads
@@ -92,59 +39,15 @@ for core = cores
                 allData = [allData; data];
             end
             
-            dataDis1 = allData(:,1:2:13);
-            dataDis2 = allData(:,[2:2:12,13]);
-            for i = 1:6
-                %%%%%%%%%%%%%%%% Scatter %%%%%%%%%%%%%%%%
-                figure('Position', [100, 100, 400, 200]);
-                scatter(dataDis1(:,i),dataDis1(:,7));
-                
-                ylabel('$\Delta{R_i}(\%)$', 'FontSize', 12 ,'Interpreter','latex');
-                xlabel('Normalised Ranking', 'FontSize', 12);
-                
-                set(gcf, 'PaperSize', [25 25])
-                saveas(gcf,strcat('../CARVB_figs/carvb_cc_ba_carvb_scatter_',num2str(core),'_','0.1','_',types_names(i),'.eps'), 'epsc');
-                saveas(gcf,strcat('../CARVB_figs/carvb_cc_ba_carvb_scatter_',num2str(core),'_','0.1','_',types_names(i),'.png'));
-                
-                
-                %%%%%%%%%%%%%%%% histogram %%%%%%%%%%%%%%%%
-                f=figure('Position', [100, 100, 400, 200]);
-                
-                y = dataDis2(dataDis2(:,i)==1,:);
-
-                y1 = y(:,7);
-                
-                histogram(y1,100);
-                
-                xlim([-0.05 0.3])
-                ylim([0 200])
-                
-                ylabel('Frequency', 'FontSize', 12);
-                xlabel(strcat('$\Delta{R_i}(\%)$'), 'FontSize', 12,'Interpreter','latex');
-                
-                set(gcf, 'PaperSize', [25 25])
-                saveas(gcf,strcat('../CARVB_figs/carvb_cc_ba_carvb_hist_',num2str(core),'_','0.1','_',types_names(i),'.eps'), 'epsc');
-                saveas(gcf,strcat('../CARVB_figs/carvb_cc_ba_carvb_hist_',num2str(core),'_','0.1','_',types_names(i),'.png'));
-                
-            end
-            
-            
+            dataDis1 = allData(:,[1:2:12,14]);
+            dataDis2 = allData(:,[2:2:12,14]);
             
             
             [r,p] = corrcoef(dataDis1);
-            r
-%             p
-            %             p
+            r(:,7)'
             
             [r,p] = corrcoef(dataDis2);
-            r
-%             p
-            %             p
-            
-            %            [coeff,score,latent,tsquared,explained,mu] = pca(allData(:,1:6));
-            %
-            %            anova1(allData);
-            %            explained
+            r(:,7)'
         end
     end
 end
