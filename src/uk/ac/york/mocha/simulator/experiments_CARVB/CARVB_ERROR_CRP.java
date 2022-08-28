@@ -27,16 +27,15 @@ public class CARVB_ERROR_CRP {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
-	static int cores = 4;
-	static int nos = 5;
-	static int biggerTimes = 1;
-	static int intanceNum = 10;
+	static int nos = 500;
+	static int intanceNum = 50;
 
-	static int util = 2;
+	static int cores = 4;
+	static int util = 20;
 	static boolean print = false;
 
-	static double[] faultRates = { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 };
-	static double[] faultEffects = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5 };
+	static double[] faultRates = { 0.1, 0.3, 0.5, 0.7, 0.9 };
+	static double[] faultEffects = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 }; // 0.1, 0.2, 0.3, 0.4, 0.5,
 
 	public static void main(String args[]) {
 		SystemParameters.utilPerTask = Double.parseDouble(df.format((double) util / (double) 10));
@@ -76,8 +75,9 @@ public class CARVB_ERROR_CRP {
 		RunOneGroup(1, intanceNum, -1, true, null, seed, seed, null, nos, true, ExpName.error_crp, rate, effect);
 	}
 
-	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil, List<List<Double>> util,
-			int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC, ExpName name, double rate, double effect) {
+	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
+			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
+			ExpName name, double rate, double effect) {
 
 		int[] instanceNo = new int[taskNum];
 
@@ -98,12 +98,13 @@ public class CARVB_ERROR_CRP {
 		List<OneSystemResults> allRes = new ArrayList<>();
 
 		for (int i = 0; i < nos; i++) {
-			System.out.println("\n\n****************************************************************************************************");
-			System.out.println("Rate: " + rate + ", Effect: " + effect + ", Util per task: " + SystemParameters.utilPerTask
-					+ " --- Current system number: " + (i + 1));
+
+			System.out.println("Rate: " + rate + ", Effect: " + effect + ", Util per task: "
+					+ SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
 
 			SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, taskSeed + i, true, print);
-			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1, null, false);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
+					null, false);
 
 			OneSystemResults res = null;
 			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed, i, rate, effect);
@@ -119,8 +120,8 @@ public class CARVB_ERROR_CRP {
 	/**
 	 * This test case will generate two fixed DAG structure.
 	 */
-	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int tasks,
-			int[] NoInstances, int cores, int taskSeed, int tableSeed, int not, double rate, double effect) {
+	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys,
+			int tasks, int[] NoInstances, int cores, int taskSeed, int tableSeed, int not, double rate, double effect) {
 
 		boolean lcif = true;
 
@@ -139,16 +140,16 @@ public class CARVB_ERROR_CRP {
 
 		assignErrors(sys, rate, effect);
 
-		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT, RecencyType.TIME_DEFAULT,
-				sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
+		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
 
 		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
-		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB, RecencyType.TIME_DEFAULT,
-				sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
 
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();

@@ -2,7 +2,6 @@ package uk.ac.york.mocha.simulator.experiments_CARVB;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.util.Pair;

@@ -6,7 +6,6 @@ import java.util.List;
 
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
-import uk.ac.york.mocha.simulator.experiments_real.FiveNodeAllocation;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineWFD extends AllocationMethods {

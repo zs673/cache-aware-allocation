@@ -10,10 +10,10 @@ types_names = ["nodeET","pathET","in-degree","out-degree","in_out_degree","pathN
 
 judgements = 0.9;
 dummy_judgements = "0.1";
-threads = 0:3;
+threads = 0:4;
 
 % effects = ["0.5","0.8","1.0","2.0","4.0","5.0","10.0"];
-effects = ["-1.0"];
+effects = ["-1.0","1.0"];
 
 displaySize = 100000;
 

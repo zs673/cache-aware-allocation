@@ -26,24 +26,15 @@ public class CARVB_General {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
-	static int now = 1;
-
 	static int cores = 4;
 	static int nos = 500;
-	static int biggerTimes = 1;
 	static int intanceNum = 100;
 
 	static int startUtil = 4;
 	static int incrementUtil = 4;
 	static int endUtil = 36;
-	static boolean hasFaults = false;
-
+	
 	static boolean print = false;
-
-	static long baseDagWCET = 0;
-	static long[] baseNodeWCET;
-
-	static boolean append = false;
 
 	public static void main(String args[]) {
 		oneTaskWithFaults();
@@ -55,18 +46,15 @@ public class CARVB_General {
 
 		for (int i = startUtil; i <= endUtil; i = i + incrementUtil) {
 			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
-
-			append = false;
 			RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);
 		}
 	}
 
 	static boolean bigger = false;
 
-	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil, List<List<Double>> util,
-			int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC, ExpName name) {
-
-		// List<OneSystemResults> allSys = new ArrayList<>();
+	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
+			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
+			ExpName name) {
 
 		int[] instanceNo = new int[taskNum];
 
@@ -84,73 +72,30 @@ public class CARVB_General {
 			System.out.println("Cannot get same instances number for randomly generated periods.");
 		}
 
-		List<Thread> workers = new ArrayList<>();
-		final int workload = (int) Math.ceil((double) nos / (double) now);
+		List<OneSystemResults> allRes = new ArrayList<>();
 
-		for (int i = 0; i < now; i++) {
-			final int index = i;
-			Thread worker = new Thread(new Runnable() {
+		for (int i = 0; i < nos; i++) {
+			System.out.println(
+					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
 
-				@Override
-				public void run() {
-					int startSeed = taskSeed + workload * index;
-					
-					List<OneSystemResults> allRes = new ArrayList<>();
+			SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, taskSeed + i, true, print);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
+					null, false);
 
-					for (int i = 0; i < workload; i++) {
-						System.out.println(
-								"\n\n****************************************************************************************************");
-						System.out.println("Util per task: " + SystemParameters.utilPerTask + ", Thread No: " + index
-								+ " --- Current system number: " + (i + 1));
+			OneSystemResults res = null;
+			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed, i);
 
-						SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, startSeed + i, true, print);
-						Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1, null,
-								false);
-
-						OneSystemResults res = null;
-						res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, startSeed, tableSeed, i);
-						// allSys.add(res);
-
-//						List<OneSystemResults> oneRes = new ArrayList<>();
-//						oneRes.add(res);
-//
-//						addResult(oneRes, instanceNo, taskNum, name);
-						
-						allRes.add(res);
-
-						startSeed++;
-					}
-					addResult(allRes, instanceNo, taskNum, name);
-				}			
-			});
-
-			workers.add(worker);
+			allRes.add(res);
+			taskSeed++;
 		}
-
-		for (Thread worker : workers) {
-			worker.start();
-		}
-
-		for (Thread worker : workers) {
-			try {
-				worker.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
-
-	public static synchronized void addResult(List<OneSystemResults> oneRes, int[] instanceNo, int taskNum, ExpName name) {
-		new AllSystemsResults(oneRes, instanceNo, cores, taskNum, name, append);
-		append = true;
+		new AllSystemsResults(allRes, instanceNo, cores, taskNum, name);
 	}
 
 	/**
 	 * This test case will generate two fixed DAG structure.
 	 */
-	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys, int tasks,
-			int[] NoInstances, int cores, int taskSeed, int tableSeed, int not) {
+	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys,
+			int tasks, int[] NoInstances, int cores, int taskSeed, int tableSeed, int not) {
 
 		boolean lcif = true;
 
@@ -169,8 +114,8 @@ public class CARVB_General {
 			}
 		}
 
-		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT, RecencyType.TIME_DEFAULT,
-				sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
+		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
 
 		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
@@ -194,8 +139,8 @@ public class CARVB_General {
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 =
 		// cacheCASim.simulate(print);
 
-		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB, RecencyType.TIME_DEFAULT,
-				sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
 
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();

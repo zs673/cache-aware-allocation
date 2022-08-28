@@ -3,7 +3,6 @@ package uk.ac.york.mocha.simulator.entity;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;

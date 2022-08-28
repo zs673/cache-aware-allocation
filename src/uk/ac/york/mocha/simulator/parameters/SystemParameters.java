@@ -14,11 +14,10 @@ public class SystemParameters {
 	// public static double[] cc_weights = { 0.6778, 0.6374, 0.5094, 0.5015,
 	// 0.6460, 0.6055 };
 
-	// public static double[] cc_weights = { 0.6784, 0.6381, 0.5102, 0.5026,
-	// 0.6470, 0.6068 }; // two way
+	public static double[] cc_weights = { 0.6784, 0.6381, 0.5102, 0.5026, 0.6470, 0.6068 }; // two way
 	// public static double[] cc_weights = { 0.4961, 0.4343, 0.2314, 0.2055,
 	// 0.3454, 0.3642 }; // one way increase
-	public static double[] cc_weights = { 0.4038, 0.3123, 0.2837, 0.2844, 0.4532, 0.4800 }; // one
+//	public static double[] cc_weights = { 0.4038, 0.3123, 0.2837, 0.2844, 0.4532, 0.4800 }; // one
 																							// way
 																							// decrease
 
@@ -61,7 +60,10 @@ public class SystemParameters {
 	};
 
 	public enum Allocation {
-		SIMPLE, RANDOM, BEST_FIT, FIRST_FIT, WORST_FIT, WORST_FIT_OUR, CACHE_AWARE, CACHE_AWARE_NEW, CACHE_AWARE_ROBUST_v2_1, CACHE_AWARE_ROBUST_v2_2, OFFLINE_CACHE_AWARE, CACHE_AWARE_OUR, CACHE_AWARE_RESERVE, CACHE_AWARE_COMPARE, CARVB, CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW, CACHE_AWARE_NEW_BASE
+		SIMPLE, RANDOM, BEST_FIT, FIRST_FIT, WORST_FIT, WORST_FIT_OUR, CACHE_AWARE, CACHE_AWARE_NEW,
+		CACHE_AWARE_ROBUST_v2_1, CACHE_AWARE_ROBUST_v2_2, OFFLINE_CACHE_AWARE, CACHE_AWARE_OUR, CACHE_AWARE_RESERVE,
+		CACHE_AWARE_COMPARE, CARVB,
+		CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW, CACHE_AWARE_NEW_BASE
 
 	};
 

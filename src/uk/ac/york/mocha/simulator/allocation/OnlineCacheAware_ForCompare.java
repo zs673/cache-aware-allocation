@@ -8,8 +8,6 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
-import uk.ac.york.mocha.simulator.experiments_real.FiveNodeAllocation;
-import uk.ac.york.mocha.simulator.experiments_real.FiveNodeForCompare;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 

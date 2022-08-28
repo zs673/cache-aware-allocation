@@ -16,13 +16,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
-import org.python.modules.synchronize;
 
 import uk.ac.york.mocha.simulator.entity.Node.NodeType;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
-import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class DirectedAcyclicGraph implements Serializable {
 
