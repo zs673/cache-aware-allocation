@@ -56,7 +56,7 @@ public class AllSystemsResults {
 			folder = "result/" + name + "/";
 		else
 			folder = "result/" + name + "_" + this.rate + "_" + this.effect + "/";
-		
+
 		File theDir = new File(folder);
 		if (!theDir.exists()) {
 			theDir.mkdirs();
@@ -77,6 +77,11 @@ public class AllSystemsResults {
 	public AllSystemsResults(List<OneSystemResults> resPerSystem, int[] instanceNo, int systemNum, int taskNum,
 			SystemParameters.ExpName name) {
 		this(resPerSystem, instanceNo, systemNum, taskNum, name, "", false);
+	}
+
+	public AllSystemsResults(List<OneSystemResults> resPerSystem, int[] instanceNo, int systemNum, int taskNum,
+			SystemParameters.ExpName name, double CCR) {
+		this(resPerSystem, instanceNo, systemNum, taskNum, name, CCR, "", false);
 	}
 
 	public AllSystemsResults(List<OneSystemResults> resPerSystem, int[] instanceNo, int systemNum, int taskNum,
@@ -106,6 +111,28 @@ public class AllSystemsResults {
 		writeTaskParam(resPerSystem, append);
 	}
 
+	public AllSystemsResults(List<OneSystemResults> resPerSystem, int[] instanceNo, int systemNum, int taskNum,
+			SystemParameters.ExpName name, double CCR, String recencyName, boolean append) {
+		this.taskNum = taskNum;
+		this.systemNum = systemNum;
+		this.instanceNo = instanceNo;
+		this.recencyName = recencyName;
+
+		if (rate.equals(""))
+			folder = "result/" + name + "/" + String.valueOf(CCR) + "/";
+		else
+			folder = "result/" + name + "_" + rate + "_" + effect + "_" + String.valueOf(CCR) + "/";
+		File theDir = new File(folder);
+		if (!theDir.exists()) {
+			theDir.mkdirs();
+		}
+
+		writeInstanceNum(append);
+		writeResults(resPerSystem, append);
+		writeCachePerf(resPerSystem, append);
+		writeTaskParam(resPerSystem, append);
+	}
+
 	public void writeTaskParam(List<OneSystemResults> resPerSystem, boolean append) {
 		StringBuilder builder = new StringBuilder();
 
@@ -114,7 +141,8 @@ public class AllSystemsResults {
 
 			String dagsInfo = "";
 			for (int j = 0; j < 1; j++) {
-				String dagInfo = dags.get(j).getSchedParameters().getWCET() + "," + dags.get(j).getSchedParameters().getPeriod() + ","
+				String dagInfo = dags.get(j).getSchedParameters().getWCET() + ","
+						+ dags.get(j).getSchedParameters().getPeriod() + ","
 						+ df.format(dags.get(j).getSchedParameters().getUtil()) + "\n";
 				dagsInfo += dagInfo;
 				// if (j < dags.size() - 1)
@@ -167,14 +195,17 @@ public class AllSystemsResults {
 		}
 
 		for (int i = 0; i < ResultType.values().length; i++) {
-			String dataFileName = ResultType.values()[i].name() + "_" + taskNum + "_" + SystemParameters.utilPerTask + recencyName + ".txt";
+			String dataFileName = ResultType.values()[i].name() + "_" + taskNum + "_" + SystemParameters.utilPerTask
+					+ recencyName + ".txt";
 			Utils.writeResult(folder + dataFileName, data.get(i).toString(), append);
 
-			String compareFileName = ResultType.values()[i].name() + "_compare" + "_" + taskNum + "_" + SystemParameters.utilPerTask
+			String compareFileName = ResultType.values()[i].name() + "_compare" + "_" + taskNum + "_"
+					+ SystemParameters.utilPerTask
 					+ recencyName + ".txt";
 			Utils.writeResult(folder + compareFileName, compareData.get(i).toString(), append);
 
-			String dataAnaFileName = "A_" + ResultType.values()[i].name() + "_" + taskNum + "_" + SystemParameters.utilPerTask + recencyName
+			String dataAnaFileName = "A_" + ResultType.values()[i].name() + "_" + taskNum + "_"
+					+ SystemParameters.utilPerTask + recencyName
 					+ ".txt";
 			Utils.writeResult(folder + dataAnaFileName, dataAna.get(i).toString(), append);
 
@@ -184,7 +215,8 @@ public class AllSystemsResults {
 		}
 	}
 
-	public Pair<String, String> dataPerSysToAllSys(List<OneSystemResults> resPerSystem, int metricIndex, boolean compare) {
+	public Pair<String, String> dataPerSysToAllSys(List<OneSystemResults> resPerSystem, int metricIndex,
+			boolean compare) {
 
 		List<List<String>> temp = new ArrayList<>();
 		for (int i = 0; i < resPerSystem.size(); i++) {
@@ -300,20 +332,20 @@ public class AllSystemsResults {
 				int count = summartAllHtoV.indexOf(v);
 
 				switch (count) {
-				case 0:
-					resAnalyse.append("AVGs,");
-					break;
-				case 1:
-					resAnalyse.append("MEDs,");
-					break;
-				case 2:
-					resAnalyse.append("MAXs,");
-					break;
-				case 3:
-					resAnalyse.append("MINs,");
-					break;
-				default:
-					break;
+					case 0:
+						resAnalyse.append("AVGs,");
+						break;
+					case 1:
+						resAnalyse.append("MEDs,");
+						break;
+					case 2:
+						resAnalyse.append("MAXs,");
+						break;
+					case 3:
+						resAnalyse.append("MINs,");
+						break;
+					default:
+						break;
 				}
 
 				resAnalyse.append(df.format(avg) + ",");
@@ -337,7 +369,8 @@ public class AllSystemsResults {
 				instanceNumString += instanceNo[i] + "\n";
 		}
 
-		Utils.writeResult(folder + "instanceNum_" + taskNum + "_" + SystemParameters.utilPerTask + recencyName + ".txt", instanceNumString,
+		Utils.writeResult(folder + "instanceNum_" + taskNum + "_" + SystemParameters.utilPerTask + recencyName + ".txt",
+				instanceNumString,
 				append);
 	}
 

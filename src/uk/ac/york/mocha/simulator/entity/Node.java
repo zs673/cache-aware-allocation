@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.HashMap; // 引入 HashMap 类
 
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
@@ -41,6 +42,16 @@ public class Node implements Serializable {
 	// private long WCETinRange;
 
 	/*
+	 * edge cost
+	 * communication cost for the suc nodes
+	 */
+	// parent_id to cost
+	public HashMap<Integer, Integer> com_edge = new HashMap<Integer, Integer>();
+
+	/* max waiting time */
+	public long waiting_for_edges = 0;
+
+	/*
 	 * A list of successors/predecessors of the node.
 	 */
 	private List<Node> successors;
@@ -52,11 +63,10 @@ public class Node implements Serializable {
 	public int pathNum = 0;
 	public long pathET;
 
-//	public long globalMaxPathET = -1;
-//	public long globalMaxPathNum = -1;
+	// public long globalMaxPathET = -1;
+	// public long globalMaxPathNum = -1;
 
 	public double[] weights = new double[6];
-	
 
 	public double sensitivity = -1;
 
@@ -91,29 +101,28 @@ public class Node implements Serializable {
 	public long expectedCache = -1;
 	public long[] expectedETPerCore;
 	public boolean isDelayed = false;
-	
+
 	public double variation = 0;
-	
+
 	public int fixed_order = -1;
 	public int fixed_allocation = -1;
-	
+
 	public int repeat_fixed_order = -1;
 	public int repeat_fixed_allocation = -1;
-	
+
 	/*
 	 * The variability of the node
 	 */
 	public RecencyProfile crp;
 	public RecencyProfile crp_synth;
-	
+
 	public CacheVariabilityProfile cvp;
 
 	boolean isReal;
 
 	Random rng;
-	
-	
-//	public List<Long> speeds = new ArrayList<>();
+
+	// public List<Long> speeds = new ArrayList<>();
 
 	public Node(int layer, NodeType type, int id, int dagID, RecencyProfile crp, Random rng) {
 		this(-1, layer, type, id, dagID, crp, false, rng);
@@ -146,10 +155,14 @@ public class Node implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", Fixed Order: " + fixed_order + ", Fixed Alloc: " + fixed_allocation + ", has Fault: " + hasFaults;
-//		return "Node " + dagID + "_" + id + ", C:" + WCET + ", in: " + predecessors.size() + ", out: "
-//				+ successors.size() + ", in+out: " + predecessors.size() + successors.size() + ", pathNum: " + pathNum;
-//		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:" + partition + ", A:" + affinity;
+		return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", Fixed Order: " + fixed_order
+				+ ", Fixed Alloc: " + fixed_allocation + ", has Fault: " + hasFaults;
+		// return "Node " + dagID + "_" + id + ", C:" + WCET + ", in: " +
+		// predecessors.size() + ", out: "
+		// + successors.size() + ", in+out: " + predecessors.size() + successors.size()
+		// + ", pathNum: " + pathNum;
+		// return "Node " + dagID + "_" + dagInstNo + "_" + id + ", C:" + WCET + ", P:"
+		// + partition + ", A:" + affinity;
 	}
 
 	public String getFullName() {
@@ -223,16 +236,17 @@ public class Node implements Serializable {
 		this.dagInstNo = dagInstNo;
 	}
 
-//	public Node deepCopy() {
-//	Node copy = new Node(this.WCET, this.layer, this.type, this.id, this.dagID, this.rng);
-//	copy.release = release;
-//	copy.start = start;
-//	copy.finish = finish;
-//	copy.finishAt = finishAt;
-//	copy.partition = partition;
-//	copy.affinity = affinity;
-//	copy.delayed = delayed;
-//	return copy;
-//}
+	// public Node deepCopy() {
+	// Node copy = new Node(this.WCET, this.layer, this.type, this.id, this.dagID,
+	// this.rng);
+	// copy.release = release;
+	// copy.start = start;
+	// copy.finish = finish;
+	// copy.finishAt = finishAt;
+	// copy.partition = partition;
+	// copy.affinity = affinity;
+	// copy.delayed = delayed;
+	// return copy;
+	// }
 
 }

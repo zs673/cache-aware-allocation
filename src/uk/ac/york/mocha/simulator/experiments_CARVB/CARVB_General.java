@@ -33,8 +33,10 @@ public class CARVB_General {
 	static int startUtil = 4;
 	static int incrementUtil = 4;
 	static int endUtil = 36;
-	
+
 	static boolean print = false;
+
+	static double[] CCRs = { 0.1, 0.2, 0.3 };
 
 	public static void main(String args[]) {
 		oneTaskWithFaults();
@@ -44,9 +46,12 @@ public class CARVB_General {
 		int hyperPeriodNum = -1;
 		int seed = 1000;
 
-		for (int i = startUtil; i <= endUtil; i = i + incrementUtil) {
-			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
-			RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);
+		for (double CCR : CCRs) {
+			for (int i = startUtil; i <= endUtil; i = i + incrementUtil) {
+				SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
+				RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict,
+						CCR);
+			}
 		}
 	}
 
@@ -54,7 +59,7 @@ public class CARVB_General {
 
 	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
-			ExpName name) {
+			ExpName name, double CCR) {
 
 		int[] instanceNo = new int[taskNum];
 
@@ -80,7 +85,7 @@ public class CARVB_General {
 
 			SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, taskSeed + i, true, print);
 			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
-					null, false);
+					null, false, CCR);
 
 			OneSystemResults res = null;
 			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed, i);
@@ -88,7 +93,7 @@ public class CARVB_General {
 			allRes.add(res);
 			taskSeed++;
 		}
-		new AllSystemsResults(allRes, instanceNo, cores, taskNum, name);
+		new AllSystemsResults(allRes, instanceNo, cores, taskNum, name, CCR);
 	}
 
 	/**

@@ -78,12 +78,14 @@ public class DirectedAcyclicGraph implements Serializable {
 	RecencyProfile globalCRP;
 	List<RecencyProfile> crps;
 
-	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, CacheHierarchy cache, int id, Random rng,
+	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, CacheHierarchy cache,
+			int id, Random rng,
 			boolean hard) {
 		this(sched_param, dag_param, null, cache, id, rng, hard, false);
 	}
 
-	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param, List<RecencyProfile> crps,
+	public DirectedAcyclicGraph(SchedulingParameters sched_param, StructuralParameters dag_param,
+			List<RecencyProfile> crps,
 			CacheHierarchy cache, int id, Random rng, boolean hard, boolean real) {
 
 		this.id = id;
@@ -223,7 +225,8 @@ public class DirectedAcyclicGraph implements Serializable {
 			/*
 			 * generate nodes for this layer
 			 */
-			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
+			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+					+ dag_param.parallelism_min;
 			// int nodeNum = rng.nextInt(dag_param.getParallelism()) + 1;
 			// System.out.println(nodeNum);
 			List<Node> nodePerLayer = new ArrayList<>();
@@ -371,7 +374,8 @@ public class DirectedAcyclicGraph implements Serializable {
 				/*
 				 * generate nodes for fan-in
 				 */
-				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min) + dag_param.parallelism_min;
+				int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
+						+ dag_param.parallelism_min;
 				List<Node> nodePerLayer = new ArrayList<>();
 
 				for (int k = 0; k < nodeNum; k++) {
@@ -559,9 +563,10 @@ public class DirectedAcyclicGraph implements Serializable {
 			n.weights[2] = Double.parseDouble(df.format((double) n.getParent().size() / (double) maxInDegree));
 			n.weights[3] = Double.parseDouble(df.format((double) n.getChildren().size() / (double) matOutDegree));
 			n.weights[4] = Double
-					.parseDouble(df.format((double) (n.getParent().size() + n.getChildren().size()) / (double) maxInOutDegree));
+					.parseDouble(df.format(
+							(double) (n.getParent().size() + n.getChildren().size()) / (double) maxInOutDegree));
 			n.weights[5] = Double.parseDouble(df.format((double) n.pathNum / (double) maxpathNum));
-			
+
 		}
 
 	}
@@ -668,6 +673,10 @@ public class DirectedAcyclicGraph implements Serializable {
 
 	public List<Node> getFlatNodes() {
 		return flatNodes;
+	}
+
+	public int getEdgeNum() {
+		return edges.size();
 	}
 
 	public String getName() {

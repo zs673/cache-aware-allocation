@@ -62,6 +62,11 @@ public class SimualtorNWC {
 
 	/* a ready queue for the nodes waiting to be EXECUTED */
 	List<Node> readyNodes;
+	/*
+	 * a queue for the nodes with all parents finished but waiting for the
+	 * communcation costs on edges
+	 */
+	List<Node> waitingNodes;
 
 	/* a run queue for EXECUTING nodes */
 	Node[] currentExe;
@@ -91,7 +96,7 @@ public class SimualtorNWC {
 	List<Node> history_level3;
 
 	List<Node> etHist = new ArrayList<>();
-//	List<List<List<Long>>> et_history = new ArrayList<>();
+	// List<List<List<Long>>> et_history = new ArrayList<>();
 
 	DecimalFormat df = new DecimalFormat("#.###");
 
@@ -178,50 +183,50 @@ public class SimualtorNWC {
 		AllocationMethods allocM = null;
 
 		switch (alloc) {
-		case SIMPLE:
-			allocM = new SimpleAllocation();
-			break;
-		case WORST_FIT_NEW:
-			allocM = new OnlineWFDNewSimu();
-			break;
-		case WORST_FIT_NEW_BASE:
-			allocM = new OnlineWFDNewSimu_Base();
-			break;
-		case FIXED_SCHEDULE_ALLOCATION_NEW:
-			allocM = new OnlineFixedScheduleAllocation();
-			break;
-		case CACHE_AWARE_NEW:
-			allocM = new OnlineCacheAwareNewSimu();
-			break;
-		case CACHE_AWARE_ROBUST_v2_1:
-			allocM = new OnlineCacheAwareRobust_v2_1();
-			break;
-		case CACHE_AWARE_ROBUST_v2_2:
-			allocM = new OnlineCacheAwareRobust_v2_2();
-			break;
-		case CARVB:
-			allocM = new OnlineCARVB();
-			break;
-		case CACHE_AWARE_PREDICT_WCET:
-			allocM = new OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare();
-			break;
-		case CACHE_AWARE_NEW_BASE:
-			allocM = new OnlineCacheAwareNewSimu_base();
-			break;
-		default:
-			System.err.println("The simualtion method is NOT supported! ");
-			System.exit(-1);
-			return null;
+			case SIMPLE:
+				allocM = new SimpleAllocation();
+				break;
+			case WORST_FIT_NEW:
+				allocM = new OnlineWFDNewSimu();
+				break;
+			case WORST_FIT_NEW_BASE:
+				allocM = new OnlineWFDNewSimu_Base();
+				break;
+			case FIXED_SCHEDULE_ALLOCATION_NEW:
+				allocM = new OnlineFixedScheduleAllocation();
+				break;
+			case CACHE_AWARE_NEW:
+				allocM = new OnlineCacheAwareNewSimu();
+				break;
+			case CACHE_AWARE_ROBUST_v2_1:
+				allocM = new OnlineCacheAwareRobust_v2_1();
+				break;
+			case CACHE_AWARE_ROBUST_v2_2:
+				allocM = new OnlineCacheAwareRobust_v2_2();
+				break;
+			case CARVB:
+				allocM = new OnlineCARVB();
+				break;
+			case CACHE_AWARE_PREDICT_WCET:
+				allocM = new OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare();
+				break;
+			case CACHE_AWARE_NEW_BASE:
+				allocM = new OnlineCacheAwareNewSimu_base();
+				break;
+			default:
+				System.err.println("The simualtion method is NOT supported! ");
+				System.exit(-1);
+				return null;
 		}
 
 		switch (hardware) {
-		case PROC:
-			cacheAware = false;
-			break;
-		case PROC_CACHE:
-			cacheAware = true;
-		default:
-			break;
+			case PROC:
+				cacheAware = false;
+				break;
+			case PROC_CACHE:
+				cacheAware = true;
+			default:
+				break;
 		}
 
 		debug_output_begin(printSim);
@@ -273,14 +278,14 @@ public class SimualtorNWC {
 		if (readyDAGs.size() > 0)
 			return false;
 
-//		for (Node n : currentExe) {
-//			if (n != null)
-//				return false;
-//		}
-//
-//		for (List<Node> nl : localRunQueue)
-//			if (nl.size() > 0)
-//				return false;
+		// for (Node n : currentExe) {
+		// if (n != null)
+		// return false;
+		// }
+		//
+		// for (List<Node> nl : localRunQueue)
+		// if (nl.size() > 0)
+		// return false;
 
 		return true;
 	}
@@ -318,8 +323,13 @@ public class SimualtorNWC {
 					}
 
 					if (isReady) {
-						child.release = systemTime;
-						readyNodes.add(child);
+						if (child.waiting_for_edges <= systemTime) {
+							child.release = systemTime;
+							readyNodes.add(child);
+						} else {
+							child.release = child.waiting_for_edges;
+							waitingNodes.add(child);
+						}
 					}
 				}
 
@@ -394,6 +404,7 @@ public class SimualtorNWC {
 		} else {
 			if (readyNodes.size() == 0) {
 			} else {
+				// 根据alloM内部的finishAt，更新后继节点的waiting_for_edges
 				noCalls++;
 				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
 						history_level3, allocHistory, systemTime, lcif, etHist);
@@ -437,7 +448,8 @@ public class SimualtorNWC {
 				long realET = ETWithCache.getFirst().getFirst();
 				n.variation = ETWithCache.getFirst().getSecond();
 
-				if (n.getDagInstNo() >= SystemParameters.etHist_start) { // && n.getDagInstNo() < SystemParameters.endInstNo
+				if (n.getDagInstNo() >= SystemParameters.etHist_start) { // && n.getDagInstNo() <
+																			// SystemParameters.endInstNo
 					etHist.add(n);
 				}
 
@@ -445,7 +457,7 @@ public class SimualtorNWC {
 				coreTime[n.partition] = n.finishAt = systemTime + realET;
 				n.expectedET = realET;
 				n.expectedCache = ETWithCache.getSecond();
-				
+
 				int cacheEffects = ETWithCache.getSecond();
 				cachePerformance[cacheEffects - 1] = cachePerformance[cacheEffects - 1] + 1;
 
@@ -500,10 +512,13 @@ public class SimualtorNWC {
 				break;
 			}
 		}
+		for (Node n : waitingNodes) {
+			firstFinish = firstFinish < n.waiting_for_edges ? firstFinish : n.waiting_for_edges;
+		}
 
-		if (jump)
+		if (jump) {
 			systemTime = firstFinish;
-		else {
+		} else {
 
 			long earliestFinish = Long.MAX_VALUE;
 
@@ -521,6 +536,16 @@ public class SimualtorNWC {
 			long earliestRelease = sleepingDAGs.size() > 0 ? sleepingDAGs.get(0).releaseTime : Long.MAX_VALUE;
 
 			systemTime = earliestFinish < earliestRelease ? earliestFinish : earliestRelease;
+		}
+
+		/*
+		 * add the nodes from waiting to ready
+		 */
+		for (Node n : waitingNodes) {
+			if (n.waiting_for_edges <= systemTime) {
+				readyNodes.add(n);
+				waitingNodes.remove(n);
+			}
 		}
 
 		if (systemTime == oldTime) {
@@ -609,7 +634,8 @@ public class SimualtorNWC {
 			SystemParameters.utilPerTask = 0.2;
 
 			SystemGenerator gen = new SystemGenerator(SystemParameters.coreNum, 1, true, true, null, i, true, false);
-			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> res = gen.generatedDAGInstancesInOneHP(1, -1, null, false);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> res = gen.generatedDAGInstancesInOneHP(1, -1, null, false,
+					0);
 
 			// SimualtorNWC cacheBFSim = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 			// Hardware.PROC_CACHE,

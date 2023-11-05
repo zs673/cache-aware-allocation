@@ -75,7 +75,7 @@ public class SystemGenerator {
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, CacheHierarchy> generatedDAGInstancesInOneHP(int forceInstanceNum,
-			int hyperPeriodNum, List<Long> periods, boolean hard) {
+			int hyperPeriodNum, List<Long> periods, boolean hard, double CCR) {
 
 		if (periods != null && periods.size() != total_tasks) {
 			System.err
@@ -94,7 +94,7 @@ public class SystemGenerator {
 
 		if (hard) {
 			while (!schedulable) {
-				dagTasks = generateSporadicDAGs(periods, hard);
+				dagTasks = generateSporadicDAGs(periods, hard, CCR);
 
 				/**
 				 * Set offline scheduling and allocation for the hard task
@@ -163,7 +163,7 @@ public class SystemGenerator {
 			// currentCore++;
 			// }
 		} else {
-			dagTasks = generateSporadicDAGs(periods, hard);
+			dagTasks = generateSporadicDAGs(periods, hard, CCR);
 		}
 
 		for (DirectedAcyclicGraph d : dagTasks)
@@ -281,42 +281,42 @@ public class SystemGenerator {
 		return dags;
 	}
 
-	private List<DirectedAcyclicGraph> generateSporadicDAGs(List<Long> periods, boolean hard) {
+	private List<DirectedAcyclicGraph> generateSporadicDAGs(List<Long> periods, boolean hard, double CCR) {
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
 		List<SchedulingParameters> schedParam = generateSchedParam(periods);
 
 		switch (periodToUitl) {
-		case 1:
-			for (SchedulingParameters sp : schedParam) {
-				sp.setPeriod(sp.getPeriod() * 2);
-			}
+			case 1:
+				for (SchedulingParameters sp : schedParam) {
+					sp.setPeriod(sp.getPeriod() * 2);
+				}
 
-			break;
+				break;
 
-		case 2:
-			/* we do nothing here */
+			case 2:
+				/* we do nothing here */
 
-			break;
+				break;
 
-		case 3:
+			case 3:
 
-			for (SchedulingParameters sp : schedParam) {
-				sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 1.5));
-			}
+				for (SchedulingParameters sp : schedParam) {
+					sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 1.5));
+				}
 
-			break;
+				break;
 
-		case 4:
+			case 4:
 
-			for (SchedulingParameters sp : schedParam) {
-				sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 2));
-			}
+				for (SchedulingParameters sp : schedParam) {
+					sp.setPeriod((long) Math.floor((double) sp.getPeriod() / (double) 2));
+				}
 
-			break;
+				break;
 
-		default:
-			break;
+			default:
+				break;
 		}
 
 		/*
@@ -338,8 +338,64 @@ public class SystemGenerator {
 		}
 
 		generateWCETs(dags);
+		setEdgeCosts(dags, CCR);
 
 		return dags;
+	}
+
+	private void setEdgeCosts(List<DirectedAcyclicGraph> dags, double CCR) {
+		if (print) {
+			System.out.println("Assigned and generated Edge_costs (in us):");
+			System.out.println("-----------------------------------------------------------------------------");
+		}
+
+		/*
+		 * 1、edges数组，从哪指向哪，size=m
+		 * 2、根据CCR值，生成n个待赋予的edge cost
+		 * 3、为节点中的对应属性赋值
+		 */
+
+		for (DirectedAcyclicGraph d : dags) {
+			/*
+			 * to do: the rules to generate edge cost for parent node
+			 */
+			long avg_communi_cost = (long) ((double) d.getSchedParameters().getWCET() * CCR);
+			int n = d.getNodeNum(), m = d.getEdgeNum();
+			int index_of_m = 0;
+			double[] costs_edge = generateEdgeCosts(m, avg_communi_cost);
+
+			List<Node> node = d.getFlatNodes();
+
+			for (Node cur : node) {
+				for (Node parent : cur.getParent()) {
+					cur.com_edge.put(parent.getId(), (int) costs_edge[index_of_m++]);
+				}
+			}
+		}
+
+		if (print)
+			System.out.println("-----------------------------------------------------------------------------");
+	}
+
+	public static double[] generateEdgeCosts(int n, double targetMean) {
+		Random random = new Random();
+		double[] numbers = new double[n];
+
+		// 随机生成n个正数
+		double sum = 0;
+		for (int i = 0; i < n; i++) {
+			numbers[i] = random.nextDouble() * targetMean * 2; // 随机生成正数，范围为0到2 * targetMean
+			sum += numbers[i];
+		}
+
+		// 调整数值以满足目标均值
+		double currentMean = sum / n;
+		double scaleFactor = targetMean / currentMean;
+		for (int i = 0; i < n; i++) {
+			numbers[i] *= scaleFactor;
+		}
+
+		return numbers;
 	}
 
 	private void generateWCETs(List<DirectedAcyclicGraph> dags) {
