@@ -359,8 +359,8 @@ public class SystemGenerator {
 			/*
 			 * to do: the rules to generate edge cost for parent node
 			 */
-			long avg_communi_cost = (long) ((double) d.getSchedParameters().getWCET() * CCR);
-			int n = d.getNodeNum(), m = d.getEdgeNum();
+			long avg_communi_cost = (long) ((double) d.getSchedParameters().getWCET() * CCR / (double) d.getNodeNum());
+			int m = d.getEdgeNum();
 			int index_of_m = 0;
 			double[] costs_edge = generateEdgeCosts(m, avg_communi_cost);
 
@@ -378,7 +378,7 @@ public class SystemGenerator {
 	}
 
 	public static double[] generateEdgeCosts(int n, double targetMean) {
-		Random random = new Random();
+		Random random = new Random(25);
 		double[] numbers = new double[n];
 
 		// 随机生成n个正数

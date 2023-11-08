@@ -17,9 +17,10 @@ public class SystemParameters {
 	public static double[] cc_weights = { 0.6784, 0.6381, 0.5102, 0.5026, 0.6470, 0.6068 }; // two way
 	// public static double[] cc_weights = { 0.4961, 0.4343, 0.2314, 0.2055,
 	// 0.3454, 0.3642 }; // one way increase
-//	public static double[] cc_weights = { 0.4038, 0.3123, 0.2837, 0.2844, 0.4532, 0.4800 }; // one
-																							// way
-																							// decrease
+	// public static double[] cc_weights = { 0.4038, 0.3123, 0.2837, 0.2844, 0.4532,
+	// 0.4800 }; // one
+	// way
+	// decrease
 
 	// Delay enabled
 	// public static double[] cc_weights = { 0.2465, 0.3465, 0.1691, 0.1175,
@@ -71,7 +72,9 @@ public class SystemParameters {
 	 *********************** Experimental Settings ************************
 	 **********************************************************************/
 	public enum ExpName {
-		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, offline_multi, methods, periods, tasks, sysUtil, sysUtilOneDAG, util_compare, util_compare_three, predict, predict_rule1, predict_rule2, error_crp
+		oneDAG, taskNum, recency_fault, recency_fault_util, recency_pattern, offline, offline_multi, methods, periods,
+		tasks, sysUtil, sysUtilOneDAG, util_compare, util_compare_three, predict, predict_rule1, predict_rule2,
+		error_crp
 	}
 
 	public static int NoS = 1000;
@@ -86,8 +89,8 @@ public class SystemParameters {
 	/**********************************************************************
 	 ************************** Cache Hierarchy ***************************
 	 **********************************************************************/
-	public static final int cacheLevel = 3;
-	public static final int Level2CoreNum = 4;
+	public static final int cacheLevel = 2;
+	public static final int Level2CoreNum = 8;
 
 	/**********************************************************************
 	 **************************** DAG Structure ***************************
@@ -96,9 +99,9 @@ public class SystemParameters {
 	/* parameters for generic DAGs */
 	public static final double connectProb = 0.2;
 	public static final int minLayer = 5;
-	public static final int maxLayer = 10;
+	public static final int maxLayer = 10;// 10
 	public static int minParal = 2;
-	public static int maxParal = 10;
+	public static int maxParal = 10;// 10
 
 	/* parameters for NFJ DAGs */
 	public static final int depth = 5;

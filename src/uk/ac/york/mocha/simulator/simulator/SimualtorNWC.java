@@ -2,6 +2,7 @@ package uk.ac.york.mocha.simulator.simulator;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
@@ -130,6 +131,7 @@ public class SimualtorNWC {
 
 		this.readyDAGs = new ArrayList<>();
 		this.readyNodes = new ArrayList<>();
+		this.waitingNodes = new ArrayList<>();
 		this.currentExe = new Node[procNum];
 		this.coreTime = new long[procNum];
 
@@ -541,10 +543,12 @@ public class SimualtorNWC {
 		/*
 		 * add the nodes from waiting to ready
 		 */
-		for (Node n : waitingNodes) {
+		Iterator<Node> iterator = waitingNodes.iterator();
+		while (iterator.hasNext()) {
+			Node n = iterator.next();
 			if (n.waiting_for_edges <= systemTime) {
 				readyNodes.add(n);
-				waitingNodes.remove(n);
+				iterator.remove();
 			}
 		}
 
