@@ -64,7 +64,8 @@ public class SystemParameters {
 		SIMPLE, RANDOM, BEST_FIT, FIRST_FIT, WORST_FIT, WORST_FIT_OUR, CACHE_AWARE, CACHE_AWARE_NEW,
 		CACHE_AWARE_ROBUST_v2_1, CACHE_AWARE_ROBUST_v2_2, OFFLINE_CACHE_AWARE, CACHE_AWARE_OUR, CACHE_AWARE_RESERVE,
 		CACHE_AWARE_COMPARE, CARVB,
-		CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW, CACHE_AWARE_NEW_BASE
+		CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW,
+		CACHE_AWARE_NEW_BASE, GYY
 
 	};
 
@@ -90,7 +91,7 @@ public class SystemParameters {
 	 ************************** Cache Hierarchy ***************************
 	 **********************************************************************/
 	public static final int cacheLevel = 2;
-	public static final int Level2CoreNum = 8;
+	public static final int Level2CoreNum = 4;
 
 	/**********************************************************************
 	 **************************** DAG Structure ***************************
@@ -142,8 +143,15 @@ public class SystemParameters {
 	 */
 	public static final long v1 = 0;
 	public static final long v2 = 10000;
-	public static final long v3 = 100000;
-	public static final long v4 = 500000;
+	public static final long v3 = 200000;
+	public static final long v4 = 200000;
+	/*
+	 * primary data
+	 * public static final long v1 = 0;
+	 * public static final long v2 = 10000;
+	 * public static final long v3 = 100000;
+	 * public static final long v4 = 500000;
+	 */
 
 	public static final double delta1 = 0.3;
 	public static final double delta2 = 0.5;

@@ -204,7 +204,7 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 		 ***************************************************************************/
 		long level3Time = time != -1 ? time
 				: getTimeofLastIndex(history_level3, n, SystemParameters.v4) + additionalTime;
-		level3Time = -1;
+		// level3Time = -1;
 
 		switch (type) {
 			case TIME_DEFAULT:

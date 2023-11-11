@@ -8,9 +8,11 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.Queue;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jgrapht.Graph;
@@ -320,6 +322,57 @@ public class DirectedAcyclicGraph implements Serializable {
 		for (ImmutablePair<Node, Node> e : edges)
 			this.graph.addEdge(e.left, e.right);
 
+		topological_order();
+	}
+
+	public void Rank_Down(List<Node> nodes_topology) {
+		for (int i = nodes_topology.size() - 1; i >= 0; i--) {
+			Node n = nodes_topology.get(i);
+			n.UpDate_Down();
+		}
+	}
+
+	public void topological_order() {
+		// greedy
+		int num = 0, n = flatNodes.size(); // num记录入队顶点数
+		Queue<Node> q = new LinkedList<Node>();
+		ArrayList<Integer> inDegree = new ArrayList<Integer>();
+		ArrayList<Integer> outDegree = new ArrayList<Integer>();
+		ArrayList<Boolean> vis = new ArrayList<Boolean>();
+
+		for (int i = 0; i < n; i++) {
+			inDegree.add(0);
+			outDegree.add(0);
+			vis.add(false);
+		}
+		for (Node t : flatNodes) {
+			inDegree.set(t.getId(), t.getParent().size());
+			outDegree.set(t.getId(), t.getChildren().size());
+			if (t.getParent().size() == 0) {
+				q.offer(t);
+				vis.set(t.getId(), true);
+			}
+		}
+
+		while (q.size() != 0) {
+			Node u = q.poll();
+			u.topology_order = ++num;
+
+			for (Node child : u.getChildren()) {
+				int tmp_id = child.getId();
+				if (vis.get(tmp_id))
+					continue;
+				inDegree.set(tmp_id, inDegree.get(tmp_id) - 1);
+				if (inDegree.get(tmp_id) == 0) {
+					q.offer(child);
+					vis.set(tmp_id, true);
+				}
+			}
+		}
+		if (num != n) {
+			System.out.println("error topological order! maybe a circle in the graph");
+			System.out.println(num + " and " + n + '\n');
+		}
 	}
 
 	/******************************************************************

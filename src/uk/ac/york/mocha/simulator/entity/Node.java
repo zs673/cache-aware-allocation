@@ -47,6 +47,12 @@ public class Node implements Serializable {
 	 */
 	// parent_id to cost
 	public HashMap<Integer, Integer> com_edge = new HashMap<Integer, Integer>();
+	// cost to suc nodes
+	public int cost_suc;
+
+	public long rank_down;
+	public int topology_order;
+	public double gradient_cache;
 
 	/* max waiting time */
 	public long waiting_for_edges = 0;
@@ -234,6 +240,19 @@ public class Node implements Serializable {
 
 	public void setDagInstNo(int dagInstNo) {
 		this.dagInstNo = dagInstNo;
+	}
+
+	public void setNodeDown(long value) {
+		rank_down = value + WCET;
+	}
+
+	public void UpDate_Down() {
+		long record = 0;
+		for (Node suc : successors) {
+			if (suc.rank_down + suc.com_edge.get(getId()) > record)
+				record = suc.rank_down + suc.com_edge.get(getId());
+		}
+		this.setNodeDown(record);
 	}
 
 	// public Node deepCopy() {

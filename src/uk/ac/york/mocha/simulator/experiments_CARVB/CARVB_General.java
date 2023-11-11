@@ -8,6 +8,7 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.entity.newCache;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -19,6 +20,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
 import uk.ac.york.mocha.simulator.simulator.Simualtor;
+import uk.ac.york.mocha.simulator.simulator.SimualtorGYY;
 import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -29,6 +31,8 @@ public class CARVB_General {
 	static int cores = 4;
 	static int nos = 500;
 	static int intanceNum = 100;
+	static int cache_size = 1000;
+	static int ways = 10;
 
 	static int startUtil = 4;
 	static int incrementUtil = 4;
@@ -85,7 +89,7 @@ public class CARVB_General {
 
 			SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, taskSeed + i, true, print);
 			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
-					null, false, CCR);
+					null, false, CCR, ways);
 
 			OneSystemResults res = null;
 			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed, i);
@@ -119,13 +123,20 @@ public class CARVB_General {
 			}
 		}
 
-		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
+		newCache gyyCache = new newCache(ways, cache_size);
+		SimualtorGYY sim0 = new SimualtorGYY(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif, gyyCache);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
 
 		Simualtor sim2 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
+
+		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.WORST_FIT,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+				lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
 
 		/*
 		 * SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
@@ -161,6 +172,7 @@ public class CARVB_General {
 		 * cacheCASim3.simulate(print);
 		 */
 
+		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
 		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 		/*
@@ -170,6 +182,7 @@ public class CARVB_General {
 
 		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
 
+		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
 		/*
@@ -192,6 +205,7 @@ public class CARVB_General {
 			}
 
 			if (count < NoInstances[dags.get(i).id]) {
+				method0.add(m0.get(i));
 				method1.add(m1.get(i));
 				method2.add(m2.get(i));
 				/*
@@ -202,16 +216,20 @@ public class CARVB_General {
 			}
 		}
 
-		allMethods.add(method1);
+		allMethods.add(method0);
 		allMethods.add(method2);
+		allMethods.add(method1);
+
 		/*
 		 * allMethods.add(method2);
 		 * allMethods.add(method3);
 		 */
 
 		List<double[]> cachePerformance = new ArrayList<>();
-		cachePerformance.add(pair1.getSecond());
+		cachePerformance.add(pair0.getSecond());
 		cachePerformance.add(pair2.getSecond());
+		cachePerformance.add(pair1.getSecond());
+
 		/*
 		 * cachePerformance.add(pair2.getSecond());
 		 * cachePerformance.add(pair3.getSecond());

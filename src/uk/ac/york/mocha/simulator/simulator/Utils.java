@@ -171,6 +171,36 @@ public class Utils {
 
 	}
 
+	public static int compareNodeByPath(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
+
+		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+
+		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
+			return -1;
+		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
+			return 1;
+		} else {
+
+			int ins = Long.compare(c1.getDagInstNo(), c2.getDagInstNo());
+
+			if (ins != 0)
+				return ins;
+			else
+				return -Long.compare(c1.rank_down, c2.rank_down);
+
+			// int c = -Long.compare(c1.getWCET(), c2.getWCET());
+			//
+			// if (c != 0)
+			// return c;
+			// else {
+			// return Integer.compare(c1.getDagInstNo(), c2.getDagInstNo());
+			// }
+
+		}
+
+	}
+
 	public static int compareNodeByID(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
 
 		return Integer.compare(c1.getId(), c2.getId());
@@ -353,7 +383,7 @@ public class Utils {
 	}
 
 	public static void main(String args[]) {
-//		List<RecencyProfileReal> crps = readJson("crp/profile.tacle.crp.json");
+		// List<RecencyProfileReal> crps = readJson("crp/profile.tacle.crp.json");
 
 	}
 
@@ -383,7 +413,7 @@ public class Utils {
 
 				double WCET = ((Number) job.get("median_timing")).doubleValue();
 
-//				double highWaterMark = ((Number) job.get("hwm")).doubleValue();
+				// double highWaterMark = ((Number) job.get("hwm")).doubleValue();
 				double medianET = ((Number) job.get("median_timing")).doubleValue();
 
 				JSONArray breaks_j = (JSONArray) job.get("breaks");

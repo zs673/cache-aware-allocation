@@ -11,6 +11,7 @@ import org.apache.commons.math3.util.Pair;
 import uk.ac.york.mocha.simulator.entity.DAGtoPython;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.entity.newCache;
 import uk.ac.york.mocha.simulator.entity.RecencyProfile;
 import uk.ac.york.mocha.simulator.entity.RecencyProfileReal;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
@@ -75,7 +76,7 @@ public class SystemGenerator {
 	}
 
 	public Pair<List<DirectedAcyclicGraph>, CacheHierarchy> generatedDAGInstancesInOneHP(int forceInstanceNum,
-			int hyperPeriodNum, List<Long> periods, boolean hard, double CCR) {
+			int hyperPeriodNum, List<Long> periods, boolean hard, double CCR, int ways) {
 
 		if (periods != null && periods.size() != total_tasks) {
 			System.err
@@ -94,7 +95,7 @@ public class SystemGenerator {
 
 		if (hard) {
 			while (!schedulable) {
-				dagTasks = generateSporadicDAGs(periods, hard, CCR);
+				dagTasks = generateSporadicDAGs(periods, hard, CCR, ways);
 
 				/**
 				 * Set offline scheduling and allocation for the hard task
@@ -163,7 +164,7 @@ public class SystemGenerator {
 			// currentCore++;
 			// }
 		} else {
-			dagTasks = generateSporadicDAGs(periods, hard, CCR);
+			dagTasks = generateSporadicDAGs(periods, hard, CCR, ways);
 		}
 
 		for (DirectedAcyclicGraph d : dagTasks)
@@ -281,7 +282,8 @@ public class SystemGenerator {
 		return dags;
 	}
 
-	private List<DirectedAcyclicGraph> generateSporadicDAGs(List<Long> periods, boolean hard, double CCR) {
+	private List<DirectedAcyclicGraph> generateSporadicDAGs(List<Long> periods, boolean hard, double CCR,
+			int ways) {
 
 		List<DirectedAcyclicGraph> dags = new ArrayList<>();
 		List<SchedulingParameters> schedParam = generateSchedParam(periods);
@@ -339,8 +341,32 @@ public class SystemGenerator {
 
 		generateWCETs(dags);
 		setEdgeCosts(dags, CCR);
+		setUtilForCache(dags, ways);
+
+		// update nodes' rank_up and rank_down for each dag
+		// topology order has beed set since the dag created
+		for (DirectedAcyclicGraph d : dags) {
+			List<Node> nodes_topology = d.getFlatNodes();
+			nodes_topology.sort((n1, n2) -> Integer.compare(n1.topology_order, n2.topology_order));
+			d.Rank_Down(nodes_topology);
+		}
 
 		return dags;
+	}
+
+	private void setUtilForCache(List<DirectedAcyclicGraph> dags, int ways) {
+		/*
+		 * 随机生成每个节点对cache size的加速率
+		 */
+		double up_bound = 1 / ways;
+		double low_bound = up_bound / 10;
+		Random random = new Random(56);
+
+		for (DirectedAcyclicGraph d : dags) {
+			for (Node n : d.getFlatNodes()) {
+				n.gradient_cache = low_bound + (up_bound - low_bound) * random.nextDouble();
+			}
+		}
 	}
 
 	private void setEdgeCosts(List<DirectedAcyclicGraph> dags, double CCR) {
@@ -360,17 +386,54 @@ public class SystemGenerator {
 			 * to do: the rules to generate edge cost for parent node
 			 */
 			long avg_communi_cost = (long) ((double) d.getSchedParameters().getWCET() * CCR / (double) d.getNodeNum());
-			int m = d.getEdgeNum();
+			int m = d.getEdgeNum(), n = d.getNodeNum();
 			int index_of_m = 0;
 			double[] costs_edge = generateEdgeCosts(m, avg_communi_cost);
 
 			List<Node> node = d.getFlatNodes();
 
+			List<Double> cnt = new ArrayList<>();
+			List<List<Double>> record = new ArrayList<List<Double>>();
+
+			for (int i = 0; i < n; i++) {
+				cnt.add(0.0);
+				List<Double> tmp = new ArrayList<>();
+				record.add(tmp);
+			}
+
 			for (Node cur : node) {
 				for (Node parent : cur.getParent()) {
-					cur.com_edge.put(parent.getId(), (int) costs_edge[index_of_m++]);
+					// 计算父节点到当前节点的距离
+					// cur.com_edge.put(parent.getId(), (int) costs_edge[index_of_m++]);
+					cnt.set(parent.getId(), cnt.get(parent.getId()) + 1);
+					record.get(parent.getId()).add(costs_edge[index_of_m++]);
 				}
 			}
+			for (int i = 0; i < n; i++) {
+				double sum = 0;
+				for (double j : record.get(i)) {
+					sum += j;
+				}
+				if (cnt.get(i) != 0) {
+					cnt.set(i, sum / cnt.get(i));
+				}
+			}
+			/*
+			 * double sum = 0;
+			 * int tmp = 0;
+			 */
+			for (Node cur : node) {
+				cur.cost_suc = (int) Math.round(cnt.get(cur.getId()));
+				for (Node parent : cur.getParent()) {
+					/*
+					 * tmp++;
+					 * sum += (int) Math.round(cnt.get(parent.getId()));
+					 */
+					// 计算父节点到当前节点的距离
+					cur.com_edge.put(parent.getId(), (int) Math.round(cnt.get(parent.getId())));
+				}
+			}
+			// double test = sum / tmp;
 		}
 
 		if (print)
