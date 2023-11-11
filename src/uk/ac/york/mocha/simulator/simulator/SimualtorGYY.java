@@ -364,15 +364,15 @@ public class SimualtorGYY {
 				Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo()).startTime = systemTime;
 			}
 
-			// edit here
+			// edit here: done
 			long n_ways = gyyCache.apply_read_write(realET, n);
 			long accET = Math.round(realET * (1 - n.gradient_cache * n_ways));
 			allProcs[n.partition] = n.finishAt = systemTime + accET;
 
 			for (Node child : n.getChildren()) {
-				// edit here
+				// edit here: done
 				child.waiting_for_edges = Math.max(child.waiting_for_edges, n.finishAt +
-						child.com_edge.get(n.getId()) * (1 - gyyCache.read_only.get(n.getDagID() * 1000 + n.getId())));
+						Math.round(child.com_edge.get(n.getId()) * (1 - n_ways * child.gradient_cache)));
 			}
 
 			///////////////// Debug Output //////////////////////
@@ -408,7 +408,7 @@ public class SimualtorGYY {
 			if (n != null && n.finishAt <= systemTime) {
 				currentExe[i] = null;
 				n.finish = true;
-				// update cache
+				// edit here: done update cache
 				gyyCache.trans_read_only(n);
 
 				/* add the node to history for each cache level */
@@ -431,7 +431,6 @@ public class SimualtorGYY {
 					}
 
 					if (isReady) {
-						// edit here
 						if (child.waiting_for_edges <= systemTime) {
 							child.release = systemTime;
 							readyNodes.add(child);

@@ -31,8 +31,8 @@ public class CARVB_General {
 	static int cores = 4;
 	static int nos = 500;
 	static int intanceNum = 100;
-	static int cache_size = 1000;
-	static int ways = 10;
+	static int cache_size = 100;
+	static int ways = 30;
 
 	static int startUtil = 4;
 	static int incrementUtil = 4;
@@ -124,19 +124,19 @@ public class CARVB_General {
 		}
 
 		newCache gyyCache = new newCache(ways, cache_size);
-		SimualtorGYY sim0 = new SimualtorGYY(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+		SimualtorGYY sim0 = new SimualtorGYY(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.GYY,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif, gyyCache);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
-
-		Simualtor sim2 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
 		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 				Allocation.WORST_FIT,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 				lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
+
+		Simualtor sim2 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
 		/*
 		 * SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
@@ -217,8 +217,8 @@ public class CARVB_General {
 		}
 
 		allMethods.add(method0);
-		allMethods.add(method2);
 		allMethods.add(method1);
+		allMethods.add(method2);
 
 		/*
 		 * allMethods.add(method2);
@@ -227,8 +227,8 @@ public class CARVB_General {
 
 		List<double[]> cachePerformance = new ArrayList<>();
 		cachePerformance.add(pair0.getSecond());
-		cachePerformance.add(pair2.getSecond());
 		cachePerformance.add(pair1.getSecond());
+		cachePerformance.add(pair2.getSecond());
 
 		/*
 		 * cachePerformance.add(pair2.getSecond());

@@ -14,9 +14,9 @@ public class newCache implements Serializable {
      * key = dag_id * 1000 + node_id
      * value = cache ways in used
      */
-    HashMap<Integer, Long> read_only;// 查询cost用的是edge的起点key，也就是parent id
-    HashMap<Integer, Long> read_write;
-    HashMap<Integer, Integer> cnt_depend;
+    public HashMap<Integer, Long> read_only;// 查询cost用的是edge的起点key，也就是parent id
+    public HashMap<Integer, Long> read_write;
+    public HashMap<Integer, Integer> cnt_depend;
 
     public newCache(int ways, int capacity) {
         this.ways = ways;
@@ -73,7 +73,7 @@ public class newCache implements Serializable {
     /*
      * 申请read write cache
      */
-    public void apply_read_write(long apply, Node n) {
+    public long apply_read_write(long apply, Node n) {
         // 计算能分配的剩余cache (apply is data size)
         long require = (apply + capacity - 1) / capacity;
         long rest = find_rest_cap();
@@ -86,7 +86,6 @@ public class newCache implements Serializable {
          */
         read_write.put(key, allo);
 
-        // 更新总capacity
-        ways -= allo;
+        return allo;
     }
 }
