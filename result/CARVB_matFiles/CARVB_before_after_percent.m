@@ -9,8 +9,8 @@ judgements = 0.9;
 dummy_judgement = "0.1";
 
 threads = 0:4;
-effects = ["-1.0","1.0"];
-percents = [ "-0.1", "0.1", "0.3", "0.4", "0.5", "1.0" ];
+effects = ["1.0"];
+percents = [  "0.1", "0.3", "0.4", "0.5", "1.0" ];
 
 for percent = percents
     disp(strcat("percent:"," ",percent))

@@ -27,13 +27,13 @@ public class CARVB_General {
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	static int cores = 4;
-	static int nos = 500;
+	static int nos = 400;
 	static int intanceNum = 100;
 
 	static int startUtil = 4;
 	static int incrementUtil = 4;
 	static int endUtil = 36;
-	
+
 	static boolean print = false;
 
 	public static void main(String args[]) {
