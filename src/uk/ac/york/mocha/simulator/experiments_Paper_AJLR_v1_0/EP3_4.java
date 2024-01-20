@@ -27,8 +27,8 @@ public class EP3_4 {
 
 	public static void main(String args[]) {
 
-		faultsInRecency3D();
-//		oneTaskWithFaults();
+//		faultsInRecency3D();
+		oneTaskWithFaults();
 //
 //		oneTaskWithDifferentPatterns();
 
@@ -165,10 +165,10 @@ public class EP3_4 {
 		int seed = 1000;
 
 		SystemParameters.fault_rate = 50;
-		SystemParameters.fault_median = 25;
+		SystemParameters.fault_median = 5;
 		SystemParameters.fault_range = SystemParameters.fault_median * 2;
 
-		for (int i = 8; i <= 40; i = i + 8) {
+		for (int i = 8; i <= 64; i = i + 8) {
 
 			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
 

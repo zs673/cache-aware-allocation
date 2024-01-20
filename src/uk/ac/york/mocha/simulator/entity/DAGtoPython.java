@@ -81,7 +81,7 @@ public class DAGtoPython {
 			 * CPC model. 1 - use priority passed from java space.
 			 */
 			Process process = Runtime.getRuntime()
-					.exec("python3 rta.py " + G + " " + C + " " + P + " " + core + " " + 0);
+					.exec("python rta.py " + G + " " + C + " " + P + " " + core + " " + 0);
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 

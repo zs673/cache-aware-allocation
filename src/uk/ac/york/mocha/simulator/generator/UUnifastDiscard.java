@@ -102,10 +102,15 @@ public class UUnifastDiscard {
 	}
 	
 	public static void main(String args[]) {
-		for(int i=0; i<1000; i++) {
-			UUnifastDiscard uu = new UUnifastDiscard(8.0, 1, 1000, 8, false, new Random(i));
-			System.out.println(uu.getUtils().get(0));
-		}
+		
+		UUnifastDiscard uu = new UUnifastDiscard(8.0, 1, 1000, 8, false, new Random(1000));
+		
+		uu.getUtils();
+		
+//		for(int i=0; i<1000; i++) {
+//			
+//			System.out.println(uu.getUtils().get(0));
+//		}
 	}
 
 }

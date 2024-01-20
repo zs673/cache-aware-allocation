@@ -82,17 +82,17 @@ end
 
 xlim([0,14.5]);
 set(gca,'xtick',[0, 2, 6.5 14.5] );
-set(gca,'xticklabel',[0, 10, 100, 500]);
+set(gca,'xticklabel',[0, 16, 128, 512]);
 
 ylim([0, 100]);
 
 ax = gca;
 ax.FontSize = 12; 
 
-xlabel({'Recency distance'},'FontSize', 14);
-ylabel({'Speedup over WCET (%)'},'FontSize', 14)
+xlabel({'Recency distance (in ΔNoUC)'},'FontSize', 14);
+ylabel("Approx. ET over WCET (%)",'FontSize', 14)
 
-h=legend("Recency for core", "Recency for cluster", "Recency for system",'location','southeast');
+h=legend("Recency for core (L1)", "Recency for cluster (L2)", "Recency for system (L3)",'location','southeast');
 set(h,'FontSize',14);
 
 saveas(gcf,strcat('figs/ep_recency.eps'), 'epsc');
