@@ -1,5 +1,10 @@
 package uk.ac.york.mocha.simulator.generator;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,5 +30,51 @@ public class HitCore {
 
     public Boolean isEmpty(){
         return this.level1.size() == 0 && this.level2.size() == 0;
+    }
+
+    public synchronized HitCore deepCopy() {
+
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(this);
+
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			ObjectInputStream ois = new ObjectInputStream(bais);
+
+			HitCore hitCore = (HitCore) ois.readObject();
+
+			oos.flush();
+			baos.flush();
+
+			baos.close();
+			oos.close();
+			bais.close();
+			ois.close();
+
+			return hitCore;
+		} catch (EOFException eof) {
+			eof.printStackTrace();
+			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+    public HitCore excludCore(List<Integer> allocProcs){
+        for (int i = 0; i < allocProcs.size(); i++){
+            Integer proc = allocProcs.get(i);
+            if (this.level1.contains(proc)){
+                this.level1.remove(proc);
+            }
+            if (this.level2.contains(proc)){
+                this.level2.remove(proc);
+            }
+            if (this.level3.contains(proc)){
+                this.level3.remove(proc);
+            }
+        }
+        return this;
     }
 }
