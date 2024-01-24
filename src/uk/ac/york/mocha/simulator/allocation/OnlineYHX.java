@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.Iterator;
 
 import org.apache.commons.math3.util.Pair;
 import org.python.antlr.PythonParser.list_for_return;
@@ -189,9 +190,10 @@ public class OnlineYHX extends AllocationMethods {
 	 * （2）没有造成核上已分配任务的L2 recency miss
 	 * （3）为了多命中几个cluster，是不是要牺牲第二个instance（实现第一点好像就能，但后面只命中一个L2时还是会选择miss，违背初衷，还是要为第二个instance单独设立分配方式。其他的instance在只命中一个cluster的时候选择该cluster，第二个instance选择miss）
 	 * （4）想一下这样有没有实现初衷(优先级那里倒序能不能实现让步，怎么样实现让步)
-	 * 	(5) todo:判断是否命中多个cluster 以及分instance分配
-	 * （6）todo: 优先级怎么考虑争用
+	 * 	(5) todo:判断是否命中多个cluster 以及分instance分配（分类讨论不同instance、是否只命中一个cluster）
+	 * （6）todo: 优先级怎么考虑争用（动态？不同readyNodes、不同可用核）
 	 * （7）todo: 分配一个核之后更新其他结点的可用核
+	 * （8）todo: allocProcs和allocNodes在setPartition中的使用，procsTime的使用
 	 */
 	private Integer setPartitionForYHX(Node n, Map<Node, HitCore>hitCore, List<Integer> allocNodes,
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
@@ -202,70 +204,165 @@ public class OnlineYHX extends AllocationMethods {
 		if (hitCore.get(n).isEmpty()){//hit no L1 and L2
 			return rng.nextInt(procs.size());
 		}
-		//只命中一个cluster的L1、一个cluster的L1和L2、一个cluster的L2，牺牲第二个instance
-		//todo：第二个instance之后的分配，在只命中一个clusters时直接选择该cluster
 		if (hitCore.get(n).level1.size() > 1){//hit two L1 
 			List<Entry<Integer, Long>> recencyTable = getRecencyTable(n, new ArrayList<Integer>(hitCore.get(n).level1), history_level1, history_level2, history_level3, 0);
-			Integer clusterIdx = recencyTable.get(0).getKey() / level2ClusterSize;
-
-			int minMissIdx = Integer.MAX_VALUE;
-			int minMissCnt = Integer.MAX_VALUE;
-			for (int i = 1; i < recencyTable.size(); i++){
-				int core = recencyTable.get(i).getKey();
-				if (core / level2ClusterSize == clusterIdx)
-					continue;
-				
-				long et_n = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, 0, false).getFirst().getFirst();
-				List<Node> nodesInProc = allocHistory.get(core);
-
+			if (checkMultiCluster(n, hitCore.get(n).level1, history_level1, history_level2, history_level3)){
 				/*
-				* Get the nodes that can hit level two cache in each free core.
-				*/
-				long nodeNum = 0;
-				List<Node> affectedNodes = new ArrayList<>();
-				for (int j = nodesInProc.size() - 1; j >= 0; j--) {
-					nodeNum += nodesInProc.get(j).expectedET;
-
-					if (nodeNum >= SystemParameters.v4) { //无法从cache受益的在计算impact时不考虑
-						break;
-					}
-
-					affectedNodes.add(nodesInProc.get(j));
-				}
-				//优先选不让(更少的）别的结点miss L2的核 todo：有可能所有的候选核都会有之前的结点miss L2了，在都miss的情况下是选recency小的还是miss少的（都hit L1感觉speedup都不差，选miss少的吧）
-				int cnt = 0;
-				for (Node affected : affectedNodes){
-					Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected, core, true, et_n);
-					if (recencyL2 > SystemParameters.v3){
-						cnt++;
-					}
-				}
-				if (minMissCnt > cnt){
-					minMissCnt = cnt;
-					minMissIdx = i;
+				 * 1)choose different cluster with min recency
+				 * 2)choose max recency left for L2 and max speedup(speedup second, since almost same)
+				 */
+				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, history_level1, history_level2, history_level3);
+				return core;
+			}else{
+				if (n.getDagInstNo() == 1){
+					return 0;
+				}else{
+					return recencyTable.get(0).getKey();
 				}
 			}
-			return minMissIdx;
-			
+			/*else只命中一个cluster
+				if(n.getDagId.getInstanceNo == 2)
+					return 核上已分配任务距离L2阈值最远的
+				else
+					return recency最小的
+
+				*/
 		}else if (hitCore.get(n).level1.size() == 1 && hitCore.get(n).level2.size() > 0){//hit L1 and L2
+			Set<Integer> allHitCore = new HashSet<>();
+			allHitCore.addAll(hitCore.get(n).level1);
+			allHitCore.addAll(hitCore.get(n).level2);
+			List<Entry<Integer, Long>> recencyTable = getRecencyTable(n, new ArrayList<Integer>(allHitCore), history_level1, history_level2, history_level3, 0);
+			//if 命中多个cluster
+			if (checkMultiCluster(n, allHitCore, history_level1, history_level2, history_level3)){
+				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, history_level1, history_level2, history_level3);
+				return core;
+			}else{
+				if (n.getDagInstNo() == 1){
+					return 0;
+				}else{
+					return recencyTable.get(0).getKey();
+				}
+			}
+			/*else只命中一个cluster
+				if(n.getDagId.getInstanceNo == 2)
+					return 核上已分配任务距离L2阈值最远的
+				else
+					return recency最小的
+
+				*/
 
 		}else if (hitCore.get(n).level2.size() > 1){// hit two L2
+			List<Entry<Integer, Long>> recencyTable = getRecencyTable(n, new ArrayList<Integer>(hitCore.get(n).level2), history_level1, history_level2, history_level3, 0);
+			//if 命中多个cluster
+			if (checkMultiCluster(n, hitCore.get(n).level2, history_level1, history_level2, history_level3)){
+				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, history_level1, history_level2, history_level3);
+				return core;
+			}else{
+				if (n.getDagInstNo() == 1){
+					return 0;
+				}else{
+					return recencyTable.get(0).getKey();
+				}
+			}
+			/*else只命中一个cluster
+				if(n.getDagId.getInstanceNo == 2)
+					return 核上已分配任务距离L2阈值最远的
+				else
+					return recency最小的
 
+				*/
 		}else{//只命中一个L2 
-			return hitCore.get(n).level2.iterator().next();
-		}
+			/*只命中一个cluster
+				if(n.getDagId.getInstanceNo == 2)
+					return 核上已分配任务距离L2阈值最远的
+				else
+					return recency最小的
 
-		return 0;
-		
+				*/
+			if (n.getDagInstNo() == 1){
+				return 0;
+			}else{
+				return hitCore.get(n).level2.iterator().next();
+			}
+		}
 	}
 
-	private Boolean checkCluster(Node n, Map<Node, HitCore>hitCore, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+
+	private Boolean checkMultiCluster(Node n, Set<Integer> level, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
 		int level2ClusterNum = history_level2.size();
 		int level2ClusterSize = history_level1.size() / level2ClusterNum;
-		if (hitCore.get(n).level1.size() > 1){
-
+		Set<Integer> set = new HashSet<>();
+		Iterator<Integer> iterator = level.iterator();
+        while (iterator.hasNext()) {
+            Integer element = iterator.next();
+			if (set.contains(element / level2ClusterSize)){
+				return true;
+			}
+			set.add(element / level2ClusterSize);
 		}
 		return false;
+	}
+
+	private Integer setPartitionRules(Node n, Integer level2ClusterSize, List<Entry<Integer, Long>> recencyTable, List<List<Node>> allocHistory, 
+			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+		
+		Integer clusterIdx = recencyTable.get(0).getKey() / level2ClusterSize;
+
+		Integer minMissIdx = Integer.MAX_VALUE;
+		Long minMissCnt = Long.MAX_VALUE;
+		for (int i = 1; i < recencyTable.size(); i++){
+			int core = recencyTable.get(i).getKey();
+			if (core / level2ClusterSize == clusterIdx)
+				continue;
+			
+			Long cnt = getRecencyFree(n, core, allocHistory, history_level1, history_level2, history_level3);
+			if (minMissCnt > cnt){
+				minMissCnt = cnt;
+				minMissIdx = i;
+			}
+		}
+		return minMissIdx;
+	}
+
+	private Integer setPartitionForIns2(Node n, Integer level2ClusterSize, Map<Node, HitCore> hitCore, List<Integer> allocNodes,
+			List<Integer> allocProcs, List<List<Node>> allocHistory, List<Integer> procs, 
+			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+		//已经是空闲的了，排掉已分配的就行
+		List<Integer> candidateCore = procs
+		return 0;
+	}
+
+	private Long getRecencyFree(Node n, int core, List<List<Node>> allocHistory, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+		long et_n = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, 0, false).getFirst().getFirst();
+		List<Node> nodesInProc = allocHistory.get(core);
+
+		long nodeNum = 0; //Get the nodes that can hit level two cache in each free core.
+		List<Node> affectedNodes = new ArrayList<>();
+		for (int j = nodesInProc.size() - 1; j >= 0; j--) {
+			nodeNum += nodesInProc.get(j).expectedET;
+
+			if (nodeNum >= SystemParameters.v4) { //无法从cache受益的在计算impact时不考虑
+				break;
+			}
+
+			affectedNodes.add(nodesInProc.get(j));
+		}
+		//优先选不让(更少的）别的结点miss L2的核 todo：有可能所有的候选核都会有之前的结点miss L2了，在都miss的情况下是选recency小的还是miss少的（都hit L1感觉speedup都不差，选miss少的吧）
+		//也可以换成别的方案：距离L2 miss的阈值最远的，试试哪个好
+		// int cnt = 0;
+		// for (Node affected : affectedNodes){
+		// 	Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected, core, true, et_n);
+		// 	if (recencyL2 > SystemParameters.v3){
+		// 		cnt++;
+		// 	}
+		// }
+
+		Long sum = (long) 0;
+		for (Node affected : affectedNodes){
+			Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected, core, true, 0);
+			sum += SystemParameters.v3 - recencyL2;
+		}
+		return sum;
 	}
 
 	private List<Entry<Integer, Long>> getRecencyTable(Node n, List<Integer> procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, long additionalTime){
