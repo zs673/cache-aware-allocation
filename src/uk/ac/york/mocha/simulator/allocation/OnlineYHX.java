@@ -62,29 +62,29 @@ public class OnlineYHX extends AllocationMethods {
 
 		List<Integer> availableP = new ArrayList<>(availableCores);
 
-		List<List<Long>> speedUpTable = new ArrayList<>();
-		//计算SUT
-		for (Node n : preEligible) {
-			List<Long> ETdrop = new ArrayList<>();
+		// List<List<Long>> speedUpTable = new ArrayList<>();
+		// //计算SUT
+		// for (Node n : preEligible) {
+		// 	List<Long> ETdrop = new ArrayList<>();
 
-			for (int i = 0; i < history_level1.size(); i++) {
-				int proc = i;
-				if (availableP.contains(proc)) {
-					/*
-					 * Speed up by ABSOLUTE value
-					 */
-					long WCET = n.getWCET();
-					long realET = n.crp
-							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, 0,false)
-							.getFirst().getFirst();//computeET返回三个值，第一个是model估计的ET，第二个是err，第三个是命中第几层缓存
-					long speedup = WCET - realET;
+		// 	for (int i = 0; i < history_level1.size(); i++) {
+		// 		int proc = i;
+		// 		if (availableP.contains(proc)) {
+		// 			/*
+		// 			 * Speed up by ABSOLUTE value
+		// 			 */
+		// 			long WCET = n.getWCET();
+		// 			long realET = n.crp
+		// 					.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, 0,false)
+		// 					.getFirst().getFirst();//computeET返回三个值，第一个是model估计的ET，第二个是err，第三个是命中第几层缓存
+		// 			long speedup = WCET - realET;
 
-					ETdrop.add(speedup);
-				}
-			}
+		// 			ETdrop.add(speedup);
+		// 		}
+		// 	}
 
-			speedUpTable.add(ETdrop);
-		}
+		// 	speedUpTable.add(ETdrop);
+		// }
 
 		List<Integer> allocProcs = new ArrayList<>();
 		List<Node> allocNodes = new ArrayList<>();
@@ -196,14 +196,20 @@ public class OnlineYHX extends AllocationMethods {
 	}
         
 	/*
-	 * （1）和上一次不同cluster里面recency最小的（是不是全部里面第二小的 不一定 可能第二小的和上一个instance还是一个cluster） --- 维护一个recency table，排序一下，选择和最小的不一个cluster的
-	 * （2）没有造成核上已分配任务的L2 recency miss
+	 * （1）和recency最小的不同cluster里面recency最小的（是不是全部里面第二小的 不一定 可能第二小的和上一个instance还是一个cluster） --- 维护一个recency table，排序一下，选择和最小的不一个cluster的
+	 * （2）没有造成核上已分配任务的L2 recency miss or 距离L2 miss的阈值最远的，试试哪个好
 	 * （3）为了多命中几个cluster，是不是要牺牲第二个instance（实现第一点好像就能，但后面只命中一个L2时还是会选择miss，违背初衷，还是要为第二个instance单独设立分配方式。其他的instance在只命中一个cluster的时候选择该cluster，第二个instance选择miss）
 	 * （4）想一下这样有没有实现初衷(优先级那里倒序能不能实现让步，怎么样实现让步)
-	 * 	(5) todo:判断是否命中多个cluster 以及分instance分配（分类讨论不同instance、是否只命中一个cluster）
+	 * 	(5) todo:判断是否命中多个cluster 以及分instance分配（分类讨论不同instance、是否只命中一个cluster） done
 	 * （6）todo: 优先级怎么考虑争用（动态？不同readyNodes、不同可用核）
-	 * （7）todo: 分配一个核之后更新其他结点的可用核
-	 * （8）todo: allocProcs和allocNodes在setPartition中的使用，procsTime的使用
+	 * （7）todo: 分配一个核之后更新其他结点的可用核  done
+	 * （8）todo: allocProcs和allocNodes在setPartition中的使用，procsTime的使用  done
+	 * （9）todo：debug simulator main
+	 * （10）todo：experiment
+	 * （11）todo：加system error
+	 * （12）找crp怎么构建的
+	 * （13）看看这样写能不能实现让步和多hit L2
+	 * 	 
 	 */
 	private Integer setPartitionForYHX(Node n, Map<Node, HitCore> hitCore, List<Node> allocNodes,
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
@@ -386,127 +392,9 @@ public class OnlineYHX extends AllocationMethods {
 		//return list.stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 		return list;
 	}
-
-
-	// MSF + LCIF
-	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
-			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
-			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
-			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
-
-		int row = -1;
-		int col = -1;
-		long max = Long.MIN_VALUE;
-		//find the max value in SUT
-		for (int i = 0; i < speedUpTable.size(); i++) {
-			if (!allocNodes.contains(i)) {//还没被分配的结点
-				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
-					if (!allocProcs.contains(j)) {//还没被分配的核
-						if (max < speedUpTable.get(i).get(j)) {
-							max = speedUpTable.get(i).get(j);
-							row = i;
-							col = j;
-						}
-					}
-
-				}
-			}
-		}
-
-		if (lcif) {
-			Node n = preEligible.get(row);
-			List<Integer> freeProcIndex = new ArrayList<>();
-			List<Integer> freeProc = new ArrayList<>();
-			List<Integer> freeCluster = new ArrayList<>();
-
-			/**
-			 * Find all available cores that can have the same speed up
-			 */
-			for (int i = 0; i < procs.size(); i++) {
-				if (!allocProcs.contains(i) && speedUpTable.get(row).get(i) == max) {
-					freeProcIndex.add(i);
-
-					int proc = procs.get(i);
-					freeProc.add(proc);
-
-					int c = proc / 4;
-					if (!freeCluster.contains(c))
-						freeCluster.add(c);
-				}
-			}
-
-			if (freeProcIndex.size() > 1) {
-
-				/*
-				 * Search in history for same node & DAG allocation
-				 */
-				List<List<Node>> NodeHis = new ArrayList<>();
-				List<Long> impacts = new ArrayList<>();
-
-				for (int i = 0; i < freeProcIndex.size(); i++) {
-					NodeHis.add(new ArrayList<>());
-					impacts.add((long) 0);
-				}
-
-				for (int i = 0; i < freeProcIndex.size(); i++) {
-					int procIndex = freeProcIndex.get(i);
-					long et_n = n.getWCET() - speedUpTable.get(row).get(procIndex);
-
-					List<Node> nodesInProc = allocHistory.get(procIndex);
-
-					/*
-					 * Get the nodes that can hit level two cache in each free core.
-					 */
-					long Nodenum = 0;
-					for (int j = nodesInProc.size() - 1; j >= 0; j--) {
-						Nodenum += nodesInProc.get(j).expectedET;
-
-						if (Nodenum >= SystemParameters.v4) { //无法从cache受益的在计算impact时不考虑
-							break;
-						}
-
-						NodeHis.get(i).add(nodesInProc.get(j));
-					}
-
-					List<Node> affectedNodes = NodeHis.get(i);
-					long affectedTime = 0;
-
-					for (Node affected : affectedNodes) {
-						long affectedTimeOneNode = affected.crp.computeET(-1, history_level1, history_level2,
-								history_level3, affected, affected.partition, true, et_n, 0,false).getFirst().getFirst()
-								- affected.crp.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, 0,0, false).getFirst().getFirst(); //加多一个additional_time：et_n
-
-						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
-
-						if (affectedTime < 0) {
-							System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");
-							System.exit(-1);
-						}
-					}
-
-					impacts.set(i, affectedTime);
-				}
-
-				long minExecutionTime = Collections.min(impacts);
-				int minETIndex = impacts.indexOf(minExecutionTime);
-
-				col = freeProcIndex.get(minETIndex);
-
-			}
-
-		}
-
-		if (row == -1 || col == -1) {
-			System.err.println("SimpleCacheAware.getIndexOfMaximum(): Cannot find the max value!");
-
-			System.exit(-1);
-		}
-
-		return new Pair<Integer, Integer>(row, col);
-	}
-
 }
+
+
 
 
 
