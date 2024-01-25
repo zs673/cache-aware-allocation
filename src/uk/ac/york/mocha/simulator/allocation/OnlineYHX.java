@@ -122,7 +122,7 @@ public class OnlineYHX extends AllocationMethods {
 			allocProcs.add(core);
 
 			localRunqueue.get(n.partition).add(n);//加到localRunqueue
-			allocHistory.get(n.partition).add(n);
+			//allocHistory.get(n.partition).add(n);重了
 			// Node n = preEligible.get(p.getFirst().intValue());
 
 			// n.partition = availableP.get(p.getSecond().intValue());
@@ -217,7 +217,8 @@ public class OnlineYHX extends AllocationMethods {
 			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
 		
 		HitCore oriNodeHitcore = hitCore.get(n);
-		HitCore updateHitCore = oriNodeHitcore.deepCopy().excludCore(allocProcs);//排除已分配的procs
+		HitCore updateHitCore = oriNodeHitcore.deepCopy();
+		updateHitCore = updateHitCore.excludCore(allocProcs);//排除已分配的procs
 
 		Integer level2ClusterSize = history_level1.size() / history_level2.size();
 		if (updateHitCore.isEmpty()){//hit no L1 and L2
@@ -230,7 +231,7 @@ public class OnlineYHX extends AllocationMethods {
 				 * 1)choose different cluster with min recency
 				 * 2)choose max recency left for L2 and max speedup(speedup second, since almost same)
 				 */
-				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, history_level1, history_level2, history_level3);
+				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, procs, history_level1, history_level2, history_level3);
 				return core;
 			}else{
 				if (n.getDagInstNo() == 1){
@@ -253,7 +254,7 @@ public class OnlineYHX extends AllocationMethods {
 			List<Entry<Integer, Long>> recencyTable = getRecencyTable(n, new ArrayList<Integer>(allHitCore), history_level1, history_level2, history_level3, 0);
 			//if 命中多个cluster
 			if (checkMultiCluster(n, allHitCore, history_level1, history_level2, history_level3)){
-				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, history_level1, history_level2, history_level3);
+				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, procs, history_level1, history_level2, history_level3);
 				return core;
 			}else{
 				if (n.getDagInstNo() == 1){
@@ -266,7 +267,7 @@ public class OnlineYHX extends AllocationMethods {
 			List<Entry<Integer, Long>> recencyTable = getRecencyTable(n, new ArrayList<Integer>(updateHitCore.level2), history_level1, history_level2, history_level3, 0);
 			//if 命中多个cluster
 			if (checkMultiCluster(n, updateHitCore.level2, history_level1, history_level2, history_level3)){
-				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, history_level1, history_level2, history_level3);
+				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, procs, history_level1, history_level2, history_level3);
 				return core;
 			}else{
 				if (n.getDagInstNo() == 1){
@@ -292,7 +293,7 @@ public class OnlineYHX extends AllocationMethods {
 		Iterator<Integer> iterator = level.iterator();
         while (iterator.hasNext()) {
             Integer element = iterator.next();
-			if (set.contains(element / level2ClusterSize)){
+			if (!set.isEmpty() && !set.contains(element / level2ClusterSize)){
 				return true;
 			}
 			set.add(element / level2ClusterSize);
@@ -300,7 +301,7 @@ public class OnlineYHX extends AllocationMethods {
 		return false;
 	}
 
-	private Integer setPartitionRules(Node n, Integer level2ClusterSize, List<Entry<Integer, Long>> recencyTable, List<List<Node>> allocHistory, 
+	private Integer setPartitionRules(Node n, Integer level2ClusterSize, List<Entry<Integer, Long>> recencyTable, List<List<Node>> allocHistory, List<Integer> procs,
 			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
 		
 		Integer clusterIdx = recencyTable.get(0).getKey() / level2ClusterSize;
@@ -312,7 +313,7 @@ public class OnlineYHX extends AllocationMethods {
 			if (core / level2ClusterSize == clusterIdx)
 				continue;
 			
-			Long cnt = getRecencyFree(n, core, allocHistory, history_level1, history_level2, history_level3);
+			Long cnt = getRecencyFree(n, core, allocHistory, procs, history_level1, history_level2, history_level3);
 			if (minMissCnt > cnt){
 				minMissCnt = cnt;
 				minMissIdx = i;
@@ -331,9 +332,9 @@ public class OnlineYHX extends AllocationMethods {
 		Integer minMissIdx = Integer.MAX_VALUE;
 		Long minMissCnt = Long.MAX_VALUE;
 		for (int i = 0; i < candidateCore.size(); i++){
-			int core = i;
+			int core = candidateCore.get(i);
 			
-			Long cnt = getRecencyFree(n, core, allocHistory, history_level1, history_level2, history_level3);
+			Long cnt = getRecencyFree(n, core, allocHistory, procs, history_level1, history_level2, history_level3);
 			if (minMissCnt > cnt){
 				minMissCnt = cnt;
 				minMissIdx = i;
@@ -342,9 +343,13 @@ public class OnlineYHX extends AllocationMethods {
 		return minMissIdx;
 	}
 
-	private Long getRecencyFree(Node n, int core, List<List<Node>> allocHistory, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+	private Long getRecencyFree(Node n, int core, List<List<Node>> allocHistory, List<Integer> procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
 		long et_n = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, 0, false).getFirst().getFirst();
-		List<Node> nodesInProc = allocHistory.get(core);
+		int idx = procs.indexOf(core);
+		if (idx == -1){
+			System.out.println("*****");
+		}
+		List<Node> nodesInProc = allocHistory.get(idx);
 
 		long nodeNum = 0; //Get the nodes that can hit level two cache in each free core.
 		List<Node> affectedNodes = new ArrayList<>();
@@ -379,8 +384,8 @@ public class OnlineYHX extends AllocationMethods {
 		Map<Integer, Long> rct = new HashMap<>();
 
 		for (int i = 0; i < procs.size(); i++){
-			long recencyDis = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, n, i, true, additionalTime);
-			rct.put(i, recencyDis);
+			long recencyDis = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, n, procs.get(i), true, additionalTime);
+			rct.put(procs.get(i), recencyDis);
 		}
 		List<Entry<Integer, Long>> list = new ArrayList<Entry<Integer, Long>>(rct.entrySet());
 		Collections.sort(list, new Comparator<Map.Entry<Integer, Long>>() {

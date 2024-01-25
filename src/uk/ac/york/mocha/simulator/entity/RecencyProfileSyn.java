@@ -248,7 +248,7 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 	}
 
 	
-	private Long computeRecency(long time, List<List<Node>> history_level1, List<List<Node>> history_level2,
+	public Long computeRecency(long time, List<List<Node>> history_level1, List<List<Node>> history_level2,
 		List<Node> history_level3, Node n, int proc, boolean cacheAware, long additionalTime) {
 		/**
 		 * Compute recency distance at each cache level

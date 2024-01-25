@@ -170,11 +170,11 @@ public class CARVB_General {
 		// 	// TODO Auto-generated catch block
 		// 	e.printStackTrace();
 		// }
-		// SimualtorYHX sim0 = new SimualtorYHX(SimuType.CLOCK_LEVEL,
-		// Hardware.PROC_CACHE, Allocation.ONLINE_YHX, // PROC_CACHE
-		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		// lcif);
-		// Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);//运行完的dags + 缓存命中
+		SimualtorYHX sim0 = new SimualtorYHX(SimuType.CLOCK_LEVEL,
+		Hardware.PROC_CACHE, Allocation.ONLINE_YHX, // PROC_CACHE
+		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);//运行完的dags + 缓存命中
 
 		// WFD  worst-fit allocation
 		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC,
@@ -290,7 +290,7 @@ public class CARVB_General {
 		// get_new_metric(pair5);
 		// get_new_metric(pair6);
 		// get_new_metric(pair7);
-		//List<DirectedAcyclicGraph> m0 = pair0.getFirst();
+		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
 		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 		// List<DirectedAcyclicGraph> m3 = pair3.getFirst();
@@ -333,7 +333,7 @@ public class CARVB_General {
 			}
 
 			if (count < NoInstances[dags.get(i).id]) {
-				// method0.add(m0.get(i));
+				method0.add(m0.get(i));
 				method1.add(m1.get(i));
 				method2.add(m2.get(i));
 				// method3.add(m3.get(i));
@@ -345,7 +345,7 @@ public class CARVB_General {
 			}
 		}
 
-		// allMethods.add(method0);
+		allMethods.add(method0);
 		allMethods.add(method1);
 		allMethods.add(method2);
 		// allMethods.add(method3);
@@ -355,7 +355,7 @@ public class CARVB_General {
 		// allMethods.add(method7);
 
 		List<double[]> cachePerformance = new ArrayList<>();
-		// cachePerformance.add(pair0.getSecond());
+		cachePerformance.add(pair0.getSecond());
 		cachePerformance.add(pair1.getSecond());
 		cachePerformance.add(pair2.getSecond());
 		// cachePerformance.add(pair3.getSecond());

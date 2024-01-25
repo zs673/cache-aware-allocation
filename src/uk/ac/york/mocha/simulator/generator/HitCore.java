@@ -5,12 +5,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class HitCore {
+public class HitCore implements Serializable {
     public int coreNum;
 	public int cacheLevel;
 	public int level2ClusterNum;

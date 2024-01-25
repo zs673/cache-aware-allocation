@@ -24,6 +24,8 @@ public abstract class RecencyProfile  implements Serializable {
 	public abstract Pair<Pair<Long, Double>, Integer> computeET(long time, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, Node n, int proc, boolean cacheAware,
 			long additionalTime, long variation, boolean error);
+	public abstract Long computeRecency(long time, List<List<Node>> history_level1, List<List<Node>> history_level2,
+			List<Node> history_level3, Node n, int proc, boolean cacheAware, long additionalTime);
     //距离结点上一次运行在缓存（L1、L2、L3都在这）上过去了多久（期间运行的node realET之和）
 	public long getTimeofLastIndex(List<Node> nodes, Node n, double bound) {
 
