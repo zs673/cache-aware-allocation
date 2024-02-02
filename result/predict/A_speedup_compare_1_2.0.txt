@@ -3,20 +3,6 @@
 Data analysis for each instance 
 AVG,MED,MAX,MIN
 NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
-NaN,NaN,NaN,NaN,
 
 
 

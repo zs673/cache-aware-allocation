@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.python.antlr.op.In;
+
 public class HitCore implements Serializable {
     public int coreNum;
 	public int cacheLevel;
@@ -32,6 +34,16 @@ public class HitCore implements Serializable {
     public Boolean isEmpty(){
         return this.level1.size() == 0 && this.level2.size() == 0;
     }
+
+	public Integer getSize(){
+        return this.level1.size() + this.level2.size();
+    }
+
+	public List<Integer> getCoreList(){
+		List<Integer> tmp = new ArrayList<>(this.level1);
+		tmp.addAll(new ArrayList<>(this.level2));
+		return tmp;
+	}
 
     public synchronized HitCore deepCopy() {
 

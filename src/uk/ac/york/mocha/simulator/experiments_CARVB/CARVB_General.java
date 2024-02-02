@@ -170,18 +170,18 @@ public class CARVB_General {
 		// 	// TODO Auto-generated catch block
 		// 	e.printStackTrace();
 		// }
-		SimualtorYHX sim0 = new SimualtorYHX(SimuType.CLOCK_LEVEL,
+		SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL,
 		Hardware.PROC_CACHE, Allocation.ONLINE_YHX, // PROC_CACHE
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);//运行完的dags + 缓存命中
+		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
 
 		// WFD  worst-fit allocation
-		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC,
+		Simualtor sim0 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC,
 		Allocation.WORST_FIT_OUR, // Hardware.PROC
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif, speeds);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
 
 		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
