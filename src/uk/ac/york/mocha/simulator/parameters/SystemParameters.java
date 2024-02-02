@@ -66,8 +66,7 @@ public class SystemParameters {
 		CACHE_AWARE_COMPARE, CARVB,
 		CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW,
 		CACHE_AWARE_NEW_BASE, GYY, HSF, GYY_WCET, GYY_old, HEFT, HEFT_NEW, CPOP, CPOP_NEW, gyy_test, sota_with_old,
-		ONLINE_YHX
-
+		ONLINE_YHX, ONLINE_YHX_TEST
 	};
 
 	/**********************************************************************

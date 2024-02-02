@@ -47,7 +47,7 @@ public class OnlineYHX_test extends AllocationMethods {
         //Map<Node, HitCore> hitCore = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
         Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);
         Map<Node, HitCore> hitCore = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
-        Integer metric = getSacrifice(readyNodes, hitCore, availableCores, availableTimeAllProcs, affectedList, 
+        Map<Node, List<Integer>> sacrifice = getSacrifice(readyNodes, hitCore, availableCores, availableTimeAllProcs, affectedList, 
                                     history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
 		/*
@@ -119,7 +119,7 @@ public class OnlineYHX_test extends AllocationMethods {
 			allocProcs.add(p.getSecond().intValue());
 
 			localRunqueue.get(n.partition).add(n);//加到localRunqueue
-			allocHistory.get(n.partition).add(n);//有点多余
+			//allocHistory.get(n.partition).add(n);//有点多余
 		}
 		//从readyNode移走已分配的结点
 		for (int i = 0; i < readyNodes.size(); i++) {
@@ -538,11 +538,19 @@ public class OnlineYHX_test extends AllocationMethods {
             long startTime = currentTime; long endTime = startTime + n.getWCET();
 
             for (int j = 0; j < allocHistory.size(); j++){
-                for (int k = 0; k < allocHistory.get(0).size(); k++){
+                for (int k = 0; k < allocHistory.get(j).size(); k++){
                     Node tmpNode = allocHistory.get(j).get(k);
-                    long nextArrival = tmpNode.start + Utils.getDagByIndex(dags, tmpNode.getDagID(), tmpNode.getDagInstNo()).sched_param.getPeriod();
-                    if (nextArrival <= endTime && nextArrival >= currentTime){
-                        tmp.add(tmpNode);
+					//exclude nodes whose next instance is Node n
+					if (n.getId() == tmpNode.getId() && n.getDagID() == tmpNode.getDagID() && tmpNode.getDagInstNo() + 1 == n.getDagInstNo()){
+						continue;
+					}
+					long T = Utils.getDagByIndex(dags, tmpNode.getDagID(), tmpNode.getDagInstNo()).sched_param.getPeriod();
+					long nextArrival = tmpNode.start + T;
+                    if (nextArrival < endTime && nextArrival >= currentTime){
+						//exclude the nodes already in readynodes
+						if (!readyNodes.contains(Utils.getDagByIndex(dags, tmpNode.getDagID(), tmpNode.getDagInstNo() + 1).getNodeById(tmpNode.getId()))){
+							tmp.add(tmpNode);
+						}
                     }
                 }
             }
@@ -568,7 +576,7 @@ public class OnlineYHX_test extends AllocationMethods {
                     }
                 }
                 for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(readyNodes.get(i));
+                    HitCore tmp = hitCore2.get(affected.get(i));
                     if (tmp.level1.size() == 1 && tmp.level1.contains(core)){
                         sum++;
                     }
@@ -586,7 +594,7 @@ public class OnlineYHX_test extends AllocationMethods {
                     }
                 }
                 for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(readyNodes.get(i));
+                    HitCore tmp = hitCore2.get(affected.get(i));
                     if (tmp.level1.contains(core)){
                         sum++;
                     }
@@ -604,7 +612,7 @@ public class OnlineYHX_test extends AllocationMethods {
                     }
                 }
                 for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(readyNodes.get(i));
+                    HitCore tmp = hitCore2.get(affected.get(i));
                     if (tmp.level2.size() == 1 && tmp.level2.contains(core)){
                         sum++;
                     }
@@ -622,7 +630,7 @@ public class OnlineYHX_test extends AllocationMethods {
                     }
                 }
                 for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(readyNodes.get(i));
+                    HitCore tmp = hitCore2.get(affected.get(i));
                     if (tmp.level2.contains(core)){
                         sum++;
                     }
@@ -672,14 +680,14 @@ public class OnlineYHX_test extends AllocationMethods {
     //L1 miss: 只要有争用就算一个 or hit的L1刚好只有这一个才算
     //L2 miss：只要有争用就算一个 or hit的L2刚好只有这一个才算 or L2 recency miss 余地总和（和其他核比较，越小越不好）
     //最大recency的变化
-    private List<List<Integer>> getSacrifice(List<Node> readyNodes, Map<Node, HitCore> hitCore, List<Integer> availableCores, long[] availableTimeAllProcs, 
+    private Map<Node, List<Integer>> getSacrifice(List<Node> readyNodes, Map<Node, HitCore> hitCore, List<Integer> availableCores, long[] availableTimeAllProcs, 
             Map<Node, List<Node>> affectedList, List<List<Node>> history_level1, List<List<Node>> history_level2, 
             List<Node> history_level3, List<List<Node>> allocHistory, long currentTime, boolean lcif){
         
-        List<List<Integer>> sacrifice = new ArrayList<>();
+        Map<Node, List<Integer>> sacrifice = new HashMap<>();
         for (int i = 0; i < readyNodes.size(); i++){
-            sacrifice.add(new ArrayList<>());
-
+            //sacrifice.add(new ArrayList<>());
+			List<Integer> sacList = new ArrayList<>();
             Node n = readyNodes.get(i);
             HitCore nHitCore = hitCore.get(n);
 
@@ -691,8 +699,9 @@ public class OnlineYHX_test extends AllocationMethods {
             for (int j = 0; j < coreList.size(); j++){
                 Integer core = coreList.get(j);
                 Integer metric = getMetric(n, core, readyNodes, hitCore, affected, affectedHitCore, 0);
-                sacrifice.get(i).add(metric);
+                sacList.add(metric);
             }
+			sacrifice.put(n, sacList);
         }
         
         return sacrifice;

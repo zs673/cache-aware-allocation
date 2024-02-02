@@ -772,6 +772,15 @@ public class DirectedAcyclicGraph implements Serializable {
 		return flatNodes;
 	}
 
+	public Node getNodeById(Integer _id){
+		for (Node n : flatNodes){
+			if (n.getId() == _id){
+				return n;
+			}
+		}
+		return null;
+	}
+
 	public String getName() {
 		return name + "-" + instanceNo;
 	}

@@ -14,11 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.Iterator;
 
-import org.apache.commons.math3.util.Pair;
-import org.python.antlr.PythonParser.else_clause_return;
-import org.python.antlr.PythonParser.list_for_return;
-import org.python.antlr.op.In;
-
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.entity.Node.NodeType;

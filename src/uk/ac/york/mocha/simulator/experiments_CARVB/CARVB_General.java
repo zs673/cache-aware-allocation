@@ -171,7 +171,7 @@ public class CARVB_General {
 		// 	e.printStackTrace();
 		// }
 		SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL,
-		Hardware.PROC_CACHE, Allocation.ONLINE_YHX, // PROC_CACHE
+		Hardware.PROC_CACHE, Allocation.ONLINE_YHX_TEST, // PROC_CACHE
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中

@@ -28,6 +28,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX;
+import uk.ac.york.mocha.simulator.allocation.OnlineYHX_test;
 
 /*
  * This is a Multiprocessor Non-preemptive Multi-DAG Simulator
@@ -212,6 +213,9 @@ public class SimualtorYHX {
 				break;
             case ONLINE_YHX:
                 allocM = new OnlineYHX();
+                break;
+			case ONLINE_YHX_TEST:
+                allocM = new OnlineYHX_test();
                 break;
 			default:
 				System.err.println("The simualtion method is NOT supported! ");
