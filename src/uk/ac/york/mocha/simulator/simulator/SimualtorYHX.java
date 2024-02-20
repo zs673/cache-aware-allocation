@@ -28,7 +28,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX;
-import uk.ac.york.mocha.simulator.allocation.OnlineYHX_test;
+import uk.ac.york.mocha.simulator.allocation.OnlineYHX_test2;
 
 /*
  * This is a Multiprocessor Non-preemptive Multi-DAG Simulator
@@ -39,7 +39,7 @@ public class SimualtorYHX {
 	private SimuType type;
 	private Hardware hardware;
 	private Allocation alloc;
-
+ 
 	List<Integer> cores;
 	CacheHierarchy cache;
 
@@ -215,7 +215,7 @@ public class SimualtorYHX {
                 allocM = new OnlineYHX();
                 break;
 			case ONLINE_YHX_TEST:
-                allocM = new OnlineYHX_test();
+                allocM = new OnlineYHX_test2();
                 break;
 			default:
 				System.err.println("The simualtion method is NOT supported! ");
@@ -453,8 +453,15 @@ public class SimualtorYHX {
 				Pair<Pair<Long, Double>, Integer> ETWithCache = n.crp.computeET(-1, history_level1, history_level2,
 						history_level3, n, n.partition, cacheAware, 0, variation, n.hasFaults);
 
-				// TO DO:change realet here
+				// change realet with penalty here
 				long realET = ETWithCache.getFirst().getFirst();
+				// Integer hitCache = ETWithCache.getSecond();
+				// if (hitCache.equals(2)){
+				// 	realET *= 10;
+				// }else if(hitCache > 2){
+				// 	realET *= 100;
+				// }
+
 				n.variation = ETWithCache.getFirst().getSecond();
 
 				if (n.getDagInstNo() >= SystemParameters.etHist_start) { // && n.getDagInstNo() <

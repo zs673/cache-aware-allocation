@@ -191,7 +191,7 @@ public class AllSystemsResults {
 	public Pair<String, String> dataPerSysToAllSys(List<OneSystemResults> resPerSystem, int metricIndex,
 			boolean compare) {
 
-		List<List<String>> temp = new ArrayList<>();
+		List<List<String>> temp = new ArrayList<>();//第一维度表示nos，第二维度表示方法，string表示多个dag的表现
 		for (int i = 0; i < resPerSystem.size(); i++) {
 
 			String[] oneMetric = null;
@@ -211,7 +211,7 @@ public class AllSystemsResults {
 		StringBuilder resByMetric = new StringBuilder();
 		StringBuilder resAnalyse = new StringBuilder();
 
-		for (int i = 0; i < temp.get(0).size(); i++) {
+		for (int i = 0; i < temp.get(0).size(); i++) {//把每个方法的多次nos数据集中起来
 			final int index = i;
 
 			temp.stream().forEach(c1 -> {
@@ -220,7 +220,7 @@ public class AllSystemsResults {
 
 			resByMetric.append("\n");
 		}
-		//resByMetric string method * nos(实验次数) * instanceNum
+		//resByMetric string method * nos(实验次数) * instanceNum（dagNum）
 		resAnalyse.append("\n\nData analysis for each instance \n");
 		resAnalyse.append("AVG,MED,MAX,MIN\n");
 
@@ -257,7 +257,7 @@ public class AllSystemsResults {
 				double med = median.evaluate(v_d);
 
 				List<Double> summary = new ArrayList<>();
-				summary.add(avg);
+				summary.add(avg);//单次运行所有instance/dag的平均值，如果instanceNum = 1 and taskNum = 1，就只是一个值的avg
 				summary.add(med);
 				summary.add(max);
 				summary.add(min);
@@ -270,14 +270,14 @@ public class AllSystemsResults {
 
 			});
 
-			resAnalyse.append("\n\n");
+			resAnalyse.append("\n\n");//不同method之间用\n\n分割
 			analysedDataEachMethod.add(summaryAll); //多个method nos * 4个指标（among instance）维度和resAnalyse一样
 		}
 
 		resAnalyse.append("\n\nFurther Data analysis of all test cases \n");
 		resAnalyse.append("avg med max min \n");
 
-		for (int k = 0; k < analysedDataEachMethod.size(); k++) {
+		for (int k = 0; k < analysedDataEachMethod.size(); k++) {//对每个method来说
 			List<List<Double>> summaryAll = analysedDataEachMethod.get(k); //nos * 4
 			List<List<Double>> summartAllHtoV = new ArrayList<>(); //4 * nos
 			//上面两个数组维度互换

@@ -32,8 +32,12 @@ public class CARVB_General {
 
 	static DecimalFormat df = new DecimalFormat("#.###");
 
+	// static int cores = 8;// 4
+	// static int nos = 1;// 500/100   //1000次重复实验
+	// static int intanceNum = 10;// 100
+	// static int taskNum = 1;// 100
 	static int cores = 8;// 4
-	static int nos = 1;// 500/100   //1000次重复实验
+	static int nos = 15;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
 
@@ -170,6 +174,7 @@ public class CARVB_General {
 		// 	// TODO Auto-generated catch block
 		// 	e.printStackTrace();
 		// }
+
 		SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL,
 		Hardware.PROC_CACHE, Allocation.ONLINE_YHX_TEST, // PROC_CACHE
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
@@ -182,6 +187,7 @@ public class CARVB_General {
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif, speeds);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
+		//Pair<List<DirectedAcyclicGraph>, double[]> pair1 = pair0;
 
 		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE

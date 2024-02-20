@@ -8,6 +8,7 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.entity.Node.NodeType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
@@ -26,7 +27,9 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 		}
 
 		readyNodes.stream().forEach(c -> c.partition = -1);
-
+		if (readyNodes.get(0).getType() == NodeType.SOURCE){
+			System.out.println("A new instance starts");
+		}
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
