@@ -23,7 +23,7 @@ import uk.ac.york.mocha.simulator.generator.HitCore;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineYHX_test2 extends AllocationMethods {
+public class OnlineYHX_compare extends AllocationMethods {
     private Random rng = new Random(1000);
 
 	@Override
@@ -59,8 +59,8 @@ public class OnlineYHX_test2 extends AllocationMethods {
 		}
 
         List<Node> affect = new ArrayList<>(readyNodes);
-        // List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
-        // affect.addAll(futureNodes);
+        List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
+        affect.addAll(futureNodes);
 		
 
         Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);

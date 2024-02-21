@@ -29,6 +29,8 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_test2;
+import uk.ac.york.mocha.simulator.allocation.OnlineYHX_Random;
+import uk.ac.york.mocha.simulator.allocation.OnlineYHX_compare_backup;
 
 /*
  * This is a Multiprocessor Non-preemptive Multi-DAG Simulator
@@ -211,11 +213,17 @@ public class SimualtorYHX {
 			case CACHE_AWARE_NEW_BASE:
 				allocM = new OnlineCacheAwareNewSimu_base();
 				break;
-            case ONLINE_YHX:
+            case ONLINE_YHX://第一版比较复杂的那个
                 allocM = new OnlineYHX();
                 break;
-			case ONLINE_YHX_TEST:
+			case ONLINE_YHX_TEST://把结点分到代价最小的那个
                 allocM = new OnlineYHX_test2();
+                break;
+			case ONLINE_YHX_Random://按12345顺序分结点和核
+                allocM = new OnlineYHX_Random();
+                break;
+			case ONLINE_YHX_Compare://不断扩大考虑结点范围那个
+                allocM = new OnlineYHX_compare_backup();
                 break;
 			default:
 				System.err.println("The simualtion method is NOT supported! ");
@@ -377,7 +385,7 @@ public class SimualtorYHX {
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
-		if (alloc.toString().equals(Allocation.CACHE_AWARE_NEW.toString())) {
+		if (alloc.toString().contains("YHX")) {
 
 			for (List<Node> l : localRunQueue) {
 				if (l.size() > 0) {
@@ -407,7 +415,7 @@ public class SimualtorYHX {
 			} else {
 				noCalls++;
 				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
-						history_level3, allocHistory, systemTime, lcif, etHist, null, null);
+						history_level3, allocHistory, systemTime, lcif, etHist, null, currentExe);
 			}
 
 		} else {
@@ -415,7 +423,7 @@ public class SimualtorYHX {
 			} else {
 				noCalls++;
 				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
-						history_level3, allocHistory, systemTime, lcif, etHist, null, null);
+						history_level3, allocHistory, systemTime, lcif, etHist, null, currentExe);
 			}
 		}
 

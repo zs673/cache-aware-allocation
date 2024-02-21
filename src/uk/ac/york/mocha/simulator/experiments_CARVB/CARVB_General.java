@@ -182,12 +182,19 @@ public class CARVB_General {
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
 
 		// WFD  worst-fit allocation
-		Simualtor sim0 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC,
-		Allocation.WORST_FIT_OUR, // Hardware.PROC
-		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		lcif, speeds);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
+		// Simualtor sim0 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.WORST_FIT_OUR, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif, speeds);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
+
 		//Pair<List<DirectedAcyclicGraph>, double[]> pair1 = pair0;
+		
+		SimualtorYHX sim0 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
+		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
 
 		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE

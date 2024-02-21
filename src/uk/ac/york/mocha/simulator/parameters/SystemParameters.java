@@ -66,7 +66,7 @@ public class SystemParameters {
 		CACHE_AWARE_COMPARE, CARVB,
 		CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW,
 		CACHE_AWARE_NEW_BASE, GYY, HSF, GYY_WCET, GYY_old, HEFT, HEFT_NEW, CPOP, CPOP_NEW, gyy_test, sota_with_old,
-		ONLINE_YHX, ONLINE_YHX_TEST
+		ONLINE_YHX, ONLINE_YHX_TEST, ONLINE_YHX_Random, ONLINE_YHX_Compare
 	};
 
 	/**********************************************************************
@@ -146,16 +146,16 @@ public class SystemParameters {
 	public static final long v3 = 100000;
 	public static final long v4 = 500000;
 
-	// public static final double delta1 = 0.3;
-	// public static final double delta2 = 0.5;
-	// public static final double delta3 = 0.8;
-	// public static final double delta4 = 1.0;
+	public static final double delta1 = 0.3;
+	public static final double delta2 = 0.5;
+	public static final double delta3 = 0.8;
+	public static final double delta4 = 1.0;
 
 	// penalty
-	public static final double delta1 = 0.05;
-	public static final double delta2 = 0.1;
-	public static final double delta3 = 0.2;
-	public static final double delta4 = 1.0;
+	// public static final double delta1 = 0.05;
+	// public static final double delta2 = 0.1;
+	// public static final double delta3 = 0.2;
+	// public static final double delta4 = 1.0;
 
 	/**********************************************************************
 	 ************************** System Generator **************************
