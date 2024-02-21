@@ -90,6 +90,7 @@ public class Simualtor {
 	/* cache performance */
 	long[] cachePerformance;
 	int totalAccess = 0;
+	public long noCalls = 0;
 
 	DecimalFormat df = new DecimalFormat("#.###");
 
@@ -273,12 +274,13 @@ public class Simualtor {
 			result.add(d.deepCopy());
 		}
 
-		double[] cachePerf = new double[cachePerformance.length];
+		double[] cachePerf = new double[cachePerformance.length + 1];
 		for (int i = 0; i < cachePerformance.length; i++) {
 			double d = (double) cachePerformance[i] / (double) totalAccess;
 			cachePerf[i] = Double.parseDouble(df.format(d));
 		}
-
+		cachePerf[cachePerformance.length] = noCalls;
+		
 		return new Pair<>(result, cachePerf);
 
 	}
@@ -298,6 +300,7 @@ public class Simualtor {
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
+		noCalls++;
 		allocM.allocate(dags, readyNodes, null, availableProc, allProcs, history_level1, history_level2, history_level3,
 				allocNodes, systemTime, lcif, null, corespeed, currentExe);
 

@@ -13,6 +13,7 @@ import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiability_WCE
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_2;
 import uk.ac.york.mocha.simulator.allocation.OnlineWFDNewSimu;
+import uk.ac.york.mocha.simulator.allocation.OnlineWFWithOrdering;
 import uk.ac.york.mocha.simulator.allocation.SimpleAllocation;
 import uk.ac.york.mocha.simulator.allocation.empricial.OnlineCacheAwareNewSimu_base;
 import uk.ac.york.mocha.simulator.allocation.empricial.OnlineFixedScheduleAllocation;

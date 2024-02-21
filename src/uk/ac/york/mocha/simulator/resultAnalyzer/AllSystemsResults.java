@@ -13,7 +13,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class AllSystemsResults {
-
+	
 	public enum ResultType {
 		makespan, util, finish, makespan_abs, SLR, speedup
 	}
@@ -137,6 +137,8 @@ public class AllSystemsResults {
 		StringBuilder builder = new StringBuilder();
 
 		for (int i = 0; i < resPerSystem.get(0).cachePerf.size(); i++) {
+			// long[] avg = new long[resPerSystem.get(0).cachePerf.get(0).length];
+			double[] avg = new double[5];
 			final int methodIndex = i;
 
 			for (int j = 0; j < resPerSystem.size(); j++) {
@@ -145,9 +147,15 @@ public class AllSystemsResults {
 
 				for (int k = 0; k < cacheOneMethod.length; k++) {
 					builder.append(cacheOneMethod[k] + ",");
+					avg[k] += cacheOneMethod[k];
 				}
 				builder.append("\n");
 			}
+			for (int m = 0; m < avg.length; m++){
+				avg[m] = (double)avg[m] / resPerSystem.size();
+				builder.append(df.format(avg[m]) + ",");
+			}
+			builder.append("\n");
 			builder.append("\n");
 
 		}
@@ -257,16 +265,26 @@ public class AllSystemsResults {
 				double med = median.evaluate(v_d);
 
 				List<Double> summary = new ArrayList<>();
-				summary.add(avg);//单次运行所有instance/dag的平均值，如果instanceNum = 1 and taskNum = 1，就只是一个值的avg
-				summary.add(med);
-				summary.add(max);
-				summary.add(min);
+				// summary.add(avg);//单次运行所有instance/dag的平均值，如果instanceNum = 1 and taskNum = 1，就只是一个值的avg
+				// summary.add(med);
+				// summary.add(max);
+				// summary.add(min);
+				for (int i = 0; i < v.size(); i++){
+					summary.add(v.get(i));
+					if (i < v.size() - 1){
+						resAnalyse.append(df.format(v.get(i)) + ",");
+					}else{
+						resAnalyse.append(df.format(v.get(i)) + ",\n");
+					}
+					
+				}
 				summaryAll.add(summary);
 
-				resAnalyse.append(df.format(avg) + ",");
-				resAnalyse.append(df.format(med) + ",");
-				resAnalyse.append(df.format(max) + ",");
-				resAnalyse.append(df.format(min) + ",\n");
+
+				// resAnalyse.append(df.format(avg) + ",");
+				// resAnalyse.append(df.format(med) + ",");
+				// resAnalyse.append(df.format(max) + ",");
+				// resAnalyse.append(df.format(min) + ",\n");
 
 			});
 
@@ -275,7 +293,7 @@ public class AllSystemsResults {
 		}
 
 		resAnalyse.append("\n\nFurther Data analysis of all test cases \n");
-		resAnalyse.append("avg med max min \n");
+		resAnalyse.append("INSTANCEID avg med max min \n");
 
 		for (int k = 0; k < analysedDataEachMethod.size(); k++) {//对每个method来说
 			List<List<Double>> summaryAll = analysedDataEachMethod.get(k); //nos * 4
@@ -303,28 +321,28 @@ public class AllSystemsResults {
 				double min = v.stream().mapToDouble(c1 -> c1).min().getAsDouble();
 
 				int count = summartAllHtoV.indexOf(v);//如果不cache-aware，每次instance的结果都一样，所以index不准确
-
-				switch (count) {
-					case 0:
-						resAnalyse.append("AVGs,");
-						break;
-					case 1:
-						resAnalyse.append("MEDs,");
-						break;
-					case 2:
-						resAnalyse.append("MAXs,");
-						break;
-					case 3:
-						resAnalyse.append("MINs,");
-						break;
-					default:
-						break;
-				}
-
-				resAnalyse.append(df.format(avg) + ",");
-				resAnalyse.append(df.format(med) + ",");
-				resAnalyse.append(df.format(max) + ",");
-				resAnalyse.append(df.format(min) + ",\n");
+				count += 1;
+				// switch (count) {
+				// 	case 0:
+				// 		resAnalyse.append("AVGs,");
+				// 		break;
+				// 	case 1:
+				// 		resAnalyse.append("MEDs,");
+				// 		break;
+				// 	case 2:
+				// 		resAnalyse.append("MAXs,");
+				// 		break;
+				// 	case 3:
+				// 		resAnalyse.append("MINs,");
+				// 		break;
+				// 	default:
+				// 		break;
+				// }
+				resAnalyse.append("INSTANCE" + count + " ");
+				resAnalyse.append(df.format(avg) + ", ");
+				resAnalyse.append(df.format(med) + ", ");
+				resAnalyse.append(df.format(max) + ", ");
+				resAnalyse.append(df.format(min) + ", \n");
 
 			});
 			resAnalyse.append("\n\n"); //最大 最小 中位数 平均等四个指标的15次实验的最大最小中位平均

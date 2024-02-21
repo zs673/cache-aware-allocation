@@ -418,11 +418,15 @@ public class OnlineYHX_test2 extends AllocationMethods {
 
     }
 
-    private Pair<Integer, Long> findMaxValueKeyInMap(Map<Integer, Long> map) {
+    private Pair<Integer, Long> findMaxValueKeyInMap(Map<Integer, Long> map, Integer core) {
             Integer maxKey = null;
             Long maxValue = Long.MIN_VALUE;
     
             for (Entry<Integer, Long> entry : map.entrySet()) {
+                //跳过被占的核
+                if (entry.getKey() == core){
+                    continue;
+                }
                 if (entry.getValue() > maxValue) {
                     maxValue = entry.getValue();
                     maxKey = entry.getKey();
@@ -468,9 +472,9 @@ public class OnlineYHX_test2 extends AllocationMethods {
             if (!coreList.contains(core)){
                 continue;
             }
-            Map<Integer, Long> SUT = getSUT(n, coreList, history_level1, history_level2, history_level3);
+            Map<Integer, Long> SUT = getSUT(readyNodes.get(i), coreList, history_level1, history_level2, history_level3);
             Long rawSU = SUT.get(core);
-            Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT);
+            Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT, core);
 
             //rawSU < maxSU -> no sacrifice
             sum += (rawSU > pair.getSecond() ? rawSU - pair.getSecond() : 0);
