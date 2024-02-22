@@ -30,6 +30,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_test2;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_Random;
+import uk.ac.york.mocha.simulator.allocation.OnlineYHX_compare;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_compare_backup;
 
 /*
@@ -223,7 +224,7 @@ public class SimualtorYHX {
                 allocM = new OnlineYHX_Random();
                 break;
 			case ONLINE_YHX_Compare://不断扩大考虑结点范围那个
-                allocM = new OnlineYHX_compare_backup();
+                allocM = new OnlineYHX_compare();
                 break;
 			default:
 				System.err.println("The simualtion method is NOT supported! ");

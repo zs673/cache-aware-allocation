@@ -58,9 +58,9 @@ public class OnlineYHX_test2 extends AllocationMethods {
 			preEligible.add(readyNodes.get(i)); //找readyNode和空闲核的最小值
 		}
 
-        List<Node> affect = new ArrayList<>(readyNodes);
-        // List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
-        // affect.addAll(futureNodes);
+        List<Node> affect = new ArrayList<>(preEligible);
+        List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
+        affect.addAll(futureNodes);
 		
 
         Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);
@@ -479,7 +479,8 @@ public class OnlineYHX_test2 extends AllocationMethods {
                     maxKey = entry.getKey();
                 }
             }
-    
+            
+            maxValue = maxValue == Long.MIN_VALUE ? 0 : maxValue;
             return new Pair<Integer, Long>(maxKey, maxValue);
     }
 

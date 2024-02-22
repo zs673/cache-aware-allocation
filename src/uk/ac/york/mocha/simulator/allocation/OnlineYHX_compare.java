@@ -479,7 +479,8 @@ public class OnlineYHX_compare extends AllocationMethods {
                     maxKey = entry.getKey();
                 }
             }
-    
+            
+            maxValue = maxValue == Long.MIN_VALUE ? 0 : maxValue;
             return new Pair<Integer, Long>(maxKey, maxValue);
     }
 

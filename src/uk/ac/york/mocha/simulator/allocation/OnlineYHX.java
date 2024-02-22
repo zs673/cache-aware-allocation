@@ -118,6 +118,7 @@ public class OnlineYHX extends AllocationMethods {
 			allocProcs.add(core);
 
 			localRunqueue.get(n.partition).add(n);//加到localRunqueue
+			Integer mn = 1;
 			//allocHistory.get(n.partition).add(n);重了
 			// Node n = preEligible.get(p.getFirst().intValue());
 
@@ -207,6 +208,8 @@ public class OnlineYHX extends AllocationMethods {
 	 * （13）看看这样写能不能实现让步和多hit L2
 	 * 	 
 	 */
+
+	//硬伤：只hit l1一个，没有hit l2的情况没写
 	private Integer setPartitionForYHX(Node n, Map<Node, HitCore> hitCore, List<Node> allocNodes,
 			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
 			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
@@ -218,7 +221,9 @@ public class OnlineYHX extends AllocationMethods {
 
 		Integer level2ClusterSize = history_level1.size() / history_level2.size();
 		if (updateHitCore.isEmpty()){//hit no L1 and L2
-			return rng.nextInt(procs.size());
+			List<Integer> tmp = new ArrayList<>(procs);
+			tmp.removeAll(allocProcs);
+			return tmp.get(rng.nextInt(tmp.size()));
 		}
 		if (updateHitCore.level1.size() > 1){//hit two L1 
 			List<Entry<Integer, Long>> recencyTable = getRecencyTable(n, new ArrayList<Integer>(updateHitCore.level1), history_level1, history_level2, history_level3, 0);
@@ -272,10 +277,13 @@ public class OnlineYHX extends AllocationMethods {
 					return recencyTable.get(0).getKey();
 				}
 			}
-		}else if(updateHitCore.level2.size() == 1){
+		}else if(updateHitCore.level1.size() == 1 || updateHitCore.level2.size() == 1){
 			if (n.getDagInstNo() == 1){
 				return setPartitionForIns2(n, updateHitCore, procs, allocProcs, allocHistory, history_level1, history_level2, history_level3);
 			}else{
+				if (updateHitCore.level1.size() == 1){
+					return updateHitCore.level1.iterator().next();
+				}
 				return updateHitCore.level2.iterator().next();
 			}
 		}else{
@@ -306,20 +314,20 @@ public class OnlineYHX extends AllocationMethods {
 		
 		Integer clusterIdx = recencyTable.get(0).getKey() / level2ClusterSize;
 
-		Integer minMissIdx = Integer.MAX_VALUE;
-		Long minMissCnt = Long.MAX_VALUE;
+		Integer maxMissIdx = -1;
+		Long maxMissCnt = Long.MIN_VALUE;
 		for (int i = 1; i < recencyTable.size(); i++){
 			int core = recencyTable.get(i).getKey();
 			if (core / level2ClusterSize == clusterIdx)
 				continue;
 			
 			Long cnt = getRecencyFree(n, core, allocHistory, procs, history_level1, history_level2, history_level3);
-			if (minMissCnt > cnt){
-				minMissCnt = cnt;
-				minMissIdx = i;
+			if (cnt > maxMissCnt){
+				maxMissCnt = cnt;
+				maxMissIdx = core;
 			}
 		}
-		return minMissIdx;
+		return maxMissIdx;
 	}
 
 	private Integer setPartitionForIns2(Node n, HitCore updateHitCore, List<Integer> procs,
@@ -329,38 +337,44 @@ public class OnlineYHX extends AllocationMethods {
 		List<Integer> candidateCore = procs.stream().filter(element -> !allocProcs.contains(element) && !updateHitCore.level1.contains(element) 
 															&& !updateHitCore.level2.contains(element)).collect(Collectors.toList());
 		
-		Integer minMissIdx = Integer.MAX_VALUE;
-		Long minMissCnt = Long.MAX_VALUE;
+		if (candidateCore.isEmpty()){//hit no L1 and L2
+			List<Integer> tmp = new ArrayList<>(procs);
+			tmp.removeAll(allocProcs);
+			return tmp.get(rng.nextInt(tmp.size()));
+		}
+		Integer maxMissIdx = -1;
+		Long maxMissCnt = Long.MIN_VALUE;
 		for (int i = 0; i < candidateCore.size(); i++){
 			int core = candidateCore.get(i);
 			
 			Long cnt = getRecencyFree(n, core, allocHistory, procs, history_level1, history_level2, history_level3);
-			if (minMissCnt > cnt){
-				minMissCnt = cnt;
-				minMissIdx = i;
+			if (cnt > maxMissCnt){
+				maxMissCnt = cnt;
+				maxMissIdx = core;
 			}
 		}
-		return minMissIdx;
+		return maxMissIdx;
 	}
 
 	private Integer setPartitionForMiss(Node n, HitCore updateHitCore, List<Integer> procs,
 			List<Integer> allocProcs, List<List<Node>> allocHistory,  
 			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
 		//已经是空闲的了，排掉已分配的就行  其实updateHitCore已经排掉allocProcs
-		List<Integer> candidateCore = new ArrayList<>(procs);
+		List<Integer> candidateCore = procs.stream().filter(element -> !allocProcs.contains(element) && !updateHitCore.level1.contains(element) 
+															&& !updateHitCore.level2.contains(element)).collect(Collectors.toList());
 		
-		Integer minMissIdx = Integer.MAX_VALUE;
-		Long minMissCnt = Long.MAX_VALUE;
+		Integer maxMissIdx = -1;
+		Long maxMissCnt = Long.MIN_VALUE;
 		for (int i = 0; i < candidateCore.size(); i++){
 			int core = candidateCore.get(i);
 			
 			Long cnt = getRecencyFree(n, core, allocHistory, procs, history_level1, history_level2, history_level3);
-			if (minMissCnt > cnt){
-				minMissCnt = cnt;
-				minMissIdx = i;
+			if (cnt > maxMissCnt){
+				maxMissCnt = cnt;
+				maxMissIdx = core;
 			}
 		}
-		return minMissIdx;
+		return maxMissIdx;
 	}
 
 	private Long getRecencyFree(Node n, int core, List<List<Node>> allocHistory, List<Integer> procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
