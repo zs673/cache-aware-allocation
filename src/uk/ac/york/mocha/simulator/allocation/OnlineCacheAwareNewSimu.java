@@ -94,7 +94,9 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 			Node n = preEligible.get(p.getFirst().intValue());
 
 			n.partition = availableP.get(p.getSecond().intValue());
-
+			// if (n.getDagInstNo() == 0){
+            //     System.out.println(n + "->" + n.partition);
+            // }
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
 
