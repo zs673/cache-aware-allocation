@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -71,10 +72,10 @@ public class OnlineYHX_syn extends AllocationMethods {
 
 		List<Integer> availableP = new ArrayList<>(availableCores);
 
-        Map<Node, List<Pair<Integer, Long>>> speedUpTable = new HashMap<>();
+        Map<Node, List<Pair<Integer, Long>>> speedUpTable = new LinkedHashMap<>();
 		for (Node n : preEligible) {
 			List<Pair<Integer, Long>> ETdrop = new ArrayList<>();
-			for (int i = 0; i < availableP.size(); i++) {
+			for (int i = 0; i < history_level1.size(); i++) {
 				int proc = i;
 				if (availableP.contains(proc)) {
 					/*
@@ -123,7 +124,9 @@ public class OnlineYHX_syn extends AllocationMethods {
             Node n = p.getFirst(); Integer core = p.getSecond();
 
 			n.partition = core;
-
+            if (n.getDagInstNo() == 1){
+                System.out.println(n + "->" + core);
+            }
 			allocNodes.add(n);
 			allocProcs.add(core);
 
@@ -150,28 +153,28 @@ public class OnlineYHX_syn extends AllocationMethods {
                                                 List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
                                                 List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
 
-        // 是否要排除已分配的
-        Map<Node, Long> minValue = new HashMap<>();
-        Map<Node, Long> avg = new HashMap<>();
-        for (Entry<Node, List<Pair<Integer, Long>>> entry : sacrifice.entrySet()) {
-            Long min = Long.MAX_VALUE; Long sum = (long)0; Integer cnt = 0;
-            Node n = entry.getKey();
-            if (!allocNodes.contains(n)){
-                List<Pair<Integer, Long>> sacList = entry.getValue();
-                for (int i = 0; i < sacList.size(); i++){
-                    if (!allocProcs.contains(sacList.get(i).getFirst())){
-                        sum += sacList.get(i).getSecond();
-                        cnt++;
-                        if (min > sacList.get(i).getSecond()){
-                            min = sacList.get(i).getSecond();
-                        }
-                    }
-                }
-                sum = (Long)(sum / cnt);
-                minValue.put(n, min);
-                avg.put(n, sum);
-            }
-        }
+        // 放外面去
+        // 全局还是局部最小（先定位到节点 再跟据是不是最小分核）
+        // Map<Node, Long> minValue = new LinkedHashMap<>();
+        // Map<Node, Long> avg = new LinkedHashMap<>();
+        // Long minValue = Long.MAX_VALUE;
+        // Long sum = (long)0; Integer cnt = 0;
+        // for (Entry<Node, List<Pair<Integer, Long>>> entry : sacrifice.entrySet()) {
+        //     Node n = entry.getKey();
+        //     if (!allocNodes.contains(n)){
+        //         List<Pair<Integer, Long>> sacList = entry.getValue();
+        //         for (int i = 0; i < sacList.size(); i++){
+        //             if (!allocProcs.contains(sacList.get(i).getFirst())){
+        //                 sum += sacList.get(i).getSecond();
+        //                 cnt++;
+        //                 if (minValue > sacList.get(i).getSecond()){
+        //                     minValue = sacList.get(i).getSecond();
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // sum = (Long)(sum / cnt);
 
         Node nToAlloc = null; Integer core = -1;
         Long maxSUTValue = Long.MIN_VALUE;
@@ -179,17 +182,12 @@ public class OnlineYHX_syn extends AllocationMethods {
             Node n = entry.getKey();
             if (!allocNodes.contains(n)){
                 List<Pair<Integer, Long>> sutList = entry.getValue();
-                List<Pair<Integer, Long>> sacList = entry.getValue();
+                List<Pair<Integer, Long>> sacList = sacrifice.get(n);
                 for (int i = 0; i < sutList.size(); i++){
                     if (!allocProcs.contains(sutList.get(i).getFirst())){
-                        if (sutList.get(i).getSecond() > maxSUTValue){
-                            // if (sacList.get(i).getSecond() > sum){
-                            //     continue;
-                            // }
-                            if (sacList.get(i).getSecond() > minValue.get(n)){
-                                continue;
-                            }
-                            maxSUTValue = sutList.get(i).getSecond();
+                        if (sutList.get(i).getSecond() - sacList.get(i).getSecond() > maxSUTValue){
+                            
+                            maxSUTValue = sutList.get(i).getSecond() - sacList.get(i).getSecond();
                             nToAlloc = n;
                             core = sutList.get(i).getFirst();
                         }
@@ -215,7 +213,7 @@ public class OnlineYHX_syn extends AllocationMethods {
 
     private List<Node> getFutureNodes(List<Integer> cores, long[] coreTime, Node[] currentExe){
         List<Node> futureNodes = new ArrayList<>();
-        //HashMap<Integer, Long> id_to_waiting = new HashMap<>();
+        //LinkedHashMap<Integer, Long> id_to_waiting = new LinkedHashMap<>();
 		// determine the core set based on medTime -- futureProc
 
 		List<Node> nodesTobedone = new ArrayList<>();
@@ -259,7 +257,7 @@ public class OnlineYHX_syn extends AllocationMethods {
         
 		int level2ClusterNum = history_level2.size();
 		int level2ClusterSize = history_level1.size() / level2ClusterNum;
-        HashMap<Node, HitCore> map = new HashMap<>();
+        LinkedHashMap<Node, HitCore> map = new LinkedHashMap<>();
         for (int i = 0; i < readyNodes.size(); i++){
             Set<Integer> level1HitCore = new HashSet<>();
             Set<Integer> level2HitCore = new HashSet<>();
@@ -349,7 +347,7 @@ public class OnlineYHX_syn extends AllocationMethods {
 	}
 
 	private List<Entry<Integer, Long>> getRecencyTable(Node n, List<Integer> procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, long additionalTime){
-		Map<Integer, Long> rct = new HashMap<>();
+		Map<Integer, Long> rct = new LinkedHashMap<>();
 
 		for (int i = 0; i < procs.size(); i++){
 			long recencyDis = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, n, procs.get(i), true, additionalTime);
@@ -368,7 +366,7 @@ public class OnlineYHX_syn extends AllocationMethods {
 
     //找到会被影响的结点
     private Map<Node, List<Node>> getAffectedNodes(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> allocHistory, long currentTime){
-        Map<Node, List<Node>> res = new HashMap<>();
+        Map<Node, List<Node>> res = new LinkedHashMap<>();
 
         for (int i = 0; i < readyNodes.size(); i++){
             Node n = readyNodes.get(i);
@@ -422,7 +420,7 @@ public class OnlineYHX_syn extends AllocationMethods {
                     List<List<Node>> history_level2, List<Node> history_level3){
 
         //计算结点n在命中核上的SUT
-        Map<Integer, Long> speedUpTable = new HashMap<>();
+        Map<Integer, Long> speedUpTable = new LinkedHashMap<>();
         for (int i = 0; i < coreList.size(); i++) {
             int proc = coreList.get(i);
             /*
@@ -446,9 +444,9 @@ public class OnlineYHX_syn extends AllocationMethods {
         
         Long sum = (long) 0;
         for (int i = 0; i < affect.size(); i++){
-            if (n == affect.get(i)){
-                continue;
-            }
+            // if (n == affect.get(i)){
+            //     continue;
+            // }
             HitCore tmp = hitCore.get(affect.get(i));
             List<Integer> coreList = tmp.getCoreList();
             if (!coreList.contains(core)){
@@ -459,6 +457,10 @@ public class OnlineYHX_syn extends AllocationMethods {
             Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT, core);
 
             //rawSU < maxSU -> no sacrifice
+            if (n == affect.get(i)){
+                sum += (rawSU < pair.getSecond() ? pair.getSecond() - rawSU : 0);
+                continue;
+            }
             sum += (rawSU > pair.getSecond() ? rawSU - pair.getSecond() : 0);
             //if core is not available, predict the Node n will be allocated to the core with MSF
         }
@@ -485,7 +487,7 @@ public class OnlineYHX_syn extends AllocationMethods {
             long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2, 
             List<Node> history_level3, List<List<Node>> allocHistory, long currentTime, boolean lcif){
         
-        Map<Node, List<Pair<Integer, Long>>> sacrifice = new HashMap<>();
+        Map<Node, List<Pair<Integer, Long>>> sacrifice = new LinkedHashMap<>();
         for (int i = 0; i < readyNodes.size(); i++){
             //sacrifice.add(new ArrayList<>());
             Node n = readyNodes.get(i);

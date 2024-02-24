@@ -124,9 +124,9 @@ public class OnlineYHX_test2 extends AllocationMethods {
             Node n = p.getFirst(); Integer core = p.getSecond();
 
 			n.partition = core;
-            // if (n.getDagInstNo() == 0){
-            //     System.out.println(n + "->" + core);
-            // }
+            if (n.getDagInstNo() == 1){
+                System.out.println(n + "->" + core);
+            }
 			allocNodes.add(n);
 			allocProcs.add(core);
 
@@ -154,27 +154,27 @@ public class OnlineYHX_test2 extends AllocationMethods {
                                                 List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
 
         // 放外面去
-        Map<Node, Long> minValue = new LinkedHashMap<>();
-        Map<Node, Long> avg = new LinkedHashMap<>();
-        for (Entry<Node, List<Pair<Integer, Long>>> entry : sacrifice.entrySet()) {
-            Long min = Long.MAX_VALUE; Long sum = (long)0; Integer cnt = 0;
-            Node n = entry.getKey();
-            if (!allocNodes.contains(n)){
-                List<Pair<Integer, Long>> sacList = entry.getValue();
-                for (int i = 0; i < sacList.size(); i++){
-                    if (!allocProcs.contains(sacList.get(i).getFirst())){
-                        sum += sacList.get(i).getSecond();
-                        cnt++;
-                        if (min > sacList.get(i).getSecond()){
-                            min = sacList.get(i).getSecond();
-                        }
-                    }
-                }
-                sum = (Long)(sum / cnt);
-                minValue.put(n, min);
-                avg.put(n, sum);
-            }
-        }
+        // 全局还是局部最小（先定位到节点 再跟据是不是最小分核）
+        // Map<Node, Long> minValue = new LinkedHashMap<>();
+        // Map<Node, Long> avg = new LinkedHashMap<>();
+        // Long minValue = Long.MAX_VALUE;
+        // Long sum = (long)0; Integer cnt = 0;
+        // for (Entry<Node, List<Pair<Integer, Long>>> entry : sacrifice.entrySet()) {
+        //     Node n = entry.getKey();
+        //     if (!allocNodes.contains(n)){
+        //         List<Pair<Integer, Long>> sacList = entry.getValue();
+        //         for (int i = 0; i < sacList.size(); i++){
+        //             if (!allocProcs.contains(sacList.get(i).getFirst())){
+        //                 sum += sacList.get(i).getSecond();
+        //                 cnt++;
+        //                 if (minValue > sacList.get(i).getSecond()){
+        //                     minValue = sacList.get(i).getSecond();
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // sum = (Long)(sum / cnt);
 
         Node nToAlloc = null; Integer core = -1;
         Long maxSUTValue = Long.MIN_VALUE;
@@ -185,14 +185,9 @@ public class OnlineYHX_test2 extends AllocationMethods {
                 List<Pair<Integer, Long>> sacList = sacrifice.get(n);
                 for (int i = 0; i < sutList.size(); i++){
                     if (!allocProcs.contains(sutList.get(i).getFirst())){
-                        if (sutList.get(i).getSecond() > maxSUTValue){
-                            // if (sacList.get(i).getSecond() > sum){
-                            //     continue;
-                            // }
-                            if (sacList.get(i).getSecond() > avg.get(n)){
-                                continue;
-                            }
-                            maxSUTValue = sutList.get(i).getSecond();
+                        if (sutList.get(i).getSecond() - sacList.get(i).getSecond() > maxSUTValue){
+                            
+                            maxSUTValue = sutList.get(i).getSecond() - sacList.get(i).getSecond();
                             nToAlloc = n;
                             core = sutList.get(i).getFirst();
                         }
@@ -449,9 +444,9 @@ public class OnlineYHX_test2 extends AllocationMethods {
         
         Long sum = (long) 0;
         for (int i = 0; i < affect.size(); i++){
-            if (n == affect.get(i)){
-                continue;
-            }
+            // if (n == affect.get(i)){
+            //     continue;
+            // }
             HitCore tmp = hitCore.get(affect.get(i));
             List<Integer> coreList = tmp.getCoreList();
             if (!coreList.contains(core)){
@@ -462,6 +457,10 @@ public class OnlineYHX_test2 extends AllocationMethods {
             Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT, core);
 
             //rawSU < maxSU -> no sacrifice
+            if (n == affect.get(i)){
+                sum += (rawSU < pair.getSecond() ? pair.getSecond() - rawSU : 0);
+                continue;
+            }
             sum += (rawSU > pair.getSecond() ? rawSU - pair.getSecond() : 0);
             //if core is not available, predict the Node n will be allocated to the core with MSF
         }

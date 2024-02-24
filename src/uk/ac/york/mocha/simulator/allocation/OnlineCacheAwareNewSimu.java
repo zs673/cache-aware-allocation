@@ -19,7 +19,8 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 			List<Integer> cores, long[] availableTimeAllProcs, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
 			boolean lcif, List<Node> etHist, List<Double> speeds, Node[] currentExe) {
-
+		
+		lcif = false;
 		List<Integer> availableCores = new ArrayList<>();
 		for (int i = 0; i < cores.size(); i++) {
 			if (localRunqueue.get(i).size() == 0 && availableTimeAllProcs[i] <= currentTime)
@@ -94,9 +95,9 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 			Node n = preEligible.get(p.getFirst().intValue());
 
 			n.partition = availableP.get(p.getSecond().intValue());
-			// if (n.getDagInstNo() == 0){
-            //     System.out.println(n + "->" + n.partition);
-            // }
+			if (n.getDagInstNo() == 1){
+                System.out.println(n + "->" + n.partition);
+            }
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
 
