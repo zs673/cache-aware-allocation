@@ -61,8 +61,8 @@ public class OnlineYHX_syn extends AllocationMethods {
 		}
 
         List<Node> affect = new ArrayList<>(preEligible);
-        List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
-        affect.addAll(futureNodes);
+        // List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
+        // affect.addAll(futureNodes);
 		
 
         //Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);
@@ -152,29 +152,23 @@ public class OnlineYHX_syn extends AllocationMethods {
                                                 List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
                                                 List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
                                                 List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
-
-        // 放外面去
-        // 全局还是局部最小（先定位到节点 再跟据是不是最小分核）
-        // Map<Node, Long> minValue = new LinkedHashMap<>();
-        // Map<Node, Long> avg = new LinkedHashMap<>();
-        // Long minValue = Long.MAX_VALUE;
-        // Long sum = (long)0; Integer cnt = 0;
-        // for (Entry<Node, List<Pair<Integer, Long>>> entry : sacrifice.entrySet()) {
+        
+        // Map<Node, List<Pair<Integer, Long>>> tmp = new LinkedHashMap<>();
+        // for (Entry<Node, List<Pair<Integer, Long>>> entry : SUT.entrySet()) {
         //     Node n = entry.getKey();
         //     if (!allocNodes.contains(n)){
-        //         List<Pair<Integer, Long>> sacList = entry.getValue();
-        //         for (int i = 0; i < sacList.size(); i++){
-        //             if (!allocProcs.contains(sacList.get(i).getFirst())){
-        //                 sum += sacList.get(i).getSecond();
-        //                 cnt++;
-        //                 if (minValue > sacList.get(i).getSecond()){
-        //                     minValue = sacList.get(i).getSecond();
-        //                 }
+        //         List<Pair<Integer, Long>> sutList = entry.getValue();
+        //         List<Pair<Integer, Long>> sacList = sacrifice.get(n);
+        //         List<Pair<Integer, Long>> synList = new ArrayList<>();
+        //         for (int i = 0; i < sutList.size(); i++){
+        //             if (!allocProcs.contains(sutList.get(i).getFirst())){   
+        //                 Long val = sutList.get(i).getSecond() - sacList.get(i).getSecond();
+        //                 synList.add(new Pair<Integer, Long>(sutList.get(i).getFirst(), val));
         //             }
         //         }
+        //         tmp.put(n, synList);
         //     }
         // }
-        // sum = (Long)(sum / cnt);
 
         Node nToAlloc = null; Integer core = -1;
         Long maxSUTValue = Long.MIN_VALUE;

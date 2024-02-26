@@ -94,8 +94,15 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 		/**************************************************************************
 		 ************************* level 1 recency distance ************************
 		 ***************************************************************************/
-		long leve1Time = time != -1 ? time : getTimeofLastIndex(history_level1.get(proc), n, SystemParameters.v2) + additionalTime;
-
+		//long leve1Time = time != -1 ? time : getTimeofLastIndex(history_level1.get(proc), n, SystemParameters.v2) + additionalTime;
+		long lastLevel1Time = getTimeofLastIndex(history_level1.get(proc), n, SystemParameters.v2);
+		long leve1Time = -1;
+		if (lastLevel1Time >= 0){
+			leve1Time = time != -1 ? time : lastLevel1Time + additionalTime;
+		}else{
+			leve1Time = time != -1 ? time : lastLevel1Time;
+		}
+		
 		switch (type) {
 		case TIME_DEFAULT:
 			if (SystemParameters.v1 <= leve1Time && leve1Time <= SystemParameters.v2) {
@@ -132,8 +139,14 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 		 ************************* level 2 recency distance ************************
 		 ***************************************************************************/
 		int clusterID = proc / SystemParameters.Level2CoreNum;
-		long level2Time = time != -1 ? time : getTimeofLastIndex(history_level2.get(clusterID), n, SystemParameters.v3) + additionalTime;
-
+		//long level2Time = time != -1 ? time : getTimeofLastIndex(history_level2.get(clusterID), n, SystemParameters.v3) + additionalTime;
+		long lastLevel2Time = getTimeofLastIndex(history_level2.get(clusterID), n, SystemParameters.v3);
+		long level2Time = -1;
+		if (lastLevel2Time >= 0){
+			level2Time = time != -1 ? time : lastLevel2Time + additionalTime;
+		}else{
+			level2Time = time != -1 ? time : lastLevel2Time;
+		}
 		switch (type) {
 		case TIME_DEFAULT:
 			if (SystemParameters.v1 <= level2Time && level2Time < SystemParameters.v2) {
@@ -188,8 +201,14 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 		/**************************************************************************
 		 ************************* level 3 recency distance ************************
 		 ***************************************************************************/
-		long level3Time = time != -1 ? time : getTimeofLastIndex(history_level3, n, SystemParameters.v4) + additionalTime;
-
+		//long level3Time = time != -1 ? time : getTimeofLastIndex(history_level3, n, SystemParameters.v4) + additionalTime;
+		long lastLevel3Time = getTimeofLastIndex(history_level3, n, SystemParameters.v4);
+		long level3Time = -1;
+		if (lastLevel3Time >= 0){
+			level3Time = time != -1 ? time : lastLevel3Time + additionalTime;
+		}else{
+			level3Time = time != -1 ? time : lastLevel3Time;
+		}
 		switch (type) {
 		case TIME_DEFAULT:
 

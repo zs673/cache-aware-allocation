@@ -60,14 +60,14 @@ public class OnlineYHX_test2 extends AllocationMethods {
 			preEligible.add(readyNodes.get(i)); //找readyNode和空闲核的最小值
 		}
 
-        List<Node> affect = new ArrayList<>(preEligible);
-        // List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
-        // affect.addAll(futureNodes);
+        List<Node> affect = new ArrayList<>(readyNodes);
+        List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
+        affect.addAll(futureNodes);
 		
 
         //Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);
         Map<Node, HitCore> hitCore = getHitCores(affect, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
-        Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
+        Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice(preEligible, affect, preEligible.size(), hitCore, availableCores, availableTimeAllProcs, 
                                                             history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
 		List<Integer> availableP = new ArrayList<>(availableCores);
@@ -134,7 +134,7 @@ public class OnlineYHX_test2 extends AllocationMethods {
             //更新代价
             affect.remove(n);
             preEligible.remove(n);
-            sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
+            sacrifice = getSacrifice(preEligible, affect, preEligible.size(), hitCore, availableCores, availableTimeAllProcs, 
                                     history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 		}
 		//从readyNode移走已分配的结点
@@ -433,11 +433,11 @@ public class OnlineYHX_test2 extends AllocationMethods {
     }
 
     //加速差
-    private Long getSUSac(Node n, Integer core, List<Node> affect, Map<Node, HitCore> hitCore, 
+    private Long getSUSac(Node n, Integer core, List<Node> affect, Integer futureNodeStartIdx, Map<Node, HitCore> hitCore, 
             List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
         
         Long sum = (long) 0;
-        for (int i = 0; i < affect.size(); i++){
+        for (int i = 0; i < futureNodeStartIdx; i++){
             // if (n == affect.get(i)){
             //     continue;
             // }
@@ -458,26 +458,48 @@ public class OnlineYHX_test2 extends AllocationMethods {
             sum += (rawSU > pair.getSecond() ? rawSU - pair.getSecond() : 0);
             //if core is not available, predict the Node n will be allocated to the core with MSF
         }
-        // for (int i = 0; i < affected.size(); i++){
-        //     HitCore tmp = hitCore2.get(readyNodes.get(i));
-        //     List<Integer> level2List = new ArrayList<>(tmp.level2);
-        //     for (int j = 0; j < level2List.size(); j++){
-        //         if (level2List.get(j) == core){
-        //             continue;
-        //         }
-        //         Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected.get(i), level2List.get(j), true, 0);
-        //         sum += SystemParameters.v3 - recencyL2;
-        //     }
-        // }
-        return sum;
 
+        List<Node> futureNodes = new ArrayList<>(affect.subList(futureNodeStartIdx, affect.size()));
+        sum += getSUSacForFutureNodes(n, core, futureNodes, history_level1, history_level2, history_level3);
+        return sum;
+    }
+
+    private Long getSUSacForFutureNodes(Node n, Integer core, List<Node> future, 
+                List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+
+        Long sum = (long) 0;
+        for (int i = 0; i < future.size(); i++){
+            // HitCore tmp = hitCore.get(affect.get(i));
+            // List<Integer> coreList = tmp.getCoreList();
+            // if (!coreList.contains(core)){
+            //     continue;
+            // }
+            Node futureNode = future.get(i);
+            List<Integer> coreList = new ArrayList<>();
+            coreList.add(core);
+            Map<Integer, Long> SUT = getSUT(n, coreList, history_level1, history_level2, history_level3);
+            Long et_n = (long)n.getWCET() - SUT.get(core);
+            long affectedTime1 = futureNode.crp.computeET(-1, history_level1, history_level2,
+                            history_level3, futureNode, core, true, et_n, 0,false).getFirst().getFirst();
+            long affectedTime2 = futureNode.crp.computeET(-1, history_level1, history_level2, history_level3, futureNode,
+                            core, true, 0,0, false).getFirst().getFirst(); 
+            long affectedTime = affectedTime1 - affectedTime2;
+            
+            //affectedTime = affectedTime < 0 ? 0 : affectedTime;
+            if (affectedTime < 0) {
+                System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");
+                System.exit(-1);
+            }
+            sum += affectedTime;
+        }
+        return sum;
     }
 
     //L1 miss: 只要有争用就算一个 or hit的L1刚好只有这一个才算
     //L2 miss：只要有争用就算一个 or hit的L2刚好只有这一个才算 or L2 recency miss 余地总和（和其他核比较，越小越不好）
     //最大recency的变化
     //加速差
-    private Map<Node, List<Pair<Integer, Long>>> getSacrifice(List<Node> readyNodes, List<Node> affect, Map<Node, HitCore> hitCore, List<Integer> availableCores, 
+    private Map<Node, List<Pair<Integer, Long>>> getSacrifice(List<Node> readyNodes, List<Node> affect, Integer futureNodeStartIdx, Map<Node, HitCore> hitCore, List<Integer> availableCores, 
             long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2, 
             List<Node> history_level3, List<List<Node>> allocHistory, long currentTime, boolean lcif){
         
@@ -495,7 +517,7 @@ public class OnlineYHX_test2 extends AllocationMethods {
             List<Integer> coreList = new ArrayList<>(availableCores);
             for (int j = 0; j < coreList.size(); j++){
                 Integer core = coreList.get(j);
-                Long metric = getSUSac(n, core, affect, hitCore, history_level1, history_level2, history_level3);
+                Long metric = getSUSac(n, core, affect, futureNodeStartIdx, hitCore, history_level1, history_level2, history_level3);
                 sacList.add(new Pair<Integer, Long>(core, metric));
             }
             if(sacList.size() > 0){

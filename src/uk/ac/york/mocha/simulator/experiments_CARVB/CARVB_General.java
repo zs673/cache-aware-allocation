@@ -36,8 +36,8 @@ public class CARVB_General {
 	// static int nos = 1;// 500/100   //1000次重复实验
 	// static int intanceNum = 10;// 100
 	// static int taskNum = 1;// 100
-	static int cores = 8;// 4
-	static int nos = 100;// 500/100   //1000次重复实验
+	static int cores = 16;// 4
+	static int nos = 200;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
 
