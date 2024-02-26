@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -13,9 +13,11 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.math3.util.Pair;
 
+import it.unimi.dsi.fastutil.Hash;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.entity.Node.NodeType;
@@ -58,17 +60,38 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 			preEligible.add(readyNodes.get(i)); //找readyNode和空闲核的最小值
 		}
 
-        List<Node> affect = new ArrayList<>(readyNodes);
-        List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
-        affect.addAll(futureNodes);
+        List<Node> affect = new ArrayList<>(preEligible);
+        // List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
+        // affect.addAll(futureNodes);
 		
 
-        Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);
+        //Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);
         Map<Node, HitCore> hitCore = getHitCores(affect, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
-        Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, affectedList, 
+        Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
                                                             history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
 		List<Integer> availableP = new ArrayList<>(availableCores);
+
+        Map<Node, List<Pair<Integer, Long>>> speedUpTable = new LinkedHashMap<>();
+		for (Node n : preEligible) {
+			List<Pair<Integer, Long>> ETdrop = new ArrayList<>();
+			for (int i = 0; i < history_level1.size(); i++) {
+				int proc = i;
+				if (availableP.contains(proc)) {
+					/*
+					 * Speed up by ABSOLUTE value
+					 */
+					long WCET = n.getWCET();
+					long realET = n.crp
+							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, 0, false)
+							.getFirst().getFirst();
+					long speedup = WCET - realET;
+
+					ETdrop.add(new Pair<Integer, Long>(proc, speedup));
+				}
+			}
+			speedUpTable.put(n, ETdrop);
+		}
 
 		//已分配
 		List<Integer> allocProcs = new ArrayList<>();
@@ -95,13 +118,15 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 			// if (allocNodes.contains(n)){
 			// 	continue;
 			// }
-			Pair<Node, Integer> p = setPartition2(sacrifice, allocNodes, allocProcs, allocHistoryCut, allocHistory,
+			Pair<Node, Integer> p = setPartition2(speedUpTable, sacrifice, allocNodes, allocProcs, allocHistoryCut, allocHistory,
             preEligible, availableP, availableTimeAllProcs, currentTime, lcif, history_level1, history_level2,
             history_level3);
             Node n = p.getFirst(); Integer core = p.getSecond();
 
 			n.partition = core;
-
+            if (n.getDagInstNo() == 1){
+                System.out.println(n + "->" + core);
+            }
 			allocNodes.add(n);
 			allocProcs.add(core);
 
@@ -109,8 +134,8 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
             //更新代价
             affect.remove(n);
             preEligible.remove(n);
-            sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, affectedList, 
-                                                            history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
+            sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
+                                    history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 		}
 		//从readyNode移走已分配的结点
 		for (int i = 0; i < readyNodes.size(); i++) {
@@ -123,7 +148,7 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 	}
 
     // SAC + LCIF
-	private Pair<Node, Integer> setPartition2(Map<Node, List<Pair<Integer, Long>>> sacrifice, List<Node> allocNodes,
+	private Pair<Node, Integer> setPartition2(Map<Node, List<Pair<Integer, Long>>> SUT, Map<Node, List<Pair<Integer, Long>>> sacrifice, List<Node> allocNodes,
                                                 List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
                                                 List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
                                                 List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
@@ -163,7 +188,7 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 
     private List<Node> getFutureNodes(List<Integer> cores, long[] coreTime, Node[] currentExe){
         List<Node> futureNodes = new ArrayList<>();
-        //HashMap<Integer, Long> id_to_waiting = new HashMap<>();
+        //LinkedHashMap<Integer, Long> id_to_waiting = new LinkedHashMap<>();
 		// determine the core set based on medTime -- futureProc
 
 		List<Node> nodesTobedone = new ArrayList<>();
@@ -207,7 +232,7 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
         
 		int level2ClusterNum = history_level2.size();
 		int level2ClusterSize = history_level1.size() / level2ClusterNum;
-        HashMap<Node, HitCore> map = new HashMap<>();
+        LinkedHashMap<Node, HitCore> map = new LinkedHashMap<>();
         for (int i = 0; i < readyNodes.size(); i++){
             Set<Integer> level1HitCore = new HashSet<>();
             Set<Integer> level2HitCore = new HashSet<>();
@@ -297,7 +322,7 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 	}
 
 	private List<Entry<Integer, Long>> getRecencyTable(Node n, List<Integer> procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, long additionalTime){
-		Map<Integer, Long> rct = new HashMap<>();
+		Map<Integer, Long> rct = new LinkedHashMap<>();
 
 		for (int i = 0; i < procs.size(); i++){
 			long recencyDis = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, n, procs.get(i), true, additionalTime);
@@ -316,7 +341,7 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 
     //找到会被影响的结点
     private Map<Node, List<Node>> getAffectedNodes(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> allocHistory, long currentTime){
-        Map<Node, List<Node>> res = new HashMap<>();
+        Map<Node, List<Node>> res = new LinkedHashMap<>();
 
         for (int i = 0; i < readyNodes.size(); i++){
             Node n = readyNodes.get(i);
@@ -346,124 +371,6 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
         return res;
     }
 
-    //hitCore已经排除busy core了
-    //L1 miss有可能直接造成L2 miss
-    private Integer getMetric(Node n, Integer core, List<Node> readyNodes, Map<Node, HitCore> hitCore1, 
-                            List<Node> affected, Map<Node, HitCore> hitCore2, Integer metricFlag){
-        Integer sum = 0;
-        switch(metricFlag){
-            case 0:
-                for (int i = 0; i < readyNodes.size(); i++){
-                    if (n == readyNodes.get(i)){
-                        continue;
-                    }
-                    HitCore tmp = hitCore1.get(readyNodes.get(i));
-                    if (tmp.level1.size() == 1 && tmp.level1.contains(core)){
-                        sum++;
-                    }
-                }
-                for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(affected.get(i));
-                    if (tmp.level1.size() == 1 && tmp.level1.contains(core)){
-                        sum++;
-                    }
-                }
-                break;
-            
-            case 1:
-                for (int i = 0; i < readyNodes.size(); i++){
-                    if (n == readyNodes.get(i)){
-                        continue;
-                    }
-                    HitCore tmp = hitCore1.get(readyNodes.get(i));
-                    if (tmp.level1.contains(core)){
-                        sum++;
-                    }
-                }
-                for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(affected.get(i));
-                    if (tmp.level1.contains(core)){
-                        sum++;
-                    }
-                }
-                break;
-
-            case 2:
-                for (int i = 0; i < readyNodes.size(); i++){
-                    if (n == readyNodes.get(i)){
-                        continue;
-                    }
-                    HitCore tmp = hitCore1.get(readyNodes.get(i));
-                    if (tmp.level2.size() == 1 && tmp.level2.contains(core)){
-                        sum++;
-                    }
-                }
-                for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(affected.get(i));
-                    if (tmp.level2.size() == 1 && tmp.level2.contains(core)){
-                        sum++;
-                    }
-                }
-                break;
-
-            case 3:
-                for (int i = 0; i < readyNodes.size(); i++){
-                    if (n == readyNodes.get(i)){
-                        continue;
-                    }
-                    HitCore tmp = hitCore1.get(readyNodes.get(i));
-                    if (tmp.level2.contains(core)){
-                        sum++;
-                    }
-                }
-                for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(affected.get(i));
-                    if (tmp.level2.contains(core)){
-                        sum++;
-                    }
-                }
-                break;
-            default:
-                break;               
-        }
-        return sum;
-    }
-
-    //todo: 这里只单纯考虑了L2的recency余地 要不要加L1为空的条件
-    private Long getMetric(Node n, Integer core, List<Node> readyNodes, Map<Node, HitCore> hitCore1, 
-            List<Node> affected, Map<Node, HitCore> hitCore2, List<List<Node>> history_level1, 
-            List<List<Node>> history_level2, List<Node> history_level3){
-        
-        Long sum = (long) 0;
-        //每个节点在每个核上剩下的recency miss余地总和
-        for (int i = 0; i < readyNodes.size(); i++){
-            if (n == readyNodes.get(i)){
-                continue;
-            }
-            HitCore tmp = hitCore1.get(readyNodes.get(i));
-            List<Integer> level2List = new ArrayList<>(tmp.level2);
-            for (int j = 0; j < level2List.size(); j++){
-                if (level2List.get(j) == core){
-                    continue;
-                }
-                Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, readyNodes.get(i), level2List.get(j), true, 0);
-                sum += SystemParameters.v3 - recencyL2;
-            }
-        }
-        for (int i = 0; i < affected.size(); i++){
-            HitCore tmp = hitCore2.get(readyNodes.get(i));
-            List<Integer> level2List = new ArrayList<>(tmp.level2);
-            for (int j = 0; j < level2List.size(); j++){
-                if (level2List.get(j) == core){
-                    continue;
-                }
-                Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected.get(i), level2List.get(j), true, 0);
-                sum += SystemParameters.v3 - recencyL2;
-            }
-        }
-        return sum;
-
-    }
 
     private Pair<Integer, Long> findMaxValueKeyInMap(Map<Integer, Long> map, Integer core) {
             Integer maxKey = null;
@@ -488,7 +395,7 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
                     List<List<Node>> history_level2, List<Node> history_level3){
 
         //计算结点n在命中核上的SUT
-        Map<Integer, Long> speedUpTable = new HashMap<>();
+        Map<Integer, Long> speedUpTable = new LinkedHashMap<>();
         for (int i = 0; i < coreList.size(); i++) {
             int proc = coreList.get(i);
             /*
@@ -512,9 +419,9 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
         
         Long sum = (long) 0;
         for (int i = 0; i < affect.size(); i++){
-            if (n == affect.get(i)){
-                continue;
-            }
+            // if (n == affect.get(i)){
+            //     continue;
+            // }
             HitCore tmp = hitCore.get(affect.get(i));
             List<Integer> coreList = tmp.getCoreList();
             if (!coreList.contains(core)){
@@ -525,6 +432,10 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
             Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT, core);
 
             //rawSU < maxSU -> no sacrifice
+            if (n == affect.get(i)){
+                sum += (rawSU < pair.getSecond() ? pair.getSecond() - rawSU : 0);
+                continue;
+            }
             sum += (rawSU > pair.getSecond() ? rawSU - pair.getSecond() : 0);
             //if core is not available, predict the Node n will be allocated to the core with MSF
         }
@@ -547,11 +458,11 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
     //L2 miss：只要有争用就算一个 or hit的L2刚好只有这一个才算 or L2 recency miss 余地总和（和其他核比较，越小越不好）
     //最大recency的变化
     //加速差
-    private Map<Node, List<Pair<Integer, Long>>> getSacrifice(List<Node> readyNodes, List<Node> affect, Map<Node, HitCore> hitCore, List<Integer> availableCores, long[] availableTimeAllProcs, 
-            Map<Node, List<Node>> affectedList, List<List<Node>> history_level1, List<List<Node>> history_level2, 
+    private Map<Node, List<Pair<Integer, Long>>> getSacrifice(List<Node> readyNodes, List<Node> affect, Map<Node, HitCore> hitCore, List<Integer> availableCores, 
+            long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2, 
             List<Node> history_level3, List<List<Node>> allocHistory, long currentTime, boolean lcif){
         
-        Map<Node, List<Pair<Integer, Long>>> sacrifice = new HashMap<>();
+        Map<Node, List<Pair<Integer, Long>>> sacrifice = new LinkedHashMap<>();
         for (int i = 0; i < readyNodes.size(); i++){
             //sacrifice.add(new ArrayList<>());
             Node n = readyNodes.get(i);
