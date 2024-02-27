@@ -199,7 +199,7 @@ public class OnlineYHX_compare extends AllocationMethods {
                 sut = SUT.get(nToAlloc).get(i).getSecond();
                 sac = sacrifice.get(nToAlloc).get(i).getSecond();
                 if (sut - sac == maxSUTValue){
-                    candidateC.add(i);
+                    candidateC.add(proc);
                 }
             
             }
