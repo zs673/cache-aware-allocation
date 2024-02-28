@@ -135,10 +135,10 @@ public class AllSystemsResults {
 	public void writeCachePerf(List<OneSystemResults> resPerSystem, boolean append) {
 
 		StringBuilder builder = new StringBuilder();
-
+		double[][] avg = new double[resPerSystem.get(0).cachePerf.size()][5];
 		for (int i = 0; i < resPerSystem.get(0).cachePerf.size(); i++) {
 			// long[] avg = new long[resPerSystem.get(0).cachePerf.get(0).length];
-			double[] avg = new double[5];
+			//double[] avg = new double[5];
 			final int methodIndex = i;
 
 			for (int j = 0; j < resPerSystem.size(); j++) {
@@ -147,17 +147,22 @@ public class AllSystemsResults {
 
 				for (int k = 0; k < cacheOneMethod.length; k++) {
 					builder.append(cacheOneMethod[k] + ",");
-					avg[k] += cacheOneMethod[k];
+					avg[i][k] += cacheOneMethod[k];
 				}
 				builder.append("\n");
 			}
-			for (int m = 0; m < avg.length; m++){
-				avg[m] = (double)avg[m] / resPerSystem.size();
-				builder.append(df.format(avg[m]) + ",");
+			for (int m = 0; m < 5; m++){
+				avg[i][m] = (double)avg[i][m] / resPerSystem.size();
 			}
 			builder.append("\n");
 			builder.append("\n");
-
+		}
+		
+		for (int i = 0; i < resPerSystem.get(0).cachePerf.size(); i++) {
+			for (int m = 0; m < 5; m++){
+				builder.append(df.format(avg[i][m]) + ",");
+			}
+			builder.append("\n");
 		}
 
 		String cacheFileName = "cache" + "_" + taskNum + "_" + SystemParameters.utilPerTask + recencyName + ".txt";

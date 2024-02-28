@@ -60,7 +60,7 @@ public class OnlineYHX_test2 extends AllocationMethods {
 			preEligible.add(readyNodes.get(i)); //找readyNode和空闲核的最小值
 		}
 
-        List<Node> affect = new ArrayList<>(readyNodes);
+        List<Node> affect = new ArrayList<>(preEligible);
         List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
         affect.addAll(futureNodes);
 		
@@ -191,6 +191,31 @@ public class OnlineYHX_test2 extends AllocationMethods {
             }
         }
 
+        List<Integer> candidateC = new ArrayList<>();
+        for (int i = 0; i < procs.size(); i++){
+            Integer proc = procs.get(i);
+            long sut = 0; long sac = 0;
+            if (!allocProcs.contains(proc)){
+                sut = SUT.get(nToAlloc).get(i).getSecond();
+                sac = sacrifice.get(nToAlloc).get(i).getSecond();
+                if (sut - sac == maxSUTValue){
+                    candidateC.add(proc);
+                }
+            
+            }
+        }
+        long max = Long.MIN_VALUE;
+        if (candidateC.size() > 1){
+            for (int i = 0; i < candidateC.size(); i++){
+                Integer c = candidateC.get(i);
+                long recencyFree = getRecencyFree(c, allocHistory, procs, history_level1, history_level2, history_level3);
+                if (recencyFree > max){
+                    max = recencyFree;
+                    core = c;
+                }
+            }
+        }
+
         //改为之前的想法 分配给recency miss余地最小的 或者不要这一步
         // if (lcif) {
 
@@ -301,10 +326,10 @@ public class OnlineYHX_test2 extends AllocationMethods {
 	}
         
 
-	private Long getRecencyFree(Node n, int core, List<List<Node>> allocHistory, List<Integer> procs, 
+	private Long getRecencyFree(int core, List<List<Node>> allocHistory, List<Integer> procs, 
                                 List<List<Node>> history_level1,  List<List<Node>> history_level2, List<Node> history_level3){
 
-		long et_n = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, 0, false).getFirst().getFirst();
+		//long et_n = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, 0, false).getFirst().getFirst();
 		int idx = procs.indexOf(core);
 		if (idx == -1){
 			System.out.println("*****");
@@ -334,7 +359,7 @@ public class OnlineYHX_test2 extends AllocationMethods {
 
 		Long sum = (long) 0;
 		for (Node affected : affectedNodes){
-			Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected, core, true, 0);
+			Long recencyL2 = affected.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected, core, true, 0);
 			sum += SystemParameters.v3 - recencyL2;
 		}
 		return sum;

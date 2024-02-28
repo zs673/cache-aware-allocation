@@ -146,16 +146,16 @@ public class SystemParameters {
 	public static final long v3 = 100000;
 	public static final long v4 = 500000;
 
-	// public static final double delta1 = 0.3;
-	// public static final double delta2 = 0.5;
-	// public static final double delta3 = 0.8;
-	// public static final double delta4 = 1.0;
-
-	// penalty
 	public static final double delta1 = 0.3;
 	public static final double delta2 = 0.5;
-	public static final double delta3 = 1.0;
+	public static final double delta3 = 0.8;
 	public static final double delta4 = 1.0;
+
+	// penalty
+	// public static final double delta1 = 0.3;
+	// public static final double delta2 = 0.5;
+	// public static final double delta3 = 1.0;
+	// public static final double delta4 = 1.0;
 
 	/**********************************************************************
 	 ************************** System Generator **************************

@@ -60,7 +60,7 @@ public class OnlineYHX_compare extends AllocationMethods {
 			preEligible.add(readyNodes.get(i)); //找readyNode和空闲核的最小值
 		}
 
-        List<Node> affect = new ArrayList<>(readyNodes);
+        List<Node> affect = new ArrayList<>(preEligible);
         List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
         affect.addAll(futureNodes);
 		
@@ -341,7 +341,7 @@ public class OnlineYHX_compare extends AllocationMethods {
 		for (int j = nodesInProc.size() - 1; j >= 0; j--) {
 			nodeNum += nodesInProc.get(j).expectedET;
 
-			if (nodeNum >= SystemParameters.v4) { //无法从cache受益的在计算impact时不考虑
+			if (nodeNum >= SystemParameters.v3) { //无法从cache受益的在计算impact时不考虑
 				break;
 			}
 
@@ -358,10 +358,11 @@ public class OnlineYHX_compare extends AllocationMethods {
 		// }
 
 		Long sum = (long) 0;
-		for (Node affected : affectedNodes){
-			Long recencyL2 = affected.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected, core, true, 0);
-			sum += SystemParameters.v3 - recencyL2;
-		}
+        if (affectedNodes.size() > 0){
+            Node earliestNode = affectedNodes.get(affectedNodes.size() - 1);
+            Long recencyL2 = earliestNode.crp.computeRecency(-1, history_level1, history_level2, history_level3, earliestNode, core, true, 0);
+            sum = SystemParameters.v3 - recencyL2;
+        }
 		return sum;
 	}
 
