@@ -19,6 +19,7 @@ public class HitCore implements Serializable {
 	public int level2ClusterNum;
 	public int level2ClusterSize;
     public int priority;
+	public int priority1;
 
 	public Set<Integer> level1 = new HashSet<>();
 	public Set<Integer> level2 = new HashSet<>();
@@ -28,7 +29,8 @@ public class HitCore implements Serializable {
         this.level1.addAll(level1);
         this.level2.addAll(level2);
         this.level3.addAll(level3);
-        this.priority = this.level2.size() + this.level1.size() * 2; // todo:考虑争用
+        this.priority = this.level2.size() + this.level1.size() * 4; // todo:考虑争用
+		this.priority1 = this.level2.size() + this.level1.size() * 5;
     }
 
     public Boolean isEmpty(){

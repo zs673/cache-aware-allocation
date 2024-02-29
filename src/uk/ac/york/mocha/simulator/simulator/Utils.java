@@ -189,22 +189,36 @@ public class Utils {
 			if (ins != 0)
 				return ins;
 			else
-				if (hitCore.get(c1).priority != hitCore.get(c1).priority){
-					return Integer.compare(hitCore.get(c1).priority, hitCore.get(c1).priority);
+				if (hitCore.get(c1).priority != hitCore.get(c2).priority){
+					return -Integer.compare(hitCore.get(c1).priority, hitCore.get(c2).priority);
 				}
 				return -Long.compare(c1.getWCET(), c2.getWCET());
-
-			// int c = -Long.compare(c1.getWCET(), c2.getWCET());
-			//
-			// if (c != 0)
-			// return c;
-			// else {
-			// return Integer.compare(c1.getDagInstNo(), c2.getDagInstNo());
-			// }
-
 		}
-
 	}
+
+	public static int compareNodeForYHX1(List<DirectedAcyclicGraph> dags, Node c1, Node c2, Map<Node, HitCore> hitCore) {
+
+		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+
+		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
+			return -1;
+		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
+			return 1;
+		} else {
+
+			int ins = Long.compare(c1.getDagInstNo(), c2.getDagInstNo());
+
+			if (ins != 0)
+				return ins;
+			else
+				if (hitCore.get(c1).priority1 != hitCore.get(c2).priority1){
+					return -Integer.compare(hitCore.get(c1).priority1, hitCore.get(c2).priority1);
+				}
+				return -Long.compare(c1.getWCET(), c2.getWCET());
+		}
+	}
+
 
 	public static int compareNodeByID(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
 

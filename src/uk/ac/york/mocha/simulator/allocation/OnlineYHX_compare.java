@@ -46,10 +46,15 @@ public class OnlineYHX_compare extends AllocationMethods {
         if (readyNodes.get(0).getType() == NodeType.SOURCE){
 			System.out.println("A new instance starts");
 		}
+        Map<Node, HitCore> hitCore_ = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
-		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX1(dags, c1, c2, hitCore_));
+		/*
+		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
+		 */
+		//readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
         /*
          * only take the nodes which will be allocated in this allocation run into account
          */
@@ -171,7 +176,7 @@ public class OnlineYHX_compare extends AllocationMethods {
         // }
 
         Node nToAlloc = null; Integer core = -1;
-        Long maxSUTValue = Long.MIN_VALUE;
+        Long minSUTValue = Long.MAX_VALUE;
         for (Entry<Node, List<Pair<Integer, Long>>> entry : SUT.entrySet()) {
             Node n = entry.getKey();
             if (!allocNodes.contains(n)){
@@ -179,9 +184,9 @@ public class OnlineYHX_compare extends AllocationMethods {
                 List<Pair<Integer, Long>> sacList = sacrifice.get(n);
                 for (int i = 0; i < sutList.size(); i++){
                     if (!allocProcs.contains(sutList.get(i).getFirst())){
-                        if (sutList.get(i).getSecond() - sacList.get(i).getSecond() > maxSUTValue){
+                        if (sacList.get(i).getSecond() - sutList.get(i).getSecond() < minSUTValue){
                             
-                            maxSUTValue = sutList.get(i).getSecond() - sacList.get(i).getSecond();
+                            minSUTValue = sacList.get(i).getSecond() - sutList.get(i).getSecond();
                             nToAlloc = n;
                             core = sutList.get(i).getFirst();
                         }
@@ -198,7 +203,7 @@ public class OnlineYHX_compare extends AllocationMethods {
             if (!allocProcs.contains(proc)){
                 sut = SUT.get(nToAlloc).get(i).getSecond();
                 sac = sacrifice.get(nToAlloc).get(i).getSecond();
-                if (sut - sac == maxSUTValue){
+                if (sac - sut == minSUTValue){
                     candidateC.add(proc);
                 }
             

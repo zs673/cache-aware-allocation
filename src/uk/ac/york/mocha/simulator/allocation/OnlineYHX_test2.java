@@ -46,10 +46,15 @@ public class OnlineYHX_test2 extends AllocationMethods {
         if (readyNodes.get(0).getType() == NodeType.SOURCE){
 			System.out.println("A new instance starts");
 		}
+        Map<Node, HitCore> hitCore_ = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
-		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
+		/*
+		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
+		 */
+		//readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
         /*
          * only take the nodes which will be allocated in this allocation run into account
          */
@@ -171,7 +176,7 @@ public class OnlineYHX_test2 extends AllocationMethods {
         // }
 
         Node nToAlloc = null; Integer core = -1;
-        Long maxSUTValue = Long.MIN_VALUE;
+        Long minSUTValue = Long.MAX_VALUE;
         for (Entry<Node, List<Pair<Integer, Long>>> entry : SUT.entrySet()) {
             Node n = entry.getKey();
             if (!allocNodes.contains(n)){
@@ -179,9 +184,9 @@ public class OnlineYHX_test2 extends AllocationMethods {
                 List<Pair<Integer, Long>> sacList = sacrifice.get(n);
                 for (int i = 0; i < sutList.size(); i++){
                     if (!allocProcs.contains(sutList.get(i).getFirst())){
-                        if (sutList.get(i).getSecond() - sacList.get(i).getSecond() > maxSUTValue){
+                        if (sacList.get(i).getSecond() - sutList.get(i).getSecond() < minSUTValue){
                             
-                            maxSUTValue = sutList.get(i).getSecond() - sacList.get(i).getSecond();
+                            minSUTValue = sacList.get(i).getSecond() - sutList.get(i).getSecond();
                             nToAlloc = n;
                             core = sutList.get(i).getFirst();
                         }
@@ -198,7 +203,7 @@ public class OnlineYHX_test2 extends AllocationMethods {
             if (!allocProcs.contains(proc)){
                 sut = SUT.get(nToAlloc).get(i).getSecond();
                 sac = sacrifice.get(nToAlloc).get(i).getSecond();
-                if (sut - sac == maxSUTValue){
+                if (sac - sut == minSUTValue){
                     candidateC.add(proc);
                 }
             
@@ -341,7 +346,7 @@ public class OnlineYHX_test2 extends AllocationMethods {
 		for (int j = nodesInProc.size() - 1; j >= 0; j--) {
 			nodeNum += nodesInProc.get(j).expectedET;
 
-			if (nodeNum >= SystemParameters.v4) { //无法从cache受益的在计算impact时不考虑
+			if (nodeNum >= SystemParameters.v3) { //无法从cache受益的在计算impact时不考虑
 				break;
 			}
 
@@ -358,10 +363,11 @@ public class OnlineYHX_test2 extends AllocationMethods {
 		// }
 
 		Long sum = (long) 0;
-		for (Node affected : affectedNodes){
-			Long recencyL2 = affected.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected, core, true, 0);
-			sum += SystemParameters.v3 - recencyL2;
-		}
+        if (affectedNodes.size() > 0){
+            Node earliestNode = affectedNodes.get(affectedNodes.size() - 1);
+            Long recencyL2 = earliestNode.crp.computeRecency(-1, history_level1, history_level2, history_level3, earliestNode, core, true, 0);
+            sum = SystemParameters.v3 - recencyL2;
+        }
 		return sum;
 	}
 

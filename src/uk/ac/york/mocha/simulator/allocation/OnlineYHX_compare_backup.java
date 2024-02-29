@@ -62,7 +62,7 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 
         List<Node> affect = new ArrayList<>(preEligible);
         List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
-        //affect.addAll(futureNodes);
+        affect.addAll(futureNodes);
 		
 
         //Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);
@@ -191,63 +191,100 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
             }
         }
 
-        List<Integer> candidateC = new ArrayList<>();
-        for (int i = 0; i < procs.size(); i++){
+        // List<Integer> candidateC = new ArrayList<>();
+        // for (int i = 0; i < procs.size(); i++){
+        //     Integer proc = procs.get(i);
+        //     long sut = 0; long sac = 0;
+        //     if (!allocProcs.contains(proc)){
+        //         sut = SUT.get(nToAlloc).get(i).getSecond();
+        //         sac = sacrifice.get(nToAlloc).get(i).getSecond();
+        //         if (sut - sac == maxSUTValue){
+        //             candidateC.add(proc);
+        //         }
+            
+        //     }
+        // }
+
+        //Node n = preEligible.get(nToAlloc);
+        List<Integer> freeProcIndex = new ArrayList<>();
+        List<Integer> freeProc = new ArrayList<>();
+        ///List<Integer> freeCluster = new ArrayList<>();
+
+        /**
+         * Find all available cores that can have the same speed up
+         */
+        for (int i = 0; i < procs.size(); i++) {
             Integer proc = procs.get(i);
             long sut = 0; long sac = 0;
-            if (!allocProcs.contains(proc)){
+            if (!allocProcs.contains(proc)) {
                 sut = SUT.get(nToAlloc).get(i).getSecond();
                 sac = sacrifice.get(nToAlloc).get(i).getSecond();
                 if (sut - sac == maxSUTValue){
-                    candidateC.add(proc);
-                }
-            
-            }
-        }
-        long max = Long.MIN_VALUE;
-        if (candidateC.size() > 1){
-            for (int i = 0; i < candidateC.size(); i++){
-                Integer c = candidateC.get(i);
-                long recencyFree = getRecencyFree(c, allocHistory, procs, history_level1, history_level2, history_level3);
-                if (recencyFree > max){
-                    max = recencyFree;
-                    core = c;
+                    freeProcIndex.add(i);
+                    freeProc.add(proc);
                 }
             }
         }
 
-        Long maxSUT = Long.MIN_VALUE;
-        Integer core_ = -1;
-        Long Sac = (long)0;
-        List<Pair<Integer, Long>> sutList = SUT.get(nToAlloc);
-        for (int i = 0; i < sutList.size(); i++){
-            if (!allocProcs.contains(sutList.get(i).getFirst())){
-                if (sutList.get(i).getSecond()  > maxSUT){
-                    maxSUT = sutList.get(i).getSecond();
-                    core_ = sutList.get(i).getFirst();
-                    Sac = sacrifice.get(nToAlloc).get(i).getSecond();
-                }
-            }
-        }
-        
-        if (core != core_){
-            int m = 1;
-        }
-        Integer rawCore = core;
-        for (int i = 0; i < sutList.size(); i++){
-            if (sutList.get(i).getFirst() == rawCore){
-                Long tmp = maxSUT - SUT.get(nToAlloc).get(i).getSecond();
-                if (tmp > Sac){
-                    System.out.println("********************************!!!!!!!!!!!!!!!!!!!!!!!!!");
-                    core = core_;
-                    break;
-                }
-            }
-        }
-        //改为之前的想法 分配给recency miss余地最小的 或者不要这一步
-        // if (lcif) {
+        if (freeProcIndex.size() > 1) {
 
-        // }
+            /*
+             * Search in history for same node & DAG allocation
+             */
+            List<List<Node>> NodeHis = new ArrayList<>();
+            List<Long> impacts = new ArrayList<>();
+
+            for (int i = 0; i < freeProcIndex.size(); i++) {
+                NodeHis.add(new ArrayList<>());
+                impacts.add((long) 0);
+            }
+
+            for (int i = 0; i < freeProcIndex.size(); i++) {
+                int procIndex = freeProcIndex.get(i);
+                long et_n = nToAlloc.getWCET() - SUT.get(nToAlloc).get(procIndex).getSecond();
+
+                List<Node> nodesInProc = allocHistory.get(procIndex);
+
+                /*
+                 * Get the nodes that can hit level two cache in each free core.
+                 */
+                long Nodenum = 0;
+                for (int j = nodesInProc.size() - 1; j >= 0; j--) {
+                    Nodenum += nodesInProc.get(j).expectedET;
+
+                    if (Nodenum >= SystemParameters.v3) { //无法从cache受益的在计算impact时不考虑
+                        break;
+                    }
+
+                    NodeHis.get(i).add(nodesInProc.get(j));
+                }
+
+                List<Node> affectedNodes = NodeHis.get(i);
+                long affectedTime = 0;
+
+                for (Node affected : affectedNodes) {
+                    long affectedTimeOneNode = affected.crp.computeET(-1, history_level1, history_level2,
+                            history_level3, affected, affected.partition, true, et_n, 0,false).getFirst().getFirst()
+                            - affected.crp.computeET(-1, history_level1, history_level2, history_level3, affected,
+                                    affected.partition, true, 0,0, false).getFirst().getFirst(); //加多一个additional_time：et_n
+
+                    affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
+
+                    if (affectedTime < 0) {
+                        System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");
+                        System.exit(-1);
+                    }
+                }
+
+                impacts.set(i, affectedTime);
+            }
+
+            long minExecutionTime = Collections.min(impacts);
+            int minETIndex = impacts.indexOf(minExecutionTime);
+
+            core = procs.get(freeProcIndex.get(minETIndex));
+
+        }
 
         if (nToAlloc == null || core == -1) {
             System.err.println("SimpleCacheAware.getIndexOfMaximum(): Cannot find the max value!");
@@ -369,7 +406,7 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 		for (int j = nodesInProc.size() - 1; j >= 0; j--) {
 			nodeNum += nodesInProc.get(j).expectedET;
 
-			if (nodeNum >= SystemParameters.v4) { //无法从cache受益的在计算impact时不考虑
+			if (nodeNum >= SystemParameters.v3) { //无法从cache受益的在计算impact时不考虑
 				break;
 			}
 
@@ -491,7 +528,6 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
             List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
         
         Long sum = (long) 0;
-        Long max = Long.MIN_VALUE;
         for (int i = 0; i < futureNodeStartIdx; i++){
             // if (n == affect.get(i)){
             //     continue;
@@ -510,13 +546,10 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
                 sum += (rawSU < pair.getSecond() ? pair.getSecond() - rawSU : 0);
                 continue;
             }
-            if (rawSU > pair.getSecond() && rawSU - pair.getSecond() > max){
-                max = rawSU - pair.getSecond();
-            }
-            //sum += (rawSU > pair.getSecond() ? rawSU - pair.getSecond() : 0);
+            sum += (rawSU > pair.getSecond() ? rawSU - pair.getSecond() : 0);
             //if core is not available, predict the Node n will be allocated to the core with MSF
         }
-        sum += (max == Long.MIN_VALUE ? 0 : max);
+
         List<Node> futureNodes = new ArrayList<>(affect.subList(futureNodeStartIdx, affect.size()));
         sum += getSUSacForFutureNodes(n, core, futureNodes, history_level1, history_level2, history_level3);
         return sum;
