@@ -482,13 +482,13 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
     }
 
 
-    private Pair<Integer, Long> findMaxValueKeyInMap(Map<Integer, Long> map, Integer core) {
+    private Pair<Integer, Long> findMaxValueKeyInMap(Map<Integer, Long> map, Integer core, List<Integer> availableP) {
             Integer maxKey = null;
             Long maxValue = Long.MIN_VALUE;
     
             for (Entry<Integer, Long> entry : map.entrySet()) {
                 //跳过被占的核
-                if (entry.getKey() == core){
+                if (entry.getKey() == core || !availableP.contains(entry.getKey())){
                     continue;
                 }
                 if (entry.getValue() > maxValue) {
@@ -524,11 +524,12 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
     }
 
     //加速差
-    private Long getSUSac(Node n, Integer core, List<Node> affect, Integer futureNodeStartIdx, Map<Node, HitCore> hitCore, 
+    private Long getSUSac(Node n, Integer core, List<Node> affect, List<Integer> availableP, Map<Node, HitCore> hitCore, 
             List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
         
         Long sum = (long) 0;
-        for (int i = 0; i < futureNodeStartIdx; i++){
+        Long max = Long.MIN_VALUE;
+        for (int i = 0; i < affect.size(); i++){
             // if (n == affect.get(i)){
             //     continue;
             // }
@@ -539,23 +540,58 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
             }
             Map<Integer, Long> SUT = getSUT(affect.get(i), coreList, history_level1, history_level2, history_level3);
             Long rawSU = SUT.get(core);
-            Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT, core);
+            Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT, core, availableP);
 
             //rawSU < maxSU -> no sacrifice
             if (n == affect.get(i)){
                 sum += (rawSU < pair.getSecond() ? pair.getSecond() - rawSU : 0);
                 continue;
             }
-            sum += (rawSU > pair.getSecond() ? rawSU - pair.getSecond() : 0);
+            if (rawSU > pair.getSecond() && rawSU - pair.getSecond() > max){
+                max = rawSU - pair.getSecond();
+            }
             //if core is not available, predict the Node n will be allocated to the core with MSF
         }
-
-        List<Node> futureNodes = new ArrayList<>(affect.subList(futureNodeStartIdx, affect.size()));
-        sum += getSUSacForFutureNodes(n, core, futureNodes, history_level1, history_level2, history_level3);
+        sum += (max == Long.MIN_VALUE ? 0 : max);
         return sum;
     }
 
-    private Long getSUSacForFutureNodes(Node n, Integer core, List<Node> future, 
+        //加速差
+    private Long getSUSacForFutureNodes(Node n, Integer core, List<Node> future, Map<Node, HitCore> hitCore, 
+            List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+    
+        Long sum = (long) 0;
+        Long max = Long.MIN_VALUE;
+        for (int i = 0; i < future.size(); i++){
+            // if (n == affect.get(i)){
+            //     continue;
+            // }
+            HitCore tmp = hitCore.get(future.get(i));
+            List<Integer> coreList = tmp.getCoreList();
+            if (!coreList.contains(core)){
+                continue;
+            }
+            Map<Integer, Long> SUT = getSUT(future.get(i), coreList, history_level1, history_level2, history_level3);
+            Long rawSU = SUT.get(core);
+            Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT, core);
+
+            //rawSU < maxSU -> no sacrifice
+            if (n == future.get(i)){
+                sum += (rawSU < pair.getSecond() ? pair.getSecond() - rawSU : 0);
+                continue;
+            }
+            if (rawSU > pair.getSecond() && rawSU - pair.getSecond() > max){
+                max = rawSU - pair.getSecond();
+            }
+            //if core is not available, predict the Node n will be allocated to the core with MSF
+        }
+        sum += (max == Long.MIN_VALUE ? 0 : max);
+        return sum;
+    }
+
+
+    //lcif版
+    private Long getSUSacForFutureNodesLcif(Node n, Integer core, List<Node> future, 
                 List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
 
         Long sum = (long) 0;
@@ -608,7 +644,7 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
             List<Integer> coreList = new ArrayList<>(availableCores);
             for (int j = 0; j < coreList.size(); j++){
                 Integer core = coreList.get(j);
-                Long metric = getSUSac(n, core, affect, futureNodeStartIdx, hitCore, history_level1, history_level2, history_level3);
+                Long metric = getSUSac(n, core, affect, availableCores, hitCore, history_level1, history_level2, history_level3);
                 sacList.add(new Pair<Integer, Long>(core, metric));
             }
             if(sacList.size() > 0){
