@@ -50,8 +50,8 @@ public class OnlineYHX_syn extends AllocationMethods {
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
-		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
-        //readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		//readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
+        readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
@@ -66,7 +66,7 @@ public class OnlineYHX_syn extends AllocationMethods {
 			preEligible.add(readyNodes.get(i)); //找readyNode和空闲核的最小值
 		}
 
-        List<Node> affect = new ArrayList<>(preEligible);
+        List<Node> affect = new ArrayList<>(readyNodes);
         List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
         affect.addAll(futureNodes);
 		
