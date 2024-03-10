@@ -50,8 +50,8 @@ public class OnlineYHX_test2 extends AllocationMethods {
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
-		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
-        //readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		//readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
+        readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
@@ -130,7 +130,7 @@ public class OnlineYHX_test2 extends AllocationMethods {
             Node n = p.getFirst(); Integer core = p.getSecond();
 
 			n.partition = core;
-            if (n.getDagInstNo() == 1){
+            if (n.getDagInstNo() == 2){
                 System.out.println(n + "->" + core);
             }
 			allocNodes.add(n);

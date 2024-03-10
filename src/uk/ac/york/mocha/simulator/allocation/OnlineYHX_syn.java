@@ -130,7 +130,7 @@ public class OnlineYHX_syn extends AllocationMethods {
             Node n = p.getFirst(); Integer core = p.getSecond();
 
 			n.partition = core;
-            if (n.getDagInstNo() == 1){
+            if (n.getDagInstNo() == 2){
                 System.out.println(n + "->" + core);
             }
 			allocNodes.add(n);
@@ -475,11 +475,11 @@ public class OnlineYHX_syn extends AllocationMethods {
             // }
             HitCore tmp = hitCore.get(affect.get(i));
             List<Integer> coreList = tmp.getCoreList();
-            if (!coreList.contains(core)){
-                continue;
-            }
+            Long rawSU = (long)0;
             Map<Integer, Long> SUT = getSUT(affect.get(i), coreList, history_level1, history_level2, history_level3);
-            Long rawSU = SUT.get(core);
+            if (coreList.contains(core)){
+                rawSU = SUT.get(core);
+            }
             Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT, core);
 
             //rawSU < maxSU -> no sacrifice

@@ -33,7 +33,8 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 			List<Integer> cores, long[] availableTimeAllProcs, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
 			boolean lcif, List<Node> etHist, List<Double> speeds, Node[] currentExe) {
-
+        
+        System.out.println("Compare-------------");
 		List<Integer> availableCores = new ArrayList<>();
 		for (int i = 0; i < cores.size(); i++) {
 			if (localRunqueue.get(i).size() == 0 && availableTimeAllProcs[i] <= currentTime)
@@ -48,8 +49,8 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
 		}
         Map<Node, HitCore> hitCore_ = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
-		//readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
-        readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
+        //readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
         //debug
         for (Node node : readyNodes){

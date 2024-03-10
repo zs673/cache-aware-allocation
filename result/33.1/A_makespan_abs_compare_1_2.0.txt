@@ -1,0 +1,39 @@
+
+
+Data analysis for each instance 
+AVG,MED,MAX,MIN
+0,0,0,0,0,0,0,0,0,0,
+
+
+0,-0.131,0.005,-0.136,-0.228,-0.243,-0.286,-0.19,-0.172,-0.235,
+
+
+
+
+Further Data analysis of all test cases 
+INSTANCEID avg med max min 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+
+
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE2 -0.131, -0.131, -0.131, -0.131, 
+INSTANCE3 0.005, 0.005, 0.005, 0.005, 
+INSTANCE4 -0.136, -0.136, -0.136, -0.136, 
+INSTANCE5 -0.228, -0.228, -0.228, -0.228, 
+INSTANCE6 -0.243, -0.243, -0.243, -0.243, 
+INSTANCE7 -0.286, -0.286, -0.286, -0.286, 
+INSTANCE8 -0.19, -0.19, -0.19, -0.19, 
+INSTANCE9 -0.172, -0.172, -0.172, -0.172, 
+INSTANCE10 -0.235, -0.235, -0.235, -0.235, 
+
+
+
