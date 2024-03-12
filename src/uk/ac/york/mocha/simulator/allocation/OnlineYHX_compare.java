@@ -54,7 +54,7 @@ public class OnlineYHX_compare extends AllocationMethods {
 
         //debug
         for (Node node : readyNodes){
-            if (node.getDagInstNo() == 1 && node.getId() == 35){
+            if (node.getDagInstNo() == 1 && node.getId() == 42){
                 int m = 1;
             }
         }
@@ -211,6 +211,7 @@ public class OnlineYHX_compare extends AllocationMethods {
 
             }
         }
+
 
         List<Pair<Integer, Long>> sutList = SUT.get(nToAlloc);
         List<Pair<Integer, Long>> sacList = sacrifice.get(nToAlloc);
