@@ -168,8 +168,7 @@ for i = 1:n-1      % Loop for rows
 end      % i-loop for rows
 
 % Display accumulated r- and p-values
-Rho
-P
+RhoP
 
 end
 
