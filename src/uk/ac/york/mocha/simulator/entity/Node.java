@@ -68,6 +68,14 @@ public class Node implements Serializable {
 
 	public double sensitivity = -1;
 
+
+	/*
+	 * YHX features
+	 */
+	public long maxLengthToSrc = 0;
+	public long maxLengthToSink = 0;
+	public long maxLength = 0;
+
 	/*
 	 * The priority of the node
 	 */

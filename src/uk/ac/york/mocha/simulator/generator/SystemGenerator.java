@@ -167,8 +167,11 @@ public class SystemGenerator {
 			dagTasks = generateSporadicDAGs(periods, hard); //**********/
 		}
 
-		for (DirectedAcyclicGraph d : dagTasks)//yiyang
-			d.findPath(true);
+		for (DirectedAcyclicGraph d : dagTasks){//yiyang
+			//d.findPath(true);
+			d.findPath(false);
+			d.computeLength(); //huixuan
+		}
 
 		/************************************************************************************/
 

@@ -533,11 +533,51 @@ public class DirectedAcyclicGraph implements Serializable {
 	int bestLength = 0; // length of the longest path
 
 	long distance = 0; // distance of the path
-	long bestDistance; // distance of the longest path
+	public long bestDistance; // distance of the longest path
 
 	int[] visited; // used to mark a node as visited
 
 	public List<List<Node>> allpaths = new ArrayList<>();
+
+
+	public long shortestLen = Long.MAX_VALUE;
+	public long longestLen = Long.MIN_VALUE;
+	public void computeLength(){
+		this.source.maxLengthToSrc = this.source.getWCET();
+		for (int i = 0; i < flatNodes.size(); i++){
+			Node node = flatNodes.get(i);
+			if (node != this.source){
+				long maxPredLength = -1;
+				for (Node pred : node.getParent()){
+					maxPredLength = pred.maxLengthToSrc > maxPredLength ? pred.maxLengthToSrc : maxPredLength;
+				}
+				node.maxLengthToSrc = node.getWCET() + maxPredLength;
+			}
+		}
+
+		this.sink.maxLengthToSink = this.sink.getWCET();
+		for (int i = flatNodes.size() - 1; i >= 0; i--){
+			Node node = flatNodes.get(i);
+			if (node != this.sink){
+				long maxSuccLength = -1;
+				for (Node succ : node.getChildren()){
+					maxSuccLength = succ.maxLengthToSink > maxSuccLength ? succ.maxLengthToSink : maxSuccLength;
+				}
+				node.maxLengthToSink = node.getWCET() + maxSuccLength;
+			}
+		}
+
+		for (int i = 0; i < flatNodes.size(); i++){
+			flatNodes.get(i).maxLength = flatNodes.get(i).maxLengthToSink + flatNodes.get(i).maxLengthToSrc - flatNodes.get(i).getWCET();
+			if (flatNodes.get(i).maxLength < shortestLen){
+				shortestLen = flatNodes.get(i).maxLength;
+			}
+			if (flatNodes.get(i).maxLength > longestLen){
+				longestLen = flatNodes.get(i).maxLength;
+			}
+		}
+
+	}
 
 	public void findPath(boolean longest) {
 		visited = new int[flatNodes.size()];
