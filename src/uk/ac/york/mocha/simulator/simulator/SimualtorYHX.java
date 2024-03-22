@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
+import uk.ac.york.mocha.simulator.allocation.AllocationMethodsYHX;
 import uk.ac.york.mocha.simulator.allocation.OnlineCARVB;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare;
@@ -181,6 +182,7 @@ public class SimualtorYHX {
 
 		boolean cacheAware = false;
 		AllocationMethods allocM = null;
+		AllocationMethodsYHX allocM2 = null;
 
 		switch (alloc) {
 			case SIMPLE:
@@ -218,13 +220,13 @@ public class SimualtorYHX {
                 allocM = new OnlineYHX();
                 break;
 			case ONLINE_YHX_TEST://把结点分到代价最小的那个
-                allocM = new OnlineYHX_test2();
+                allocM2 = new OnlineYHX_test2();
                 break;
 			case ONLINE_YHX_Random://按12345顺序分结点和核
                 allocM = new OnlineYHX_Random();
                 break;
 			case ONLINE_YHX_Compare://不断扩大考虑结点范围那个
-                allocM = new OnlineYHX_compare();
+                allocM2 = new OnlineYHX_compare();
                 break;
 			default:
 				System.err.println("The simualtion method is NOT supported! ");
@@ -253,12 +255,12 @@ public class SimualtorYHX {
 			/*
 			 * Execute ready nodes on available processors
 			 */
-			allocateAndExecute(allocM, cacheAware, printSim);
+			boolean hasAlloc = allocateAndExecute(allocM2, cacheAware, printSim);
 
 			/*
 			 * advance to next time unit.
 			 */
-			advance();
+			advance(hasAlloc);
 		}
 
 		debug_output_end(printSim);
@@ -381,8 +383,12 @@ public class SimualtorYHX {
 	/******************************************************************
 	 ********** Choose the next node in the queue to execute **********
 	 ******************************************************************/
-	private void allocateAndExecute(AllocationMethods allocM, boolean cacheAware, boolean printSim) {
-
+	private boolean allocateAndExecute(AllocationMethodsYHX allocM, boolean cacheAware, boolean printSim) {
+		/*
+		*当前instance完成需要跳到下一个instance释放
+		* 此时readyNodes为空，所以alloc也为true
+		*/
+		boolean hasAlloc = true;
 		/*
 		 * get ready nodes to execute by the specified allocation method
 		 */
@@ -415,7 +421,7 @@ public class SimualtorYHX {
 			if (readyNodes.size() == 0 || availableCores.size() == 0) {
 			} else {
 				noCalls++;
-				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
+				hasAlloc = allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
 						history_level3, allocHistory, systemTime, lcif, etHist, null, currentExe);
 			}
 
@@ -423,7 +429,7 @@ public class SimualtorYHX {
 			if (readyNodes.size() == 0) {
 			} else {
 				noCalls++;
-				allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
+				hasAlloc = allocM.allocate(dags, readyNodes, localRunQueue, cores, coreTime, history_level1, history_level2,
 						history_level3, allocHistory, systemTime, lcif, etHist, null, currentExe);
 			}
 		}
@@ -517,13 +523,13 @@ public class SimualtorYHX {
 			debug_print_allocation(printSim, oneSched);
 
 		}
-
+		return hasAlloc;
 	}
 
 	/****************************************************************
 	 *** Advance to next time unit. Sometimes we jump, time flies ***
 	 ****************************************************************/
-	private void advance() {
+	private void advance(boolean hasAlloc) {
 		long oldTime = systemTime;
 		/*
 		 * We jump to the next available time if all cores are busy.
@@ -550,6 +556,18 @@ public class SimualtorYHX {
 			for (long i : coreTime) {
 				if (i > systemTime)
 					earliestFinish = earliestFinish < i ? earliestFinish : i;
+			}
+
+			/*
+			 * 如某次调度未调节点
+			 * 所有核均空闲
+			 * 即coreTime均小于systemTime
+			 * 且后续sleepingDAGs为空（当前最后一个instance了）
+			 * 此时earliestFinish与earliestRelease均为MAX
+			 * 导致systemTime也为MAX.VAlUE
+			 */
+			if(earliestFinish == Long.MAX_VALUE && !hasAlloc){
+				return;
 			}
 
 			/*

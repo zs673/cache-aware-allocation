@@ -150,7 +150,7 @@ public class SystemParameters {
 
 	public static final double delta1 = 0.3;
 	public static final double delta2 = 0.5;
-	public static final double delta3 = 0.8;
+	public static final double delta3 = 1.0;
 	public static final double delta4 = 1.0;
 
 	// penalty

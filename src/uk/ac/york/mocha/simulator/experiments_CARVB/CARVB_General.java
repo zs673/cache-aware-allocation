@@ -36,7 +36,7 @@ public class CARVB_General {
 	// static int nos = 1;// 500/100   //1000次重复实验
 	// static int intanceNum = 10;// 100
 	// static int taskNum = 1;// 100
-	static int cores = 16;// 4
+	static int cores = 32;// 4
 	static int nos = 500;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
@@ -89,7 +89,7 @@ public class CARVB_General {
 		List<OneSystemResults> allRes = new ArrayList<>();
 
 		for (int i = 0; i < nos; i++) {// i < nos
-			if (i == 8){
+			if (i == 66){
 				int m = 1;
 			}
 			System.out.println(

@@ -26,12 +26,12 @@ import uk.ac.york.mocha.simulator.generator.HitCore;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineYHX_compare extends AllocationMethods {
+public class OnlineYHX_compare extends AllocationMethodsYHX {
     private Random rng = new Random(1000);
-    static int delayCnt = 0;
-
+    static int delayCnt3 = 0;
+    public boolean hasAlloc = false;
 	@Override
-	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
+	public boolean allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> cores, long[] availableTimeAllProcs, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
 			boolean lcif, List<Node> etHist, List<Double> speeds, Node[] currentExe) {
@@ -46,16 +46,16 @@ public class OnlineYHX_compare extends AllocationMethods {
 
         //yhx
         if (readyNodes.get(0).getType() == NodeType.SOURCE){
-			System.out.println("A new instance starts");
+			System.out.println("compare: A new instance starts");
 		}
         Map<Node, HitCore> hitCore_ = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
-		//readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
-        readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
+        //readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
         //debug
         for (Node node : readyNodes){
-            if (node.getDagInstNo() == 2 && node.getId() == 52){
+            if (node.getDagInstNo() == 1 && node.getId() == 21){
                 int m = 1;
             }
         }
@@ -109,15 +109,16 @@ public class OnlineYHX_compare extends AllocationMethods {
 			if (k >= availableNodes)
 				break;//没那么多node分到多的核上
 			
-			Pair<Node, Integer> p = setPartition2(speedUpTable, sacrifice, sacrificeF, allocNodes, allocProcs, allocHistoryCut, allocHistory,
+			Pair<Node, Integer> p = setPartition2(dags, speedUpTable, sacrifice, sacrificeF, allocNodes, allocProcs, allocHistoryCut, allocHistory,
             preEligible, availableP, availableTimeAllProcs, currentTime, lcif, history_level1, history_level2,
             history_level3);
             Node n = p.getFirst(); Integer core = p.getSecond();
             if (core != -1){
+                hasAlloc = true;
                 n.partition = core;
-                if (n.getDagInstNo() == 1){
-                    System.out.println(n + "->" + core);
-                }
+                // if (n.getDagInstNo() == 1){
+                //     System.out.println(n + "->" + core);
+                // }
                 allocNodes.add(n);
                 allocProcs.add(core);
 
@@ -147,10 +148,11 @@ public class OnlineYHX_compare extends AllocationMethods {
 				i--;
 			}
 		}
+        return hasAlloc;
 	}
 
     // SAC + LCIF
-	private Pair<Node, Integer> setPartition2(Map<Node, List<Pair<Integer, Long>>> SUT, Map<Node, List<Pair<Integer, Long>>> sacrifice, Map<Node, List<Pair<Integer, Long>>> sacrificeF, List<Node> allocNodes,
+	private Pair<Node, Integer> setPartition2(List<DirectedAcyclicGraph> dags, Map<Node, List<Pair<Integer, Long>>> SUT, Map<Node, List<Pair<Integer, Long>>> sacrifice, Map<Node, List<Pair<Integer, Long>>> sacrificeF, List<Node> allocNodes,
                                                 List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
                                                 List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
                                                 List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
@@ -172,40 +174,44 @@ public class OnlineYHX_compare extends AllocationMethods {
         //     }
         // }
 
-        Node nToAlloc = null; Integer core = -1;
-        Long maxSUTValue = Long.MIN_VALUE;
-        Long sacValue = Long.MAX_VALUE; Long sacValueF = Long.MAX_VALUE;
-        for (Entry<Node, List<Pair<Integer, Long>>> entry : SUT.entrySet()) {
-            Node n = entry.getKey();
-            if (!allocNodes.contains(n)){
-                List<Pair<Integer, Long>> sutList = entry.getValue();
-                for (int i = 0; i < sutList.size(); i++){
-                    if (!allocProcs.contains(sutList.get(i).getFirst())){
-                        if (sutList.get(i).getSecond() > maxSUTValue){
-                            maxSUTValue = sutList.get(i).getSecond();
-                            nToAlloc = n;
-                            core = sutList.get(i).getFirst();
-                            sacValue = sacrifice.get(n).get(i).getSecond();
-                            sacValueF = sacrificeF.get(n).get(i).getSecond();
-                        }
-                    }
-                }
+        // Node nToAlloc = null; Integer core = -1;
+        // Long maxSUTValue = Long.MIN_VALUE;
+        // Long sacValue = Long.MAX_VALUE; Long sacValueF = Long.MAX_VALUE;
+        // for (Entry<Node, List<Pair<Integer, Long>>> entry : SUT.entrySet()) {
+        //     Node n = entry.getKey();
+        //     if (!allocNodes.contains(n)){
+        //         List<Pair<Integer, Long>> sutList = entry.getValue();
+        //         for (int i = 0; i < sutList.size(); i++){
+        //             if (!allocProcs.contains(sutList.get(i).getFirst())){
+        //                 if (sutList.get(i).getSecond() > maxSUTValue){
+        //                     maxSUTValue = sutList.get(i).getSecond();
+        //                     nToAlloc = n;
+        //                     core = sutList.get(i).getFirst();
+        //                     sacValue = sacrifice.get(n).get(i).getSecond();
+        //                     sacValueF = sacrificeF.get(n).get(i).getSecond();
+        //                 }
+        //             }
+        //         }
 
-            }
-        }
+        //     }
+        // }
 
-        List<Pair<Integer, Long>> sutList = SUT.get(nToAlloc);
-        List<Pair<Integer, Long>> sacList = sacrifice.get(nToAlloc);
-        List<Pair<Integer, Long>> sacListF = sacrificeF.get(nToAlloc);
-        Long maxValue = maxSUTValue - sacValue - sacValueF;
-        for (int i = 0; i < sacList.size(); i++){
-            if (!allocProcs.contains(sacList.get(i).getFirst())){
-                if (sutList.get(i).getSecond() - sacList.get(i).getSecond() - sacListF.get(i).getSecond() > maxValue){
-                    maxValue = sutList.get(i).getSecond() - sacList.get(i).getSecond() - sacListF.get(i).getSecond();
-                    core = sacList.get(i).getFirst();
-                }
-            }
-        }
+        // List<Pair<Integer, Long>> sutList = SUT.get(nToAlloc);
+        // List<Pair<Integer, Long>> sacList = sacrifice.get(nToAlloc);
+        // List<Pair<Integer, Long>> sacListF = sacrificeF.get(nToAlloc);
+        // Long minValueSac = sacValue; Long minValueSU = maxSUTValue; Long minValueF = sacValueF;
+        // Long maxValue = maxSUTValue - sacValue - sacValueF;
+        // for (int i = 0; i < sacList.size(); i++){
+        //     if (!allocProcs.contains(sacList.get(i).getFirst())){
+        //         if (sutList.get(i).getSecond() - sacList.get(i).getSecond() - sacListF.get(i).getSecond() > maxValue){
+        //             maxValue = sutList.get(i).getSecond() - sacList.get(i).getSecond() - sacListF.get(i).getSecond();
+        //             core = sacList.get(i).getFirst();
+        //             minValueSU = sutList.get(i).getSecond();
+        //             minValueSac = sacList.get(i).getSecond();
+        //             minValueF = sacListF.get(i).getSecond();
+        //         }
+        //     }
+        // }
         
         // List<Pair<Integer, Long>> sacList = sacrifice.get(nToAlloc);
         // List<Pair<Integer, Long>> sacListF = sacrificeF.get(nToAlloc);
@@ -232,6 +238,7 @@ public class OnlineYHX_compare extends AllocationMethods {
 
         // Node nToAlloc = null; Integer core = -1;
         // Long maxValue = Long.MIN_VALUE;
+        // Long minValueF = Long.MAX_VALUE; Long minValueSac = Long.MAX_VALUE;
         // for (Entry<Node, List<Pair<Integer, Long>>> entry : SUT.entrySet()) {
         //     Node n = entry.getKey();
         //     if (!allocNodes.contains(n)){
@@ -245,17 +252,50 @@ public class OnlineYHX_compare extends AllocationMethods {
         //                     maxValue = sutList.get(i).getSecond() - sacList.get(i).getSecond() - sacListF.get(i).getSecond();
         //                     nToAlloc = n;
         //                     core = sutList.get(i).getFirst();
+        //                     minValueF = sacrifice.get(n).get(i).getSecond();
+        //                     minValueSac = sacrificeF.get(n).get(i).getSecond();
         //                 }
         //             }
         //         }
 
         //     }
         // }
-        boolean alloc = maxValue < 0 ? false :true;
+        Node nToAlloc = null; Integer core = -1;
+        Long maxSUTValue = Long.MIN_VALUE;
+        Long minValueF = Long.MAX_VALUE; Long minValueSac = Long.MAX_VALUE;
+        for (Entry<Node, List<Pair<Integer, Long>>> entry : SUT.entrySet()) {
+            Node n = entry.getKey();
+            if (!allocNodes.contains(n)){
+                List<Pair<Integer, Long>> sutList = entry.getValue();
+                List<Pair<Integer, Long>> sacList = sacrifice.get(n);
+                List<Pair<Integer, Long>> sacListF = sacrificeF.get(n);
+                for (int i = 0; i < sutList.size(); i++){
+                    if (!allocProcs.contains(sutList.get(i).getFirst())){
+                        if (sutList.get(i).getSecond() > maxSUTValue){
+                            
+                            maxSUTValue = sutList.get(i).getSecond();
+                            nToAlloc = n;
+                            core = sutList.get(i).getFirst();
+                            minValueF = sacList.get(i).getSecond();
+                            minValueSac = sacListF.get(i).getSecond();
+                        }
+                    }
+                }
+
+            }
+        }
+        Long maxValue = maxSUTValue - minValueF - minValueSac;
+        boolean delay1 = maxValue < 0 ? true :false;
+        //delay1 = false;
+        Integer cache = nToAlloc.crp.computeET(-1, history_level1, history_level2, history_level3, nToAlloc,
+                            core, true, 0,0, false).getSecond(); 
+        boolean delay2 = (cache >= 3) && (minValueF + minValueSac > 0);
+        boolean delay3 = (time + nToAlloc.getWCET()) <= (nToAlloc.release + Utils.getDagByIndex(dags, nToAlloc.getDagID(), nToAlloc.getDagInstNo()).sched_param.getPeriod());
         //boolean alloc = true;
+        //boolean delay = false;
+        boolean delay = (delay1 || delay2) && delay3 && (nToAlloc.delayCnt == 0);
 
-
-        if (alloc){
+        if (!delay){
             List<Integer> candidateC = new ArrayList<>();
             for (int i = 0; i < procs.size(); i++){
                 Integer proc = procs.get(i);
@@ -265,7 +305,8 @@ public class OnlineYHX_compare extends AllocationMethods {
                     sac = sacrifice.get(nToAlloc).get(i).getSecond();
                     sut = SUT.get(nToAlloc).get(i).getSecond();
                     sacF = sacrificeF.get(nToAlloc).get(i).getSecond();
-                    if (sut - sac - sacF == maxValue){
+                    // if (sut - sac - sacF == maxValue){
+                    if (sut == maxSUTValue){
                         candidateC.add(proc);
                     }
                 
@@ -297,8 +338,9 @@ public class OnlineYHX_compare extends AllocationMethods {
 
             return new Pair<Node, Integer>(nToAlloc, core);
         }else{
-            delayCnt++;
-            //System.out.println("delay cnt: " + delayCnt);
+            nToAlloc.delayCnt++;
+            delayCnt3++;
+            //System.out.println("compare delay cnt: " + delayCnt3);
             return new Pair<Node, Integer>(nToAlloc, -1);
         }
     }
@@ -537,8 +579,6 @@ public class OnlineYHX_compare extends AllocationMethods {
         
         Long sum = (long) 0;
         Long max = Long.MIN_VALUE;
-        Integer nextCore = -1;
-        Node nextNode = null;
         for (int i = 0; i < affect.size(); i++){
             // if (n == affect.get(i)){
             //     continue;
@@ -559,22 +599,11 @@ public class OnlineYHX_compare extends AllocationMethods {
             }
             if (rawSU > pair.getSecond() && rawSU - pair.getSecond() > max){
                 max = rawSU - pair.getSecond();
-                nextCore = pair.getFirst();
-                nextNode = affect.get(i);
             }
             //if core is not available, predict the Node n will be allocated to the core with MSF
         }
-        if (max == Long.MIN_VALUE || max == 0){
-            return (long)0;
-        }
         sum += (max == Long.MIN_VALUE ? 0 : max);
-        List<Node> affectCopy = new ArrayList<>(affect); affectCopy.remove(n);
-        List<Integer> availableCore = new ArrayList<>(availableP); availableCore.remove(core);
-        Long nextSum = getSUSac(nextNode, nextCore, affectCopy, availableCore, hitCore, history_level1, history_level2, history_level3);
-        if (nextSum > 0){
-            int m = 1;
-        }
-        return sum + nextSum;
+        return sum;
     }
 
     private Long getSUSacForFutureNodes(Node n, Integer core, List<Node> future, 

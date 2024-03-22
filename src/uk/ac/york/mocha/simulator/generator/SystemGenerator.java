@@ -169,7 +169,7 @@ public class SystemGenerator {
 
 		for (DirectedAcyclicGraph d : dagTasks){//yiyang
 			//d.findPath(true);
-			d.findPath(false);
+			d.findPath(true);
 			d.computeLength(); //huixuan
 		}
 

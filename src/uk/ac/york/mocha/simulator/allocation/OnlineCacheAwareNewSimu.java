@@ -20,7 +20,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineCacheAwareNewSimu extends AllocationMethods {
-
+	static int delayCnt1 = 0;
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> cores, long[] availableTimeAllProcs, List<List<Node>> history_level1,
@@ -105,11 +105,12 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 					history_level3);
 
 			Node n = preEligible.get(p.getFirst().intValue());
-
 			n.partition = availableP.get(p.getSecond().intValue());
-			if (n.getDagInstNo() == 1){
-                System.out.println(n + "->" + n.partition);
-            }
+			delayCnt1++;
+			//System.out.println("total delayCnt: " + delayCnt1);
+			// if (n.getDagInstNo() == 1){
+            //     System.out.println(n + "->" + n.partition);
+            // }
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
 

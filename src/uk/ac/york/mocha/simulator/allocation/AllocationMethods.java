@@ -15,9 +15,5 @@ public abstract class AllocationMethods {
 			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
 			List<List<Node>> allocNodes, long sysTime, boolean lcif, List<Node> etHist, List<Double> speeds,
 			Node[] currentExe);
-	// public abstract void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes,
-	// 		List<List<Node>> localRunqueue, List<Integer> availableCores, long[] coreTimes,
-	// 		List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3,
-	// 		List<List<Node>> allocNodes, long sysTime, boolean lcif, List<Node> etHist, List<Double> speeds);
 
 }

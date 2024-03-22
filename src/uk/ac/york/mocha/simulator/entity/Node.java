@@ -75,6 +75,7 @@ public class Node implements Serializable {
 	public long maxLengthToSrc = 0;
 	public long maxLengthToSink = 0;
 	public long maxLength = 0;
+	public int delayCnt = 0;
 
 	/*
 	 * The priority of the node
