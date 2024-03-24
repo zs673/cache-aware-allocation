@@ -258,6 +258,47 @@ public class OnlineYHX_test2 extends AllocationMethodsYHX {
 
         //     }
         // }
+        
+        // boolean delay1 = maxValue < 0 ? true :false;
+        // delay1 = false;
+        // Integer cache = nToAlloc.crp.computeET(-1, history_level1, history_level2, history_level3, nToAlloc,
+        //                     core, true, 0,0, false).getSecond(); 
+        // boolean delay2 = (cache >= 3) && (minValueF + minValueSac > 0);
+
+        // boolean delay = (delay1 || delay2);
+        List<Integer> candidateC = new ArrayList<>();
+        for (int i = 0; i < procs.size(); i++){
+            Integer proc = procs.get(i);
+            long sut = 0; long sac = 0; long sacF = 0;
+            if (!allocProcs.contains(proc)){
+                //sut = SUT.get(nToAlloc).get(i).getSecond();
+                sac = sacrifice.get(nToAlloc).get(i).getSecond();
+                sut = SUT.get(nToAlloc).get(i).getSecond();
+                sacF = sacrificeF.get(nToAlloc).get(i).getSecond();
+                if (sut - sac - sacF == maxValue){
+                    candidateC.add(proc);
+                }
+            
+            }
+        }
+
+        long max = Long.MIN_VALUE;
+        if (candidateC.size() > 1){
+            for (int i = 0; i < candidateC.size(); i++){
+                Integer c = candidateC.get(i);
+                long recencyFree = getRecencyFree(c, allocHistory, procs, history_level1, history_level2, history_level3);
+                if (recencyFree > max){
+                    max = recencyFree;
+                    core = c;
+                }
+            }
+        }
+
+        if (nToAlloc == null || core == -1) {
+            System.err.println("SimpleCacheAware.getIndexOfMaximum(): Cannot find the max value!");
+            System.exit(-1);
+        }
+
         boolean delay1 = maxValue < 0 ? true :false;
         //delay1 = false;
         Integer cache = nToAlloc.crp.computeET(-1, history_level1, history_level2, history_level3, nToAlloc,
@@ -273,45 +314,6 @@ public class OnlineYHX_test2 extends AllocationMethodsYHX {
         boolean delay = (delay1 || delay2) && delay3 && delay4;
 
         if (!delay){
-            List<Integer> candidateC = new ArrayList<>();
-            for (int i = 0; i < procs.size(); i++){
-                Integer proc = procs.get(i);
-                long sut = 0; long sac = 0; long sacF = 0;
-                if (!allocProcs.contains(proc)){
-                    //sut = SUT.get(nToAlloc).get(i).getSecond();
-                    sac = sacrifice.get(nToAlloc).get(i).getSecond();
-                    sut = SUT.get(nToAlloc).get(i).getSecond();
-                    sacF = sacrificeF.get(nToAlloc).get(i).getSecond();
-                    if (sut - sac - sacF == maxValue){
-                        candidateC.add(proc);
-                    }
-                
-                }
-            }
-
-            long max = Long.MIN_VALUE;
-            if (candidateC.size() > 1){
-                for (int i = 0; i < candidateC.size(); i++){
-                    Integer c = candidateC.get(i);
-                    long recencyFree = getRecencyFree(c, allocHistory, procs, history_level1, history_level2, history_level3);
-                    if (recencyFree > max){
-                        max = recencyFree;
-                        core = c;
-                    }
-                }
-            }
-
-            //改为之前的想法 分配给recency miss余地最小的 或者不要这一步
-            // if (lcif) {
-
-            // }
-
-            if (nToAlloc == null || core == -1) {
-                System.err.println("SimpleCacheAware.getIndexOfMaximum(): Cannot find the max value!");
-
-                System.exit(-1);
-            }
-
             return new Pair<Node, Integer>(nToAlloc, core);
         }else{
             nToAlloc.delayCnt++;
