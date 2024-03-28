@@ -678,15 +678,8 @@ public class OnlineYHX_compare_backup extends AllocationMethods {
         
         Map<Node, List<Pair<Integer, Long>>> sacrifice = new LinkedHashMap<>();
         for (int i = 0; i < readyNodes.size(); i++){
-            //sacrifice.add(new ArrayList<>());
             Node n = readyNodes.get(i);
-            //HitCore nHitCore = hitCore.get(n);
-
-            // List<Node> affected = new ArrayList<>(affectedList.get(n));
-            // Map<Node, HitCore> affectedHitCore = getHitCores(affected, availableCores, availableTimeAllProcs, history_level1, 
-            //                                             history_level2, history_level3, allocHistory, currentTime, lcif);
             List<Pair<Integer, Long>> sacList = new ArrayList<>();
-            //List<Integer> coreList = nHitCore.getCoreList();
             List<Integer> coreList = new ArrayList<>(availableCores);
             for (int j = 0; j < coreList.size(); j++){
                 Integer core = coreList.get(j);

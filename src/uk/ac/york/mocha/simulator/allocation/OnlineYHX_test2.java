@@ -271,7 +271,6 @@ public class OnlineYHX_test2 extends AllocationMethodsYHX {
             Integer proc = procs.get(i);
             long sut = 0; long sac = 0; long sacF = 0;
             if (!allocProcs.contains(proc)){
-                //sut = SUT.get(nToAlloc).get(i).getSecond();
                 sac = sacrifice.get(nToAlloc).get(i).getSecond();
                 sut = SUT.get(nToAlloc).get(i).getSecond();
                 sacF = sacrificeF.get(nToAlloc).get(i).getSecond();
@@ -306,18 +305,13 @@ public class OnlineYHX_test2 extends AllocationMethodsYHX {
         boolean delay2 = (cache >= 3) && (minValueF + minValueSac > 0);
         boolean delay3 = (time + nToAlloc.getWCET()) <= (nToAlloc.release + Utils.getDagByIndex(dags, nToAlloc.getDagID(), nToAlloc.getDagInstNo()).sched_param.getPeriod());
         boolean delay4 = nToAlloc.delayCnt == 0;
-        if (!delay4){
-            int m = 1;
-        }
-        //boolean alloc = true;
-        //boolean delay = false;
         boolean delay = (delay1 || delay2) && delay3 && delay4;
 
         if (!delay){
             return new Pair<Node, Integer>(nToAlloc, core);
         }else{
             nToAlloc.delayCnt++;
-            delayCnt3++;
+            //delayCnt3++;
             //System.out.println("test2 delay cnt: " + delayCnt3);
             return new Pair<Node, Integer>(nToAlloc, -1);
         }
@@ -627,11 +621,6 @@ public class OnlineYHX_test2 extends AllocationMethodsYHX {
         for (int i = 0; i < readyNodes.size(); i++){
             //sacrifice.add(new ArrayList<>());
             Node n = readyNodes.get(i);
-            //HitCore nHitCore = hitCore.get(n);
-
-            // List<Node> affected = new ArrayList<>(affectedList.get(n));
-            // Map<Node, HitCore> affectedHitCore = getHitCores(affected, availableCores, availableTimeAllProcs, history_level1, 
-            //                                             history_level2, history_level3, allocHistory, currentTime, lcif);
             List<Pair<Integer, Long>> sacList = new ArrayList<>();
             //List<Integer> coreList = nHitCore.getCoreList();
             List<Integer> coreList = new ArrayList<>(availableCores);
