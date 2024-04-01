@@ -76,7 +76,7 @@ public class Node implements Serializable {
 	public long maxLengthToSink = 0;
 	public long maxLength = 0;
 	public int delayCnt = 0;
-
+	public List<Integer> notFitCore = new ArrayList<>();
 	/*
 	 * The priority of the node
 	 */

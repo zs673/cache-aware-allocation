@@ -35,9 +35,9 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 		}
 
 		readyNodes.stream().forEach(c -> c.partition = -1);
-		if (readyNodes.get(0).getType() == NodeType.SOURCE){
-			System.out.println("A new instance starts");
-		}
+		// if (readyNodes.get(0).getType() == NodeType.SOURCE){
+		// 	System.out.println("A new instance starts");
+		// }
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */

@@ -104,7 +104,7 @@ public class SystemParameters {
 	// public static int minParal = 2;// 2
 	// public static int maxParal = 30;// 10 best:20 15
 	public static int minParal = 4;// 2
-	public static int maxParal = 40;// 10 best:20 15
+	public static int maxParal = 48;// 10 best:20 15
 
 	/* parameters for NFJ DAGs */
 	public static final int depth = 5;
