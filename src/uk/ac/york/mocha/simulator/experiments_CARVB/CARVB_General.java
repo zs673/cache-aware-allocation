@@ -36,10 +36,10 @@ public class CARVB_General {
 	// static int nos = 1;// 500/100   //1000次重复实验
 	// static int intanceNum = 10;// 100
 	// static int taskNum = 1;// 100
-	static int cores = 4;// 4
-	static int nos = 200;// 500/100   //1000次重复实验
+	static int cores = 8;// 4
+	static int nos = 500;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
-	static int taskNum = 1;// 100
+	static int taskNum = 4;// 100
 
 	static int startUtil = 20;
 	static int incrementUtil = 4;
@@ -88,7 +88,7 @@ public class CARVB_General {
 
 		List<OneSystemResults> allRes = new ArrayList<>();
 
-		for (int i = 0; i < nos; i++) {// i < nos
+		for (int i = 400; i < nos; i++) {// i < nos
 			if (i == 6){
 				int m = 1;
 			}
@@ -178,11 +178,11 @@ public class CARVB_General {
 		// 	e.printStackTrace();
 		// }
 
-		SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL,
-		Hardware.PROC_CACHE, Allocation.ONLINE_YHX_TEST, // PROC_CACHE
-		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
+		// SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL,
+		// Hardware.PROC_CACHE, Allocation.ONLINE_YHX_TEST, // PROC_CACHE
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
 
 		// WFD  worst-fit allocation
 		// Simualtor sim0 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
@@ -192,6 +192,12 @@ public class CARVB_General {
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
 
 		//Pair<List<DirectedAcyclicGraph>, double[]> pair1 = pair0;
+
+		// SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
+		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);//运行完的dags + 缓存命中
 		
 		SimualtorYHX sim0 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
@@ -199,11 +205,11 @@ public class CARVB_General {
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
 
-		// SimualtorNWC sim0 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
-		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
-		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		// lcif);
-		// Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);//运行完的dags + 缓存命中
+		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
+		Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
+		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);//运行完的dags + 缓存命中
 
 		// SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
@@ -211,11 +217,7 @@ public class CARVB_General {
 		// lcif);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
 
-		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
-		Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
-		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);//运行完的dags + 缓存命中
+
 
 		// 1
 		// for (DirectedAcyclicGraph d : sys.getFirst()) {
@@ -319,7 +321,7 @@ public class CARVB_General {
 		// get_new_metric(pair6);
 		// get_new_metric(pair7);
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
-		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
+		//List<DirectedAcyclicGraph> m1 = pair1.getFirst();
 		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 		// List<DirectedAcyclicGraph> m3 = pair3.getFirst();
 		// List<DirectedAcyclicGraph> m4 = pair4.getFirst();
@@ -362,7 +364,7 @@ public class CARVB_General {
 
 			if (count < NoInstances[dags.get(i).id]) {
 				method0.add(m0.get(i));
-				method1.add(m1.get(i));
+				//method1.add(m1.get(i));
 				method2.add(m2.get(i));
 				// method3.add(m3.get(i));
 				// method4.add(m4.get(i));
@@ -374,7 +376,7 @@ public class CARVB_General {
 		}
 
 		allMethods.add(method0);
-		allMethods.add(method1);
+		//allMethods.add(method1);
 		allMethods.add(method2);
 		// allMethods.add(method3);
 		// allMethods.add(method4);
@@ -384,7 +386,7 @@ public class CARVB_General {
 
 		List<double[]> cachePerformance = new ArrayList<>();
 		cachePerformance.add(pair0.getSecond());
-		cachePerformance.add(pair1.getSecond());
+		//cachePerformance.add(pair1.getSecond());
 		cachePerformance.add(pair2.getSecond());
 		// cachePerformance.add(pair3.getSecond());
 		// cachePerformance.add(pair4.getSecond());

@@ -50,7 +50,7 @@ def draw_box(x, NOS_NUM, PATH):
     ax.set_xlabel('Instance index of DAG')
     legend_elements = [plt.Line2D([0], [0], color=color_list[0], label='AJLR'),
                     plt.Line2D([0], [0], color=color_list[1], label='OUR')]
-    plt.legend(handles=legend_elements, loc='upper right')
+    plt.legend(handles=legend_elements, loc='lower left')
     fig.tight_layout()
     # plt.show()
     plt.savefig(PATH + "box.png", dpi=300)
@@ -79,14 +79,17 @@ def draw_bar(x, NOS_NUM, PATH):
 
 def main():
     NOS_NUM = 500
-    PATH = "E:/Code/Java/cache-aware-allocation-main/result/12.1/"
+    PATH = "E:/Code/Java/cache-aware-allocation-main/result/12/"
     data = pd.read_table(PATH+'/makespan_1_2.0.txt', sep=',', header=None)
     # data = data.iloc[NOS_NUM:, 0:10]
+
     data1 = data.iloc[0:NOS_NUM, 0:10]
     x1 = data1.values
     data2 = data.iloc[2*NOS_NUM:, 0:10]
     x2 = data2.values
     x = np.concatenate((x1, x2), axis=0)
+    # data = data.iloc[:, 0:10]
+    # x = data.values
     draw_box(x, NOS_NUM, PATH)
     plt.clf()
     draw_bar(x, NOS_NUM, PATH)

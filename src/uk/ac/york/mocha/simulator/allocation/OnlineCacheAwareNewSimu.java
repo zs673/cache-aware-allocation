@@ -35,9 +35,9 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 		}
 
 		readyNodes.stream().forEach(c -> c.partition = -1);
-		// if (readyNodes.get(0).getType() == NodeType.SOURCE){
-		// 	System.out.println("A new instance starts");
-		// }
+		if (readyNodes.get(0).getType() == NodeType.SOURCE){
+			System.out.println("A new instance starts");
+		}
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
@@ -108,9 +108,9 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 			n.partition = availableP.get(p.getSecond().intValue());
 			delayCnt1++;
 			//System.out.println("total delayCnt: " + delayCnt1);
-			// if (n.getDagInstNo() == 1){
-            //     System.out.println(n + "->" + n.partition);
-            // }
+			if (n.getDagInstNo() == 9){
+                System.out.println(n + "->" + n.partition);
+            }
 			allocNodes.add(p.getFirst().intValue());
 			allocProcs.add(p.getSecond().intValue());
 

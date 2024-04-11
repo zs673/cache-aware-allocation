@@ -117,7 +117,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
             if (core != -1){
                 hasAlloc = true;
                 n.partition = core;
-                if (n.getDagInstNo() == 1){
+                if (n.getDagInstNo() == 9){
                     System.out.println(n + "->" + core);
                 }
                 allocNodes.add(n);
@@ -285,6 +285,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
             }
         }
         boolean delay = (delay1 || delay2) && delay3 && delay4;
+        // delay = false;
         if (!delay){
             return new Pair<Node, Integer>(nToAlloc, core);
         }else{
