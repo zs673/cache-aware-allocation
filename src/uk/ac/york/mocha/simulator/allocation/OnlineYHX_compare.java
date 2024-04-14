@@ -117,7 +117,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
             if (core != -1){
                 hasAlloc = true;
                 n.partition = core;
-                if (n.getDagInstNo() == 9){
+                if (n.getDagInstNo() == 1){
                     System.out.println(n + "->" + core);
                 }
                 allocNodes.add(n);

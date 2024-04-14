@@ -167,11 +167,11 @@ public class SystemGenerator {
 			dagTasks = generateSporadicDAGs(periods, hard); //**********/
 		}
 
-		for (DirectedAcyclicGraph d : dagTasks){//yiyang
-			//d.findPath(true);
-			d.findPath(true);
-			d.computeLength(); //huixuan
-		}
+		// for (DirectedAcyclicGraph d : dagTasks){//yiyang
+		// 	//d.findPath(true);
+		// 	d.findPath(true);
+		// 	d.computeLength(); //huixuan
+		// }
 
 		/************************************************************************************/
 
@@ -559,7 +559,6 @@ public class SystemGenerator {
 			UUnifastDiscard unifastDiscard = new UUnifastDiscard(totalUtil, total_tasks, 1000, cores, takeAllUtil, ran);
 			while (true) {
 				utils = unifastDiscard.getUtils();
-
 				double tt = 0;
 				for (int i = 0; i < utils.size(); i++) {
 					tt += utils.get(i);

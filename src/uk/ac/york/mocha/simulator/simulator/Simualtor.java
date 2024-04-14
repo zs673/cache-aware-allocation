@@ -26,6 +26,7 @@ import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.entity.Node.NodeType;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
@@ -292,7 +293,7 @@ public class Simualtor {
 			int onlyCritical, boolean printSim) {
 
 		for (Node n : readyNodes) {
-			if (n.getDagID() == 0 && n.getDagInstNo() == 0 && n.getId() == 5) {
+			if (n.getDagInstNo() == 1) {
 				break;
 			}
 		}
@@ -330,9 +331,9 @@ public class Simualtor {
 			Pair<Pair<Long, Double>, Integer> ETWithCache = n.crp.computeET(-1, history_level1, history_level2,
 					history_level3, n, n.partition, cacheAware, 0, 0, n.hasFaults);
 
-			// long realET = ETWithCache.getFirst().getFirst();
-			double DrealET = Math.max(n.WCET / corespeed.get(n.partition), 1);
-			long realET = (long) DrealET;
+			long realET = ETWithCache.getFirst().getFirst();
+			// double DrealET = Math.max(n.WCET / corespeed.get(n.partition), 1);
+			// long realET = (long) DrealET;
 			int cacheEffects = ETWithCache.getSecond();
 			totalAccess++;
 

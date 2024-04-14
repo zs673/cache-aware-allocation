@@ -210,6 +210,10 @@ public class SimualtorNWC {
 			case CACHE_AWARE_NEW_BASE:
 				allocM = new OnlineCacheAwareNewSimu_base();
 				break;
+			case WORST_FIT_OUR:
+				Utils.assignPriorityOur(dags);
+				allocM = new OnlineWFWithOrdering();
+				break;
 			default:
 				System.err.println("The simualtion method is NOT supported! ");
 				System.exit(-1);

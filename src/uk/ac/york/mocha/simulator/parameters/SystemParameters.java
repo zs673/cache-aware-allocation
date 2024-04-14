@@ -171,6 +171,7 @@ public class SystemParameters {
 	 * Harmonic periods
 	 */
 	public final static int MAX_PERIOD = 144;
+	// public final static int MIN_PERIOD = 10;
 	public final static int MIN_PERIOD = 10;
 
 	/*

@@ -108,7 +108,7 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 			n.partition = availableP.get(p.getSecond().intValue());
 			delayCnt1++;
 			//System.out.println("total delayCnt: " + delayCnt1);
-			if (n.getDagInstNo() == 9){
+			if (n.getDagInstNo() == 1){
                 System.out.println(n + "->" + n.partition);
             }
 			allocNodes.add(p.getFirst().intValue());
