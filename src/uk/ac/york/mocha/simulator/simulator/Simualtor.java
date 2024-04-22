@@ -358,6 +358,12 @@ public class Simualtor {
 
 			allProcs[n.partition] = n.finishAt = systemTime + realET;
 
+			/* add the node to history for each cache level */
+			history_level1.get(n.partition).add(n);
+			int clusterID = n.partition / SystemParameters.Level2CoreNum;
+			history_level2.get(clusterID).add(n);
+			history_level3.add(n);
+
 			///////////////// Debug Output //////////////////////
 			// oneSched[n.partition] = n.getDagID() + "_" + n.getDagInstNo() + "_" +
 			// n.getId() + ":" + n.finishAt;
@@ -392,11 +398,11 @@ public class Simualtor {
 				currentExe[i] = null;
 				n.finish = true;
 
-				/* add the node to history for each cache level */
-				history_level1.get(i).add(n);
-				int clusterID = cache.getLevel2ClusterID(i);
-				history_level2.get(clusterID).add(n);
-				history_level3.add(n);
+				// /* add the node to history for each cache level */
+				// history_level1.get(i).add(n);
+				// int clusterID = cache.getLevel2ClusterID(i);
+				// history_level2.get(clusterID).add(n);
+				// history_level3.add(n);
 
 				DirectedAcyclicGraph d = Utils.getDagByIndex(dags, n.getDagID(), n.getDagInstNo());
 				d.allocNodes.add(n);

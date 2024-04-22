@@ -83,6 +83,37 @@ public class OneSystemByMethod {
 
 					resultsPerMethod.add(Speed_D);
 					break;
+
+				case 6:
+					List<Double> node_cnt = dags.stream().map(c -> Double.parseDouble(
+							df.format((((double) c.getFlatNodes().stream().mapToLong(c1 -> c1.delayCnt > 0 ? 1 : 0).sum()
+									)
+									)))
+
+					).collect(Collectors.toList());
+
+					resultsPerMethod.add(node_cnt);
+				
+				case 7:
+					List<Double> defer_cnt = dags.stream().map(c -> Double.parseDouble(
+							df.format((((double) c.getFlatNodes().stream().mapToLong(c1 -> c1.delayCnt).sum()
+									)
+									)))).collect(Collectors.toList());
+
+					resultsPerMethod.add(defer_cnt);
+				
+				case 8:
+				List<Double> max_defer_cnt = dags.stream().map(c -> Double.parseDouble(
+					df.format(((double) c.getFlatNodes().stream().mapToLong(c1 -> c1.delayCnt).max().orElse(0)
+							)))).collect(Collectors.toList());
+
+					resultsPerMethod.add(max_defer_cnt);
+				
+				case 9:
+				List<Double> node_size = dags.stream().map(c -> Double.parseDouble(
+						df.format(((double) c.getFlatNodes().size()
+								)))).collect(Collectors.toList());
+						resultsPerMethod.add(node_size);
 				default:
 					break;
 			}

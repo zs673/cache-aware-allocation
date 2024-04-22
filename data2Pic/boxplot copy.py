@@ -112,24 +112,25 @@ TASK_NUM = 1
 INSTANCE_NUM = 10
 METHOD_NUM = 3
 def main():
-    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/exp1_1/"
-    PATH2 = "E:/Code/Java/cache-aware-allocation-main/result/exp1_2/"
-    data1 = pd.read_table(PATH1 + '/makespan_1_2.0.txt', sep=',', header=None)
-    # data = data.iloc[NOS_NUM:, 0:10]
-    data2 = pd.read_table(PATH2 + '/makespan_1_2.0.txt', sep=',', header=None)
-    x = np.zeros((METHOD_NUM*TOT_NOS, TASK_NUM*INSTANCE_NUM))
-    for i in range(0, METHOD_NUM):
-        x[i*TOT_NOS:(i+1)*TOT_NOS, :] = np.concatenate((data1.iloc[i*NOS_NUM:(i+1)*NOS_NUM, 0:TASK_NUM*INSTANCE_NUM].values, data2.iloc[i*NOS_NUM:(i+1)*NOS_NUM, 0:TASK_NUM*INSTANCE_NUM].values), axis=0)
-    # data = data.iloc[NOS_NUM:, 0:10]
+    # PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/core_32_1/"
+    # PATH2 = "E:/Code/Java/cache-aware-allocation-main/result/core_32_2/"
+    # data1 = pd.read_table(PATH1 + '/makespan_1_4.0.txt', sep=',', header=None)
+    # # data = data.iloc[NOS_NUM:, 0:10]
+    # data2 = pd.read_table(PATH2 + '/makespan_1_4.0.txt', sep=',', header=None)
+    # x = np.zeros((METHOD_NUM*TOT_NOS, TASK_NUM*INSTANCE_NUM))
+    # for i in range(0, METHOD_NUM):
+    #     x[i*TOT_NOS:(i+1)*TOT_NOS, :] = np.concatenate((data1.iloc[i*NOS_NUM:(i+1)*NOS_NUM, 0:TASK_NUM*INSTANCE_NUM].values, data2.iloc[i*NOS_NUM:(i+1)*NOS_NUM, 0:TASK_NUM*INSTANCE_NUM].values), axis=0)
+    # draw_box(x, NOS_NUM, PATH1)
+    # plt.clf()
+    # draw_bar(x, NOS_NUM, PATH1)
+    # analyse(x, PATH1)
 
-    # data1 = data.iloc[0:100, 0:TASK_NUM*INSTANCE_NUM]
-    # x1 = np.concatenate((x1, data1.values), axis=0)
-    # data2 = data.iloc[100:, 0:TASK_NUM*INSTANCE_NUM]
-    # x2 = np.concatenate((x2, data2.values), axis=0)
+    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/core4_2-60_5-8_20_1000/"
+    data1 = pd.read_table(PATH1 + '/makespan_1_0.8.txt', sep=',', header=None)
+    x = data1.iloc[:, 0:TASK_NUM*INSTANCE_NUM].values
     draw_box(x, NOS_NUM, PATH1)
     plt.clf()
     draw_bar(x, NOS_NUM, PATH1)
-    analyse(x, PATH1)
 
 if __name__ == '__main__':
     main()

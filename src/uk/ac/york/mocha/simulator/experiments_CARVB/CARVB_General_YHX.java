@@ -30,7 +30,7 @@ import java.io.*;
 
 public class CARVB_General_YHX {
 
-	static DecimalFormat df = new DecimalFormat("#.###");
+	static DecimalFormat df = new DecimalFormat("#.####");
 
 	// static int cores = 8;// 4
 	// static int nos = 1;// 500/100   //1000次重复实验
@@ -41,9 +41,9 @@ public class CARVB_General_YHX {
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
 
-	static int startUtil = 4;
-	static int incrementUtil = 4;
-	static int endUtil = 4000;
+	static int startUtil = 8;
+	static int incrementUtil = 8;
+	static int endUtil = 40000;
 
 	static boolean print = false;
 
@@ -62,7 +62,7 @@ public class CARVB_General_YHX {
             instanceNo[j] = intanceNum;
         List<OneSystemResults> allRes = new ArrayList<>();
 		for (int i = startUtil; i <= endUtil; i = i + incrementUtil) {
-			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 1000));
+			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10000));
 			OneSystemResults res = RunOneGroup(taskNum, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);
             allRes.add(res);//每个res都是OneSystemResult类
 		}

@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -13,9 +13,12 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.math3.util.Pair;
+import org.python.antlr.base.boolop;
 
+import it.unimi.dsi.fastutil.Hash;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.entity.Node.NodeType;
@@ -23,15 +26,17 @@ import uk.ac.york.mocha.simulator.generator.HitCore;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineYHX_test extends AllocationMethods {
+public class OnlineYHX_test extends AllocationMethodsYHX {
     private Random rng = new Random(1000);
+    static int delayCnt3 = 0;
 
 	@Override
-	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
+	public boolean allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> cores, long[] availableTimeAllProcs, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
 			boolean lcif, List<Node> etHist, List<Double> speeds, Node[] currentExe) {
-
+        
+        boolean hasAlloc = false;
 		List<Integer> availableCores = new ArrayList<>();
 		for (int i = 0; i < cores.size(); i++) {
 			if (localRunqueue.get(i).size() == 0 && availableTimeAllProcs[i] <= currentTime)
@@ -42,19 +47,23 @@ public class OnlineYHX_test extends AllocationMethods {
 
         //yhx
         if (readyNodes.get(0).getType() == NodeType.SOURCE){
-			System.out.println("A new instance starts");
+			System.out.println("compare: A new instance starts" + readyNodes.get(0).getDagInstNo());
 		}
-        //Map<Node, HitCore> hitCore = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
-        Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);
-        Map<Node, HitCore> hitCore = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
-        Map<Node, List<Integer>> sacrifice = getSacrifice(readyNodes, hitCore, availableCores, availableTimeAllProcs, affectedList, 
-                                    history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
+        Map<Node, HitCore> hitCore_ = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
-		/*
-		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
-		 */
-		readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore_));
+        //readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
+        //debug
+        for (Node node : readyNodes){
+            if (node.getDagInstNo() == 1 && node.getId() == 108){
+                int m = 1;
+            }
+        }
+
+        /*
+         * only take the nodes which will be allocated in this allocation run into account
+         */
 		List<Node> preEligible = new ArrayList<>();
 		for (int i = 0; i < availableCores.size(); i++) {
 			if (readyNodes.size() == i)
@@ -62,34 +71,27 @@ public class OnlineYHX_test extends AllocationMethods {
 			preEligible.add(readyNodes.get(i)); //找readyNode和空闲核的最小值
 		}
 
+        List<Node> affect = new ArrayList<>(preEligible);
+        List<Node> affectF = new ArrayList<>(readyNodes);
+        affectF.removeAll(preEligible);
+        List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
+        affectF.addAll(futureNodes);
+		
+
+        //Map<Node, List<Node>> affectedList = getAffectedNodes(dags, readyNodes, allocHistory, currentTime);
+        Map<Node, HitCore> hitCore = getHitCores(affect, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
+        Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
+                                                            history_level1, history_level2, history_level3, false);
+        Map<Node, List<Pair<Integer, Long>>> sacrificeF = getSacrifice(preEligible, affectF, hitCore, availableCores, availableTimeAllProcs, 
+                                                            history_level1, history_level2, history_level3, true);                                             
+
 		List<Integer> availableP = new ArrayList<>(availableCores);
 
-		List<List<Long>> speedUpTable = new ArrayList<>();
-		//计算SUT
-		for (Node n : preEligible) {
-			List<Long> ETdrop = new ArrayList<>();
+        Map<Node, List<Pair<Integer, Long>>> speedUpTable = getSUTForAllNodes(preEligible, availableP, history_level1, history_level2, history_level3);
 
-			for (int i = 0; i < history_level1.size(); i++) {
-				int proc = i;
-				if (availableP.contains(proc)) {
-					/*
-					 * Speed up by ABSOLUTE value
-					 */
-					long WCET = n.getWCET();
-					long realET = n.crp
-							.computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, 0,false)
-							.getFirst().getFirst();//computeET返回三个值，第一个是model估计的ET，第二个是err，第三个是命中第几层缓存
-					long speedup = WCET - realET;
-
-					ETdrop.add(speedup);
-				}
-			}
-
-			speedUpTable.add(ETdrop);
-		}
 		//已分配
 		List<Integer> allocProcs = new ArrayList<>();
-		List<Integer> allocNodes = new ArrayList<>();
+		List<Node> allocNodes = new ArrayList<>();
 		//空闲core的history_level1
 		List<List<Node>> historyCut = new ArrayList<>();
 		for (int i = 0; i < history_level1.size(); i++) {
@@ -102,25 +104,44 @@ public class OnlineYHX_test extends AllocationMethods {
 			if (availableP.contains(i))
 				allocHistoryCut.add(allocHistory.get(i));
 		}
-
-		for (int k = 0; k < availableP.size(); k++) {
-			if (k >= preEligible.size())
+        
+        Integer availableNodes = preEligible.size();
+        for (int k = 0; k < availableP.size(); k++) {
+			if (k >= availableNodes)
 				break;//没那么多node分到多的核上
+			
+			Pair<Node, Integer> p = setPartition2(dags, speedUpTable, sacrifice, sacrificeF, allocNodes, allocProcs, allocHistoryCut, allocHistory,
+            preEligible, availableP, cores, availableTimeAllProcs, currentTime, lcif, history_level1, history_level2,
+            history_level3);
+            Node n = p.getFirst(); Integer core = p.getSecond();
+            if (core != -1){
+                hasAlloc = true;
+                n.partition = core;
+                if (n.getDagInstNo() == 1){
+                    System.out.println(n + "->" + core);
+                }
+                allocNodes.add(n);
+                allocProcs.add(core);
 
-			Pair<Integer, Integer> p = setPartition(speedUpTable, allocNodes, allocProcs, allocHistoryCut, allocHistory,
-					preEligible, availableP, availableTimeAllProcs, currentTime, lcif, history_level1, history_level2,
-					history_level3);
-
-			Node n = preEligible.get(p.getFirst().intValue());
-
-			n.partition = availableP.get(p.getSecond().intValue());
-
-			allocNodes.add(p.getFirst().intValue());
-			allocProcs.add(p.getSecond().intValue());
-
-			localRunqueue.get(n.partition).add(n);//加到localRunqueue
-			//allocHistory.get(n.partition).add(n);//有点多余
+                localRunqueue.get(n.partition).add(n);//加到localRunqueue
+                //更新代价
+                affect.remove(n);
+                preEligible.remove(n);
+                sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
+                                        history_level1, history_level2, history_level3, false);
+            }else{
+                allocNodes.add(n);
+                //更新代价
+                affect.remove(n);
+                affectF.add(n);
+                preEligible.remove(n);
+                sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
+                                        history_level1, history_level2, history_level3, false);
+                sacrificeF = getSacrifice(preEligible, affectF, hitCore, availableCores, availableTimeAllProcs, 
+                                        history_level1, history_level2, history_level3, true);
+            }
 		}
+			
 		//从readyNode移走已分配的结点
 		for (int i = 0; i < readyNodes.size(); i++) {
 			if (readyNodes.get(i).partition > -1) {
@@ -128,125 +149,196 @@ public class OnlineYHX_test extends AllocationMethods {
 				i--;
 			}
 		}
-
+        return hasAlloc;
 	}
-	// MSF + LCIF
-	private Pair<Integer, Integer> setPartition(List<List<Long>> speedUpTable, List<Integer> allocNodes,
-			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
-			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
-			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
 
-		int row = -1;
-		int col = -1;
-		long max = Long.MIN_VALUE;
-		//find the max value in SUT
-		for (int i = 0; i < speedUpTable.size(); i++) {
-			if (!allocNodes.contains(i)) {//还没被分配的结点
-				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
-					if (!allocProcs.contains(j)) {//还没被分配的核
-						if (max < speedUpTable.get(i).get(j)) {
-							max = speedUpTable.get(i).get(j);
-							row = i;
-							col = j;
-						}
+    // SAC + LCIF
+	private Pair<Node, Integer> setPartition2(List<DirectedAcyclicGraph> dags, Map<Node, List<Pair<Integer, Long>>> SUT, Map<Node, List<Pair<Integer, Long>>> sacrifice, Map<Node, List<Pair<Integer, Long>>> sacrificeF, List<Node> allocNodes,
+                                                List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
+                                                List<Node> preEligible, List<Integer> procs, List<Integer> cores, long[] availableTimeAllProcs, long time, boolean lcif,
+                                                List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
+        
+        // Node nToAlloc = null; Integer core = -1;
+        // Long maxSUTValue = Long.MIN_VALUE;
+        // Long sacValue = Long.MAX_VALUE; Long sacValueF = Long.MAX_VALUE;
+        // for (Entry<Node, List<Pair<Integer, Long>>> entry : SUT.entrySet()) {
+        //     Node n = entry.getKey();
+        //     if (!allocNodes.contains(n)){
+        //         List<Pair<Integer, Long>> sutList = entry.getValue();
+        //         for (int i = 0; i < sutList.size(); i++){
+        //             if (!allocProcs.contains(sutList.get(i).getFirst())){
+        //                 if (sutList.get(i).getSecond() > maxSUTValue){
+        //                     maxSUTValue = sutList.get(i).getSecond();
+        //                     nToAlloc = n;
+        //                     core = sutList.get(i).getFirst();
+        //                     sacValue = sacrifice.get(n).get(i).getSecond();
+        //                     sacValueF = sacrificeF.get(n).get(i).getSecond();
+        //                 }
+        //             }
+        //         }
+
+        //     }
+        // }
+
+        // List<Pair<Integer, Long>> sutList = SUT.get(nToAlloc);
+        // List<Pair<Integer, Long>> sacList = sacrifice.get(nToAlloc);
+        // List<Pair<Integer, Long>> sacListF = sacrificeF.get(nToAlloc);
+        // Long minValueSac = sacValue; Long minValueSU = maxSUTValue; Long minValueF = sacValueF;
+        // Long maxValue = maxSUTValue - sacValue - sacValueF;
+        // for (int i = 0; i < sacList.size(); i++){
+        //     if (!allocProcs.contains(sacList.get(i).getFirst())){
+        //         if (sutList.get(i).getSecond() - sacList.get(i).getSecond() - sacListF.get(i).getSecond() > maxValue){
+        //             maxValue = sutList.get(i).getSecond() - sacList.get(i).getSecond() - sacListF.get(i).getSecond();
+        //             core = sacList.get(i).getFirst();
+        //             minValueSU = sutList.get(i).getSecond();
+        //             minValueSac = sacList.get(i).getSecond();
+        //             minValueF = sacListF.get(i).getSecond();
+        //         }
+        //     }
+        // }
+        
+
+        Node nToAlloc = null; Integer core = -1;
+        Long maxValue = Long.MIN_VALUE;
+        Long minValueSac = (long)0; Long minValueSU = (long)0; Long minValueF = (long)0;
+        for (Entry<Node, List<Pair<Integer, Long>>> entry : SUT.entrySet()) {
+            Node n = entry.getKey();
+            if (!allocNodes.contains(n)){
+                List<Pair<Integer, Long>> sutList = entry.getValue();
+                List<Pair<Integer, Long>> sacList = sacrifice.get(n);
+                List<Pair<Integer, Long>> sacListF = sacrificeF.get(n);
+                for (int i = 0; i < sutList.size(); i++){
+                    if (!allocProcs.contains(sutList.get(i).getFirst())){
+                        if (sutList.get(i).getSecond() - sacList.get(i).getSecond() - sacListF.get(i).getSecond() > maxValue){
+                            
+                            maxValue = sutList.get(i).getSecond() - sacList.get(i).getSecond() - sacListF.get(i).getSecond();
+                            nToAlloc = n;
+                            core = sutList.get(i).getFirst();
+                            minValueF = sacListF.get(i).getSecond();
+                            minValueSU = sutList.get(i).getSecond();
+                            minValueSac = sacList.get(i).getSecond();
+                        }
+                    }
+                }
+
+            }
+        }
+        
+        List<Integer> candidateC = new ArrayList<>();
+        for (int i = 0; i < procs.size(); i++){
+            Integer proc = procs.get(i);
+            long sut = 0; long sac = 0; long sacF = 0;
+            if (!allocProcs.contains(proc)){
+                sac = sacrifice.get(nToAlloc).get(i).getSecond();
+                sut = SUT.get(nToAlloc).get(i).getSecond();
+                sacF = sacrificeF.get(nToAlloc).get(i).getSecond();
+                if (sut - sac - sacF == maxValue){
+                    candidateC.add(proc);
+                }
+            
+            }
+        }
+
+        long max = Long.MIN_VALUE;
+        if (candidateC.size() > 1){
+            for (int i = 0; i < candidateC.size(); i++){
+                Integer c = candidateC.get(i);
+                Integer index = procs.indexOf(c);
+                long sut = 0; long sac = 0; long sacF = 0;
+                sac = sacrifice.get(nToAlloc).get(index).getSecond();
+                sut = SUT.get(nToAlloc).get(index).getSecond();
+                sacF = sacrificeF.get(nToAlloc).get(index).getSecond();
+                long recencyFree = getRecencyFree(c, allocHistory, procs, history_level1, history_level2, history_level3);
+                if (recencyFree > max){
+                    max = recencyFree;
+                    core = c;
+                    minValueSac = sac; minValueSU = sut; minValueF = sacF;
+                }
+            }
+        }
+
+        if (nToAlloc == null || core == -1) {
+            System.err.println("SimpleCacheAware.getIndexOfMaximum(): Cannot find the max value!");
+            System.exit(-1);
+        }
+
+        boolean delay1 = maxValue < 0 ? true :false;
+        //delay1 = false;
+        Integer cache = nToAlloc.crp.computeET(-1, history_level1, history_level2, history_level3, nToAlloc,
+                            core, true, 0,0, false).getSecond(); 
+        boolean delay2 = (cache >= 3) && (minValueF + minValueSac > 0);
+        boolean delay3 = (time + nToAlloc.getWCET()) <= (nToAlloc.release + Utils.getDagByIndex(dags, nToAlloc.getDagID(), nToAlloc.getDagInstNo()).sched_param.getPeriod());
+        // boolean delay4 = nToAlloc.delayCnt == 0;
+        boolean delay4 = false;
+
+        for (Integer c : cores){
+            //if (nToAlloc.notFitCore.contains(c) || (procs.contains(c) && allocProcs.contains(c))){
+            if (nToAlloc.notFitCore.contains(c) || procs.contains(c)){
+                continue;
+            }
+            long predictET = nToAlloc.crp.computeET(-1, history_level1, history_level2,
+                            history_level3, nToAlloc, c, true, 0, 0,false).getFirst().getFirst();
+            long predictSpeedup = nToAlloc.getWCET() - predictET;
+            if(minValueSU + availableTimeAllProcs[c] - time < predictSpeedup){
+                delay4 = true;
+                break;
+            }
+        }
+        boolean delay = (delay1 || delay2) && delay3 && delay4;
+        // delay = false;
+        if (!delay){
+            return new Pair<Node, Integer>(nToAlloc, core);
+        }else{
+            List<Integer> tmp = new ArrayList<>(procs);
+            procs.removeAll(allocProcs);
+            nToAlloc.notFitCore.addAll(tmp);
+
+            nToAlloc.delayCnt++;
+            delayCnt3++;
+            //System.out.println("compare delay cnt: " + delayCnt3);
+            return new Pair<Node, Integer>(nToAlloc, -1);
+        }
+    }
+
+    private List<Node> getFutureNodes(List<Integer> cores, long[] coreTime, Node[] currentExe){
+        List<Node> futureNodes = new ArrayList<>();
+        //LinkedHashMap<Integer, Long> id_to_waiting = new LinkedHashMap<>();
+		// determine the core set based on medTime -- futureProc
+
+		List<Node> nodesTobedone = new ArrayList<>();
+		for (int i = 0; i < cores.size(); i++) {
+			if (currentExe[i] != null && currentExe[i].finishAt <= coreTime[i]) {
+				nodesTobedone.add(currentExe[i]);
+			}
+
+		}
+		// determine the node to be free -- futureNodes
+		for (Node tmp : nodesTobedone) {
+			for (Node child : tmp.getChildren()) {
+				if (futureNodes.contains(child) || child.start != -1) {
+					// already added
+					continue;
+				}
+				//long worst_time = tmp.finishAt;
+				boolean isReady = true;
+				for (Node parent : child.getParent()) {
+					// haven't been finished before and would not be finished this turn
+					if (!parent.finish && !nodesTobedone.contains(parent)) {
+						isReady = false;
+						break;
 					}
-
+					// if (nodesTobedone.contains(parent)) {
+					// 	worst_time = Math.max(worst_time, parent.finishAt);
+					// }
+				}
+				if (isReady) {
+					futureNodes.add(child);
+					//id_to_waiting.put(child.getId(), worst_time);
 				}
 			}
 		}
-
-		if (lcif) {
-			Node n = preEligible.get(row);
-			List<Integer> freeProcIndex = new ArrayList<>();
-			List<Integer> freeProc = new ArrayList<>();
-			List<Integer> freeCluster = new ArrayList<>();
-
-			/**
-			 * Find all available cores that can have the same speed up
-			 */
-			for (int i = 0; i < procs.size(); i++) {
-				if (!allocProcs.contains(i) && speedUpTable.get(row).get(i) == max) {
-					freeProcIndex.add(i);
-
-					int proc = procs.get(i);
-					freeProc.add(proc);
-
-					int c = proc / 4;
-					if (!freeCluster.contains(c))
-						freeCluster.add(c);
-				}
-			}
-
-			if (freeProcIndex.size() > 1) {
-
-				/*
-				 * Search in history for same node & DAG allocation
-				 */
-				List<List<Node>> NodeHis = new ArrayList<>();
-				List<Long> impacts = new ArrayList<>();
-
-				for (int i = 0; i < freeProcIndex.size(); i++) {
-					NodeHis.add(new ArrayList<>());
-					impacts.add((long) 0);
-				}
-
-				for (int i = 0; i < freeProcIndex.size(); i++) {
-					int procIndex = freeProcIndex.get(i);
-					long et_n = n.getWCET() - speedUpTable.get(row).get(procIndex);
-
-					List<Node> nodesInProc = allocHistory.get(procIndex);
-
-					/*
-					 * Get the nodes that can hit level two cache in each free core.
-					 */
-					long Nodenum = 0;
-					for (int j = nodesInProc.size() - 1; j >= 0; j--) {
-						Nodenum += nodesInProc.get(j).expectedET;
-
-						if (Nodenum >= SystemParameters.v4) { //无法从cache受益的在计算impact时不考虑
-							break;
-						}
-
-						NodeHis.get(i).add(nodesInProc.get(j));
-					}
-
-					List<Node> affectedNodes = NodeHis.get(i);
-					long affectedTime = 0;
-
-					for (Node affected : affectedNodes) {
-						long affectedTimeOneNode = affected.crp.computeET(-1, history_level1, history_level2,
-								history_level3, affected, affected.partition, true, et_n, 0,false).getFirst().getFirst()
-								- affected.crp.computeET(-1, history_level1, history_level2, history_level3, affected,
-										affected.partition, true, 0,0, false).getFirst().getFirst(); //加多一个additional_time：et_n
-
-						affectedTime += affectedTimeOneNode < 0 ? 0 : affectedTimeOneNode;
-
-						if (affectedTime < 0) {
-							System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");
-							System.exit(-1);
-						}
-					}
-
-					impacts.set(i, affectedTime);
-				}
-
-				long minExecutionTime = Collections.min(impacts);
-				int minETIndex = impacts.indexOf(minExecutionTime);
-
-				col = freeProcIndex.get(minETIndex);
-
-			}
-
-		}
-
-		if (row == -1 || col == -1) {
-			System.err.println("SimpleCacheAware.getIndexOfMaximum(): Cannot find the max value!");
-
-			System.exit(-1);
-		}
-
-		return new Pair<Integer, Integer>(row, col);
-	}
+        return futureNodes;
+    }
 
     private Map<Node, HitCore> getHitCores(List<Node> readyNodes, List<Integer> availableCores, long[] availableTimeAllProcs, 
             List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, 
@@ -254,7 +346,7 @@ public class OnlineYHX_test extends AllocationMethods {
         
 		int level2ClusterNum = history_level2.size();
 		int level2ClusterSize = history_level1.size() / level2ClusterNum;
-        HashMap<Node, HitCore> map = new HashMap<>();
+        LinkedHashMap<Node, HitCore> map = new LinkedHashMap<>();
         for (int i = 0; i < readyNodes.size(); i++){
             Set<Integer> level1HitCore = new HashSet<>();
             Set<Integer> level2HitCore = new HashSet<>();
@@ -269,19 +361,22 @@ public class OnlineYHX_test extends AllocationMethods {
                             level1HitCore.add(j);
 							int clusterCoreIdx = (j / level2ClusterSize) * level2ClusterSize;
                             level2HitCore.addAll(IntStream.rangeClosed(clusterCoreIdx, clusterCoreIdx + level2ClusterSize - 1).boxed().collect(Collectors.toSet()));
-							Set<Integer> filteredLevel2 = level2HitCore.stream().filter(element -> availableCores.contains(element) && !level1HitCore.contains(element)).collect(Collectors.toSet());
+							Set<Integer> filteredLevel2 = level2HitCore.stream().filter(element -> availableCores.contains(element) 
+                                                                                        && !level1HitCore.contains(element)).collect(Collectors.toSet());
 							level2HitCore.clear();
 							level2HitCore.addAll(filteredLevel2);
 
 							level3HitCore.addAll(IntStream.rangeClosed(0, history_level1.size() - 1).boxed().collect(Collectors.toSet()));
-							Set<Integer> filteredLevel3 = level3HitCore.stream().filter(element -> availableCores.contains(element) && !level2HitCore.contains(element) && !level1HitCore.contains(element)).collect(Collectors.toSet());
+							Set<Integer> filteredLevel3 = level3HitCore.stream().filter(element -> availableCores.contains(element) && !level2HitCore.contains(element) 
+                                                                                            && !level1HitCore.contains(element)).collect(Collectors.toSet());
 							level3HitCore.clear();
 							level3HitCore.addAll(filteredLevel3);
                             break;
                         case 2:
 							level2HitCore.add(j);
 							level3HitCore.addAll(IntStream.rangeClosed(0, history_level1.size() - 1).boxed().collect(Collectors.toSet()));
-							Set<Integer> _filteredLevel3 = level3HitCore.stream().filter(element -> availableCores.contains(element) && !level2HitCore.contains(element) && !level1HitCore.contains(element)).collect(Collectors.toSet());
+							Set<Integer> _filteredLevel3 = level3HitCore.stream().filter(element -> availableCores.contains(element) && !level2HitCore.contains(element) 
+                                                                                            && !level1HitCore.contains(element)).collect(Collectors.toSet());
 							level3HitCore.clear();
 							level3HitCore.addAll(_filteredLevel3);
 							break;
@@ -300,180 +395,11 @@ public class OnlineYHX_test extends AllocationMethods {
 		return map;
 	}
         
-	/*
-	 * （1）和recency最小的不同cluster里面recency最小的（是不是全部里面第二小的 不一定 可能第二小的和上一个instance还是一个cluster） --- 维护一个recency table，排序一下，选择和最小的不一个cluster的
-	 * （2）没有造成核上已分配任务的L2 recency miss or 距离L2 miss的阈值最远的，试试哪个好
-	 * （3）为了多命中几个cluster，是不是要牺牲第二个instance（实现第一点好像就能，但后面只命中一个L2时还是会选择miss，违背初衷，还是要为第二个instance单独设立分配方式。其他的instance在只命中一个cluster的时候选择该cluster，第二个instance选择miss）
-	 * （4）想一下这样有没有实现初衷(优先级那里倒序能不能实现让步，怎么样实现让步)
-	 * 	(5) todo:判断是否命中多个cluster 以及分instance分配（分类讨论不同instance、是否只命中一个cluster） done
-	 * （6）todo: 优先级怎么考虑争用（动态？不同readyNodes、不同可用核）
-	 * （7）todo: 分配一个核之后更新其他结点的可用核  done
-	 * （8）todo: allocProcs和allocNodes在setPartition中的使用，procsTime的使用  done
-	 * （9）todo：debug simulator main
-	 * （10）todo：experiment
-	 * （11）todo：加system error
-	 * （12）找crp怎么构建的
-	 * （13）看看这样写能不能实现让步和多hit L2
-	 * 	 
-	 */
-	private Integer setPartitionForYHX(Node n, Map<Node, HitCore> hitCore, List<Node> allocNodes,
-			List<Integer> allocProcs, List<List<Node>> allocHistory, List<List<Node>> fullAllocHistory,
-			List<Node> preEligible, List<Integer> procs, long[] availableTimeAllProcs, long time, boolean lcif,
-			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3) {
-		
-		HitCore oriNodeHitcore = hitCore.get(n);
-		HitCore updateHitCore = oriNodeHitcore.deepCopy();
-		updateHitCore = updateHitCore.excludCore(allocProcs);//排除已分配的procs
 
-		Integer level2ClusterSize = history_level1.size() / history_level2.size();
-		if (updateHitCore.isEmpty()){//hit no L1 and L2
-			return rng.nextInt(procs.size());
-		}
-		if (updateHitCore.level1.size() > 1){//hit two L1 
-			List<Entry<Integer, Long>> recencyTable = getRecencyTable(n, new ArrayList<Integer>(updateHitCore.level1), history_level1, history_level2, history_level3, 0);
-			if (checkMultiCluster(n, updateHitCore.level1, history_level1, history_level2, history_level3)){
-				/*
-				 * 1)choose different cluster with min recency
-				 * 2)choose max recency left for L2 and max speedup(speedup second, since almost same)
-				 */
-				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, procs, history_level1, history_level2, history_level3);
-				return core;
-			}else{
-				if (n.getDagInstNo() == 1){
-					return setPartitionForIns2(n, updateHitCore, procs, allocProcs, allocHistory, history_level1, history_level2, history_level3);
-				}else{
-					return recencyTable.get(0).getKey();
-				}
-			}
-			/*else只命中一个cluster
-				if(n.getDagId.getInstanceNo == 2)
-					return 核上已分配任务距离L2阈值最远的
-				else
-					return recency最小的
+	private Long getRecencyFree(int core, List<List<Node>> allocHistory, List<Integer> procs, 
+                                List<List<Node>> history_level1,  List<List<Node>> history_level2, List<Node> history_level3){
 
-				*/
-		}else if (updateHitCore.level1.size() == 1 && updateHitCore.level2.size() > 0){//hit L1 and L2
-			Set<Integer> allHitCore = new HashSet<>();
-			allHitCore.addAll(updateHitCore.level1);
-			allHitCore.addAll(updateHitCore.level2);
-			List<Entry<Integer, Long>> recencyTable = getRecencyTable(n, new ArrayList<Integer>(allHitCore), history_level1, history_level2, history_level3, 0);
-			//if 命中多个cluster
-			if (checkMultiCluster(n, allHitCore, history_level1, history_level2, history_level3)){
-				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, procs, history_level1, history_level2, history_level3);
-				return core;
-			}else{
-				if (n.getDagInstNo() == 1){
-					return setPartitionForIns2(n, updateHitCore, procs, allocProcs, allocHistory, history_level1, history_level2, history_level3);
-				}else{
-					return recencyTable.get(0).getKey();
-				}
-			}
-		}else if (updateHitCore.level2.size() > 1){// hit two L2
-			List<Entry<Integer, Long>> recencyTable = getRecencyTable(n, new ArrayList<Integer>(updateHitCore.level2), history_level1, history_level2, history_level3, 0);
-			//if 命中多个cluster
-			if (checkMultiCluster(n, updateHitCore.level2, history_level1, history_level2, history_level3)){
-				Integer core = setPartitionRules(n, level2ClusterSize, recencyTable, allocHistory, procs, history_level1, history_level2, history_level3);
-				return core;
-			}else{
-				if (n.getDagInstNo() == 1){
-					return setPartitionForIns2(n, updateHitCore, procs, allocProcs, allocHistory, history_level1, history_level2, history_level3);
-				}else{
-					return recencyTable.get(0).getKey();
-				}
-			}
-		}else if(updateHitCore.level2.size() == 1){
-			if (n.getDagInstNo() == 1){
-				return setPartitionForIns2(n, updateHitCore, procs, allocProcs, allocHistory, history_level1, history_level2, history_level3);
-			}else{
-				return updateHitCore.level2.iterator().next();
-			}
-		}else{
-			//选一个procs里面miss余地最大的核
-			Integer core = setPartitionForMiss(n, updateHitCore, procs, allocProcs, fullAllocHistory, history_level1, history_level2, history_level3);
-			return core;
-		}
-	}
-
-
-	private Boolean checkMultiCluster(Node n, Set<Integer> level, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
-		int level2ClusterNum = history_level2.size();
-		int level2ClusterSize = history_level1.size() / level2ClusterNum;
-		Set<Integer> set = new HashSet<>();
-		Iterator<Integer> iterator = level.iterator();
-        while (iterator.hasNext()) {
-            Integer element = iterator.next();
-			if (!set.isEmpty() && !set.contains(element / level2ClusterSize)){
-				return true;
-			}
-			set.add(element / level2ClusterSize);
-		}
-		return false;
-	}
-
-	private Integer setPartitionRules(Node n, Integer level2ClusterSize, List<Entry<Integer, Long>> recencyTable, List<List<Node>> allocHistory, List<Integer> procs,
-			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
-		
-		Integer clusterIdx = recencyTable.get(0).getKey() / level2ClusterSize;
-
-		Integer minMissIdx = Integer.MAX_VALUE;
-		Long minMissCnt = Long.MAX_VALUE;
-		for (int i = 1; i < recencyTable.size(); i++){
-			int core = recencyTable.get(i).getKey();
-			if (core / level2ClusterSize == clusterIdx)
-				continue;
-			
-			Long cnt = getRecencyFree(n, core, allocHistory, procs, history_level1, history_level2, history_level3);
-			if (minMissCnt > cnt){
-				minMissCnt = cnt;
-				minMissIdx = i;
-			}
-		}
-		return minMissIdx;
-	}
-
-	private Integer setPartitionForIns2(Node n, HitCore updateHitCore, List<Integer> procs,
-			List<Integer> allocProcs, List<List<Node>> allocHistory,  
-			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
-		//已经是空闲的了，排掉已分配的就行  其实updateHitCore已经排掉allocProcs
-		List<Integer> candidateCore = procs.stream().filter(element -> !allocProcs.contains(element) && !updateHitCore.level1.contains(element) 
-															&& !updateHitCore.level2.contains(element)).collect(Collectors.toList());
-		
-		Integer minMissIdx = Integer.MAX_VALUE;
-		Long minMissCnt = Long.MAX_VALUE;
-		for (int i = 0; i < candidateCore.size(); i++){
-			int core = candidateCore.get(i);
-			
-			Long cnt = getRecencyFree(n, core, allocHistory, procs, history_level1, history_level2, history_level3);
-			if (minMissCnt > cnt){
-				minMissCnt = cnt;
-				minMissIdx = i;
-			}
-		}
-		return minMissIdx;
-	}
-
-	private Integer setPartitionForMiss(Node n, HitCore updateHitCore, List<Integer> procs,
-			List<Integer> allocProcs, List<List<Node>> allocHistory,  
-			List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
-		//已经是空闲的了，排掉已分配的就行  其实updateHitCore已经排掉allocProcs
-		List<Integer> candidateCore = new ArrayList<>(procs);
-		
-		Integer minMissIdx = Integer.MAX_VALUE;
-		Long minMissCnt = Long.MAX_VALUE;
-		for (int i = 0; i < candidateCore.size(); i++){
-			int core = candidateCore.get(i);
-			
-			Long cnt = getRecencyFree(n, core, allocHistory, procs, history_level1, history_level2, history_level3);
-			if (minMissCnt > cnt){
-				minMissCnt = cnt;
-				minMissIdx = i;
-			}
-		}
-		return minMissIdx;
-	}
-
-	private Long getRecencyFree(Node n, int core, List<List<Node>> allocHistory, List<Integer> procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
-		long et_n = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, 0, false).getFirst().getFirst();
+		//long et_n = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, 0, false).getFirst().getFirst();
 		int idx = procs.indexOf(core);
 		if (idx == -1){
 			System.out.println("*****");
@@ -485,7 +411,7 @@ public class OnlineYHX_test extends AllocationMethods {
 		for (int j = nodesInProc.size() - 1; j >= 0; j--) {
 			nodeNum += nodesInProc.get(j).expectedET;
 
-			if (nodeNum >= SystemParameters.v4) { //无法从cache受益的在计算impact时不考虑
+			if (nodeNum >= SystemParameters.v3) { //无法从cache受益的在计算impact时不考虑
 				break;
 			}
 
@@ -502,15 +428,16 @@ public class OnlineYHX_test extends AllocationMethods {
 		// }
 
 		Long sum = (long) 0;
-		for (Node affected : affectedNodes){
-			Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected, core, true, 0);
-			sum += SystemParameters.v3 - recencyL2;
-		}
+        if (affectedNodes.size() > 0){
+            Node earliestNode = affectedNodes.get(affectedNodes.size() - 1);
+            Long recencyL2 = earliestNode.crp.computeRecency(-1, history_level1, history_level2, history_level3, earliestNode, core, true, 0);
+            sum = SystemParameters.v3 - recencyL2;
+        }
 		return sum;
 	}
 
 	private List<Entry<Integer, Long>> getRecencyTable(Node n, List<Integer> procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, long additionalTime){
-		Map<Integer, Long> rct = new HashMap<>();
+		Map<Integer, Long> rct = new LinkedHashMap<>();
 
 		for (int i = 0; i < procs.size(); i++){
 			long recencyDis = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, n, procs.get(i), true, additionalTime);
@@ -529,7 +456,7 @@ public class OnlineYHX_test extends AllocationMethods {
 
     //找到会被影响的结点
     private Map<Node, List<Node>> getAffectedNodes(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> allocHistory, long currentTime){
-        Map<Node, List<Node>> res = new HashMap<>();
+        Map<Node, List<Node>> res = new LinkedHashMap<>();
 
         for (int i = 0; i < readyNodes.size(); i++){
             Node n = readyNodes.get(i);
@@ -559,152 +486,162 @@ public class OnlineYHX_test extends AllocationMethods {
         return res;
     }
 
-    //hitCore已经排除busy core了
-    //L1 miss有可能直接造成L2 miss
-    private Integer getMetric(Node n, Integer core, List<Node> readyNodes, Map<Node, HitCore> hitCore1, 
-                            List<Node> affected, Map<Node, HitCore> hitCore2, Integer metricFlag){
-        Integer sum = 0;
-        switch(metricFlag){
-            case 0:
-                for (int i = 0; i < readyNodes.size(); i++){
-                    if (n == readyNodes.get(i)){
-                        continue;
-                    }
-                    HitCore tmp = hitCore1.get(readyNodes.get(i));
-                    if (tmp.level1.size() == 1 && tmp.level1.contains(core)){
-                        sum++;
-                    }
-                }
-                for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(affected.get(i));
-                    if (tmp.level1.size() == 1 && tmp.level1.contains(core)){
-                        sum++;
-                    }
-                }
-                break;
-            
-            case 1:
-                for (int i = 0; i < readyNodes.size(); i++){
-                    if (n == readyNodes.get(i)){
-                        continue;
-                    }
-                    HitCore tmp = hitCore1.get(readyNodes.get(i));
-                    if (tmp.level1.contains(core)){
-                        sum++;
-                    }
-                }
-                for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(affected.get(i));
-                    if (tmp.level1.contains(core)){
-                        sum++;
-                    }
-                }
-                break;
 
-            case 2:
-                for (int i = 0; i < readyNodes.size(); i++){
-                    if (n == readyNodes.get(i)){
-                        continue;
-                    }
-                    HitCore tmp = hitCore1.get(readyNodes.get(i));
-                    if (tmp.level2.size() == 1 && tmp.level2.contains(core)){
-                        sum++;
-                    }
-                }
-                for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(affected.get(i));
-                    if (tmp.level2.size() == 1 && tmp.level2.contains(core)){
-                        sum++;
-                    }
-                }
-                break;
+    private Pair<Integer, Long> findMaxValueKeyInMap(Map<Integer, Long> map, Integer core, List<Integer> availableP) {
+        Integer maxKey = null;
+        Long maxValue = Long.MIN_VALUE;
 
-            case 3:
-                for (int i = 0; i < readyNodes.size(); i++){
-                    if (n == readyNodes.get(i)){
-                        continue;
-                    }
-                    HitCore tmp = hitCore1.get(readyNodes.get(i));
-                    if (tmp.level2.contains(core)){
-                        sum++;
-                    }
-                }
-                for (int i = 0; i < affected.size(); i++){
-                    HitCore tmp = hitCore2.get(affected.get(i));
-                    if (tmp.level2.contains(core)){
-                        sum++;
-                    }
-                }
-                break;
-            default:
-                break;               
-        }
-        return sum;
-    }
-
-    //todo: 这里只单纯考虑了L2的recency余地 要不要加L1为空的条件
-    private Long getMetric(Node n, Integer core, List<Node> readyNodes, Map<Node, HitCore> hitCore1, 
-            List<Node> affected, Map<Node, HitCore> hitCore2, List<List<Node>> history_level1, 
-            List<List<Node>> history_level2, List<Node> history_level3){
-        
-        Long sum = (long) 0;
-        //每个节点在每个核上剩下的recency miss余地总和
-        for (int i = 0; i < readyNodes.size(); i++){
-            if (n == readyNodes.get(i)){
+        for (Entry<Integer, Long> entry : map.entrySet()) {
+            //跳过被占的核与非空闲的核
+            if (entry.getKey() == core || !availableP.contains(entry.getKey())){
                 continue;
             }
-            HitCore tmp = hitCore1.get(readyNodes.get(i));
-            List<Integer> level2List = new ArrayList<>(tmp.level2);
-            for (int j = 0; j < level2List.size(); j++){
-                if (level2List.get(j) == core){
-                    continue;
-                }
-                Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, readyNodes.get(i), level2List.get(j), true, 0);
-                sum += SystemParameters.v3 - recencyL2;
+            if (entry.getValue() > maxValue) {
+                maxValue = entry.getValue();
+                maxKey = entry.getKey();
             }
         }
-        for (int i = 0; i < affected.size(); i++){
-            HitCore tmp = hitCore2.get(readyNodes.get(i));
-            List<Integer> level2List = new ArrayList<>(tmp.level2);
-            for (int j = 0; j < level2List.size(); j++){
-                if (level2List.get(j) == core){
-                    continue;
-                }
-                Long recencyL2 = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, affected.get(i), level2List.get(j), true, 0);
-                sum += SystemParameters.v3 - recencyL2;
-            }
-        }
-        return sum;
+        
+        maxValue = maxValue == Long.MIN_VALUE ? 0 : maxValue;
+        return new Pair<Integer, Long>(maxKey, maxValue);
+}
 
+    private Map<Integer, Long> getSUT(Node n, List<Integer> coreList, List<List<Node>> history_level1, 
+                    List<List<Node>> history_level2, List<Node> history_level3){
+
+        //计算结点n在命中核上的SUT
+        Map<Integer, Long> speedUpTable = new LinkedHashMap<>();
+        for (int i = 0; i < coreList.size(); i++) {
+            int proc = coreList.get(i);
+            /*
+                * Speed up by ABSOLUTE value
+                */
+            long WCET = n.getWCET();
+            long realET = n.crp
+                    .computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, 0,false)
+                    .getFirst().getFirst();//computeET返回三个值，第一个是model估计的ET，第二个是err，第三个是命中第几层缓存
+            long speedup = WCET - realET;
+
+            speedUpTable.put(proc, speedup);
+        }
+
+        return speedUpTable;
     }
+
+    //加速差
+    private Long getSUSac(Node n, Integer core, List<Node> affect, List<Integer> availableP, Map<Node, HitCore> hitCore, 
+            List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+        
+        Long sum = (long) 0;
+        Long max = Long.MIN_VALUE;
+        for (int i = 0; i < affect.size(); i++){
+            // if (n == affect.get(i)){
+            //     continue;
+            // }
+            HitCore tmp = hitCore.get(affect.get(i));
+            List<Integer> coreList = tmp.getCoreList();
+            Long rawSU = (long)0;
+            Map<Integer, Long> SUT = getSUT(affect.get(i), coreList, history_level1, history_level2, history_level3);
+            if (coreList.contains(core)){
+                rawSU = SUT.get(core);
+            }
+            Pair<Integer, Long> pair = findMaxValueKeyInMap(SUT, core, availableP);
+
+            //rawSU < maxSU -> no sacrifice
+            if (n == affect.get(i)){
+                //sum += (rawSU < pair.getSecond() ? pair.getSecond() - rawSU : 0);
+                continue;
+            }
+            if (rawSU > pair.getSecond() && rawSU - pair.getSecond() > max){
+                max = rawSU - pair.getSecond();
+            }
+            //if core is not available, predict the Node n will be allocated to the core with MSF
+        }
+        sum += (max == Long.MIN_VALUE ? 0 : max);
+        return sum;
+    }
+
+    private Long getSUSacForFutureNodes(Node n, Integer core, List<Node> future, 
+                List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+
+        Long sum = (long) 0;
+        Long max = Long.MIN_VALUE;
+        for (int i = 0; i < future.size(); i++){
+            Node futureNode = future.get(i);
+            List<Integer> coreList = new ArrayList<>();
+            coreList.add(core);
+            Map<Integer, Long> SUT = getSUT(n, coreList, history_level1, history_level2, history_level3);
+            Long et_n = (long)n.getWCET() - SUT.get(core);
+            long affectedTime1 = futureNode.crp.computeET(-1, history_level1, history_level2,
+                            history_level3, futureNode, core, true, et_n, 0,false).getFirst().getFirst();
+            long affectedTime2 = futureNode.crp.computeET(-1, history_level1, history_level2, history_level3, futureNode,
+                            core, true, 0,0, false).getFirst().getFirst(); 
+            long affectedTime = affectedTime1 - affectedTime2;
+            
+            //affectedTime = affectedTime < 0 ? 0 : affectedTime;
+            if (affectedTime < 0) {
+                System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");
+                System.exit(-1);
+            }
+            // if (affectedTime > max){
+            //     max = affectedTime;
+            // }
+            sum += affectedTime;
+        }
+        //return max == Long.MIN_VALUE ? 0 : max;
+        return sum;
+    }
+
     //L1 miss: 只要有争用就算一个 or hit的L1刚好只有这一个才算
     //L2 miss：只要有争用就算一个 or hit的L2刚好只有这一个才算 or L2 recency miss 余地总和（和其他核比较，越小越不好）
     //最大recency的变化
-    private Map<Node, List<Integer>> getSacrifice(List<Node> readyNodes, Map<Node, HitCore> hitCore, List<Integer> availableCores, long[] availableTimeAllProcs, 
-            Map<Node, List<Node>> affectedList, List<List<Node>> history_level1, List<List<Node>> history_level2, 
-            List<Node> history_level3, List<List<Node>> allocHistory, long currentTime, boolean lcif){
+    //加速差
+    private Map<Node, List<Pair<Integer, Long>>> getSacrifice(List<Node> readyNodes, List<Node> affect, Map<Node, HitCore> hitCore, List<Integer> availableCores, 
+            long[] availableTimeAllProcs, List<List<Node>> history_level1, List<List<Node>> history_level2, 
+            List<Node> history_level3, boolean isFuture){
         
-        Map<Node, List<Integer>> sacrifice = new HashMap<>();
+        Map<Node, List<Pair<Integer, Long>>> sacrifice = new LinkedHashMap<>();
         for (int i = 0; i < readyNodes.size(); i++){
             //sacrifice.add(new ArrayList<>());
-			List<Integer> sacList = new ArrayList<>();
             Node n = readyNodes.get(i);
-            HitCore nHitCore = hitCore.get(n);
-
-            List<Node> affected = new ArrayList<>(affectedList.get(n));
-            Map<Node, HitCore> affectedHitCore = getHitCores(affected, availableCores, availableTimeAllProcs, history_level1, 
-                                                        history_level2, history_level3, allocHistory, currentTime, lcif);
-            //allAffected.addAll(readyNodes); affectedList.remove(n);
-            List<Integer> coreList = nHitCore.getCoreList();
+            List<Pair<Integer, Long>> sacList = new ArrayList<>();
+            //List<Integer> coreList = nHitCore.getCoreList();
+            List<Integer> coreList = new ArrayList<>(availableCores);
             for (int j = 0; j < coreList.size(); j++){
                 Integer core = coreList.get(j);
-                Integer metric = getMetric(n, core, readyNodes, hitCore, affected, affectedHitCore, 0);
-                sacList.add(metric);
+                Long metric = (long)0;
+                if(isFuture){
+                    metric = getSUSacForFutureNodes(n, core, affect, history_level1, history_level2, history_level3);
+                }else{
+                    metric = getSUSac(n, core, affect, availableCores, hitCore, history_level1, history_level2, history_level3);
+                }
+                sacList.add(new Pair<Integer, Long>(core, metric));
             }
-			sacrifice.put(n, sacList);
+            if(sacList.size() > 0){
+			    sacrifice.put(n, sacList);
+            }
         }
         
         return sacrifice;
+    }
+
+    public Map<Node, List<Pair<Integer, Long>>> getSUTForAllNodes(List<Node> preEligible, List<Integer> availableP, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+        Map<Node, List<Pair<Integer, Long>>> speedUpTable = new LinkedHashMap<>();
+		for (Node n : preEligible) {
+			List<Pair<Integer, Long>> ETdrop = new ArrayList<>();
+			for (int i = 0; i < availableP.size(); i++) {
+				int proc = availableP.get(i);
+                long WCET = n.getWCET();
+                long realET = n.crp
+                        .computeET(-1, history_level1, history_level2, history_level3, n, proc, true, 0, 0, false)
+                        .getFirst().getFirst();
+                long speedup = WCET - realET;
+
+                ETdrop.add(new Pair<Integer, Long>(proc, speedup));
+			}
+			speedUpTable.put(n, ETdrop);
+		}
+        return speedUpTable;
     }
 }
 

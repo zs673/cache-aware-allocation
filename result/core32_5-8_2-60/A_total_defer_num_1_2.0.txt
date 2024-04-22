@@ -1,0 +1,57 @@
+
+
+Data analysis for each instance 
+AVG,MED,MAX,MIN
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+
+
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+
+
+0,7,4,1,0,0,0,4,5,4,
+0,13,7,17,27,15,17,6,11,23,
+
+
+
+
+Further Data analysis of all test cases 
+INSTANCEID avg med max min 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+
+
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE1 0, 0, 0, 0, 
+
+
+INSTANCE1 0, 0, 0, 0, 
+INSTANCE2 10, 10, 13, 7, 
+INSTANCE3 5.5, 5.5, 7, 4, 
+INSTANCE4 9, 9, 17, 1, 
+INSTANCE5 13.5, 13.5, 27, 0, 
+INSTANCE6 7.5, 7.5, 15, 0, 
+INSTANCE7 8.5, 8.5, 17, 0, 
+INSTANCE8 5, 5, 6, 4, 
+INSTANCE9 8, 8, 11, 5, 
+INSTANCE10 13.5, 13.5, 23, 4, 
+
+
+

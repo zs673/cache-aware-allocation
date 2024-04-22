@@ -13,6 +13,8 @@ import java.util.Set;
 
 import org.python.antlr.op.In;
 
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+
 public class HitCore implements Serializable {
     public int coreNum;
 	public int cacheLevel;
@@ -29,7 +31,8 @@ public class HitCore implements Serializable {
         this.level1.addAll(level1);
         this.level2.addAll(level2);
         this.level3.addAll(level3);
-        this.priority = this.level2.size() + this.level1.size() * 4; // todo:考虑争用
+        this.priority = this.level2.size() + this.level1.size() * SystemParameters.alpha; 
+		// this.priority = this.level2.size() * SystemParameters.alpha + this.level1.size();
 		this.priority1 = this.level2.size() + this.level1.size() * 5;
     }
 

@@ -40,9 +40,9 @@ public class OnlineWFWithOrdering extends AllocationMethods {
 
 			int core = getCoreIndexWithMinialWorkload(freeProc, history_level1);
 			readyNodes.get(i).partition = core;
-			if (readyNodes.get(i).getDagInstNo() == 1){
-				System.out.println(readyNodes.get(i) + "->" + core);
-			}
+			// if (readyNodes.get(i).getDagInstNo() == 1){
+			// 	System.out.println(readyNodes.get(i) + "->" + core);
+			// }
 			freeProc.remove(freeProc.indexOf(core));
 		}
 

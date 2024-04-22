@@ -36,14 +36,14 @@ public class CARVB_General {
 	// static int nos = 1;// 500/100   //1000次重复实验
 	// static int intanceNum = 10;// 100
 	// static int taskNum = 1;// 100
-	static int cores = 8;// 4
-	static int nos = 500;// 500/100   //1000次重复实验
+	static int cores = 32;// 4
+	static int nos = 1000;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
 
-	static int startUtil = 20;
+	static int startUtil = 64;
 	static int incrementUtil = 4;
-	static int endUtil = 20;
+	static int endUtil = 64; 
 
 	static boolean print = false;
 
@@ -58,7 +58,7 @@ public class CARVB_General {
 		int seed = 1000;
 
 		for (int i = startUtil; i <= endUtil; i = i + incrementUtil) {
-			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 1000));
+			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
 			RunOneGroup(taskNum, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);
 		}
 	}
@@ -89,9 +89,6 @@ public class CARVB_General {
 		List<OneSystemResults> allRes = new ArrayList<>();
 
 		for (int i = 0; i < nos; i++) {// i < nos
-			if (i == 6){
-				int m = 1;
-			}
 			System.out.println(
 					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
 
@@ -104,7 +101,7 @@ public class CARVB_General {
 			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed, i);
 
 			allRes.add(res);//每个res都是OneSystemResult类
-			taskSeed++;
+			//taskSeed++;
 		}
 		new AllSystemsResults(allRes, instanceNo, cores, taskNum, name);
 	}
