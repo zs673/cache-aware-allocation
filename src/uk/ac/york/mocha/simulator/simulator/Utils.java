@@ -470,3 +470,199 @@ public class Utils {
 	}
 
 }
+
+    // private Map<Node, HitCore> getHitCores(List<Node> readyNodes, List<Integer> availableCores, long[] availableTimeAllProcs, 
+    //         List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, 
+    //         List<List<Node>> allocHistory, long currentTime, boolean lcif){
+        
+	// 	int level2ClusterNum = history_level2.size();
+	// 	int level2ClusterSize = history_level1.size() / level2ClusterNum;
+    //     LinkedHashMap<Node, HitCore> map = new LinkedHashMap<>();
+    //     for (int i = 0; i < readyNodes.size(); i++){
+    //         Set<Integer> level1HitCore = new HashSet<>();
+    //         Set<Integer> level2HitCore = new HashSet<>();
+    //         Set<Integer> level3HitCore = new HashSet<>();
+    //         Node n = readyNodes.get(i);
+
+    //         for (int j = 0; j < history_level1.size(); j++) {
+    //             if (availableCores.contains(j)){
+    //                 int hitCacheLevel = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, j, true, 0, 0, lcif).getSecond();
+    //                 switch (hitCacheLevel) {
+    //                     case 1:
+    //                         level1HitCore.add(j);
+	// 						int clusterCoreIdx = (j / level2ClusterSize) * level2ClusterSize;
+    //                         level2HitCore.addAll(IntStream.rangeClosed(clusterCoreIdx, clusterCoreIdx + level2ClusterSize - 1).boxed().collect(Collectors.toSet()));
+	// 						Set<Integer> filteredLevel2 = level2HitCore.stream().filter(element -> availableCores.contains(element) 
+    //                                                                                     && !level1HitCore.contains(element)).collect(Collectors.toSet());
+	// 						level2HitCore.clear();
+	// 						level2HitCore.addAll(filteredLevel2);
+
+	// 						level3HitCore.addAll(IntStream.rangeClosed(0, history_level1.size() - 1).boxed().collect(Collectors.toSet()));
+	// 						Set<Integer> filteredLevel3 = level3HitCore.stream().filter(element -> availableCores.contains(element) && !level2HitCore.contains(element) 
+    //                                                                                         && !level1HitCore.contains(element)).collect(Collectors.toSet());
+	// 						level3HitCore.clear();
+	// 						level3HitCore.addAll(filteredLevel3);
+    //                         break;
+    //                     case 2:
+	// 						level2HitCore.add(j);
+	// 						level3HitCore.addAll(IntStream.rangeClosed(0, history_level1.size() - 1).boxed().collect(Collectors.toSet()));
+	// 						Set<Integer> _filteredLevel3 = level3HitCore.stream().filter(element -> availableCores.contains(element) && !level2HitCore.contains(element) 
+    //                                                                                         && !level1HitCore.contains(element)).collect(Collectors.toSet());
+	// 						level3HitCore.clear();
+	// 						level3HitCore.addAll(_filteredLevel3);
+	// 						break;
+	// 					case 3:
+	// 						level3HitCore.add(j);
+	// 						break;
+    //                     default:
+    //                         break;
+    //                 }
+    //             }
+	// 		}
+
+	// 		map.put(n, new HitCore(level1HitCore, level2HitCore, level3HitCore));
+
+	// 	}
+	// 	return map;
+	// }
+
+	    // private Long getSUSacForFutureNodes(Node n, Integer core, List<Node> future, 
+    //             List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+        
+    //     if (future.size() <= 0){
+    //         return (long)0;
+    //     }
+    //     List<Integer> coreList = new ArrayList<>();
+    //     coreList.add(core);
+    //     Map<Integer, Long> SUT = getSUT(n, coreList, history_level1, history_level2, history_level3);
+    //     Long et_n = (long)n.getWCET() - SUT.get(core);
+    //     // Long sum = (long) 0;
+    //     Long max = Long.MIN_VALUE;
+    //     Node maxNode = null;
+    //     Map<Node, List<Pair<Integer, Long>>> speedUpTable = getSUTForAllNodes(future, coreList, history_level1, history_level2, history_level3);
+    //     for (Entry<Node, List<Pair<Integer, Long>>> entry : speedUpTable.entrySet()) {
+    //         Node node = entry.getKey();
+    //         List<Pair<Integer, Long>> sutList = entry.getValue();
+    //         if (sutList.get(0).getSecond() > max){
+    //             max = sutList.get(0).getSecond();
+    //             maxNode = node;
+    //         }
+    //     }
+
+    //     Node futureNode = maxNode;
+    //     long affectedTime1 = futureNode.crp.computeET(-1, history_level1, history_level2,
+    //                     history_level3, futureNode, core, true, et_n, 0,false).getFirst().getFirst();
+    //     long affectedTime2 = futureNode.crp.computeET(-1, history_level1, history_level2, history_level3, futureNode,
+    //                     core, true, 0,0, false).getFirst().getFirst(); 
+    //     long affectedTime = affectedTime1 - affectedTime2;
+        
+    //     //affectedTime = affectedTime < 0 ? 0 : affectedTime;
+    //     if (affectedTime < 0) {
+    //         System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");
+    //         System.exit(-1);
+    //     }
+    //     return affectedTime;
+    // }
+
+	        
+        // future.clear();
+        // List<Node> nodesInProc = allocHistory.get(core);
+        // long Nodenum = 0;
+        // for (int j = nodesInProc.size() - 1; j >= 0; j--) {
+        //     Nodenum += nodesInProc.get(j).expectedET;
+        //     if (Nodenum >= SystemParameters.v4) { //无法从cache受益的在计算impact时不考虑
+        //         break;
+        //     }
+        //     future.add(nodesInProc.get(j));
+        // }
+
+		// private List<Entry<Integer, Long>> getRecencyTable(Node n, List<Integer> procs, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, long additionalTime){
+		// 	Map<Integer, Long> rct = new LinkedHashMap<>();
+	
+		// 	for (int i = 0; i < procs.size(); i++){
+		// 		long recencyDis = n.crp.computeRecency(-1, history_level1, history_level2, history_level3, n, procs.get(i), true, additionalTime);
+		// 		rct.put(procs.get(i), recencyDis);
+		// 	}
+		// 	List<Entry<Integer, Long>> list = new ArrayList<Entry<Integer, Long>>(rct.entrySet());
+		// 	Collections.sort(list, new Comparator<Map.Entry<Integer, Long>>() {
+		// 		public int compare(Entry<Integer, Long> o1, Entry<Integer, Long> o2) {
+		// 			return o1.getValue().compareTo(o2.getValue());
+		// 		}
+		// 	});
+		// 	//rct.sort((c1, c2) -> Long.compare(c1.value, c2.value));
+		// 	//return list.stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+		// 	return list;
+		// }
+	
+		// //找到会被影响的结点
+		// private Map<Node, List<Node>> getAffectedNodes(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> allocHistory, long currentTime){
+		// 	Map<Node, List<Node>> res = new LinkedHashMap<>();
+	
+		// 	for (int i = 0; i < readyNodes.size(); i++){
+		// 		Node n = readyNodes.get(i);
+		// 		List<Node> tmp = new ArrayList<>();
+		// 		//tmp.addAll(readyNodes); tmp.remove(n);
+		// 		long startTime = currentTime; long endTime = startTime + n.getWCET();
+	
+		// 		for (int j = 0; j < allocHistory.size(); j++){
+		// 			for (int k = 0; k < allocHistory.get(j).size(); k++){
+		// 				Node tmpNode = allocHistory.get(j).get(k);
+		// 				//exclude nodes whose next instance is Node n
+		// 				if (n.getId() == tmpNode.getId() && n.getDagID() == tmpNode.getDagID() && tmpNode.getDagInstNo() + 1 == n.getDagInstNo()){
+		// 					continue;
+		// 				}
+		// 				long T = Utils.getDagByIndex(dags, tmpNode.getDagID(), tmpNode.getDagInstNo()).sched_param.getPeriod();
+		// 				long nextArrival = tmpNode.start + T;
+		// 				if (nextArrival < endTime && nextArrival >= currentTime){
+		// 					//exclude the nodes already in readynodes
+		// 					if (!readyNodes.contains(Utils.getDagByIndex(dags, tmpNode.getDagID(), tmpNode.getDagInstNo() + 1).getNodeById(tmpNode.getId()))){
+		// 						tmp.add(tmpNode);
+		// 					}
+		// 				}
+		// 			}
+		// 		}
+		// 		res.put(n, tmp);
+		// 	}
+		// 	return res;
+		// }
+
+		
+    // private List<Node> getFutureNodes(List<Integer> cores, long[] coreTime, Node[] currentExe){
+    //     List<Node> futureNodes = new ArrayList<>();
+    //     //LinkedHashMap<Integer, Long> id_to_waiting = new LinkedHashMap<>();
+	// 	// determine the core set based on medTime -- futureProc
+
+	// 	List<Node> nodesTobedone = new ArrayList<>();
+	// 	for (int i = 0; i < cores.size(); i++) {
+	// 		if (currentExe[i] != null && currentExe[i].finishAt <= coreTime[i]) {
+	// 			nodesTobedone.add(currentExe[i]);
+	// 		}
+
+	// 	}
+	// 	// determine the node to be free -- futureNodes
+	// 	for (Node tmp : nodesTobedone) {
+	// 		for (Node child : tmp.getChildren()) {
+	// 			if (futureNodes.contains(child) || child.start != -1) {
+	// 				// already added
+	// 				continue;
+	// 			}
+	// 			//long worst_time = tmp.finishAt;
+	// 			boolean isReady = true;
+	// 			for (Node parent : child.getParent()) {
+	// 				// haven't been finished before and would not be finished this turn
+	// 				if (!parent.finish && !nodesTobedone.contains(parent)) {
+	// 					isReady = false;
+	// 					break;
+	// 				}
+	// 				// if (nodesTobedone.contains(parent)) {
+	// 				// 	worst_time = Math.max(worst_time, parent.finishAt);
+	// 				// }
+	// 			}
+	// 			if (isReady) {
+	// 				futureNodes.add(child);
+	// 				//id_to_waiting.put(child.getId(), worst_time);
+	// 			}
+	// 		}
+	// 	}
+    //     return futureNodes;
+    // }

@@ -104,7 +104,7 @@ public class CARVB_General_YHX2 {
 			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed, i);
 
 			allRes.add(res);//每个res都是OneSystemResult类
-			taskSeed++;
+			//taskSeed++;
 		}
 		new AllSystemsResults(allRes, instanceNo, cores, taskNum, name);
 	}
