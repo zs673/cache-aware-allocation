@@ -32,6 +32,7 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineYHX_compare extends AllocationMethodsYHX {
     static int delayCnt3 = 0;
+    static int futureSac3 = 0;
 
 	@Override
 	public boolean allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
@@ -49,9 +50,9 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
 		readyNodes.stream().forEach(c -> c.partition = -1);
 
         //yhx
-        if (readyNodes.get(0).getType() == NodeType.SOURCE){
-			System.out.println("test2: A new instance starts" + readyNodes.get(0).getDagInstNo());
-		}
+        // if (readyNodes.get(0).getType() == NodeType.SOURCE){
+		// 	System.out.println("compare: A new instance starts" + readyNodes.get(0).getDagInstNo());
+		// }
         Map<Node, HitCore> hitCore = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
 		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore));
@@ -114,7 +115,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
             if (core != -1){
                 hasAlloc = true;
                 n.partition = core;
-                // if (n.getDagInstNo() == 1){
+                // if (n.getDagInstNo() == 1 || n.getDagInstNo() == 0){
                 //     System.out.println(n + "->" + core);
                 // }
                 allocNodes.add(n);
@@ -154,6 +155,8 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
 				i--;
 			}
 		}
+        // System.out.println("compare delay cnt: " + delayCnt3);
+        // System.out.println("compare future cnt: " + futureSac3);
         return hasAlloc;
 	}
 
@@ -227,11 +230,11 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
             System.exit(-1);
         }
 
-        boolean delay1 = maxValue < 0 ? true :false;
+        boolean delay1 = maxValue <= 0 ? true :false;
         //delay1 = false;
         Integer cache = nToAlloc.crp.computeET(-1, history_level1, history_level2, history_level3, nToAlloc,
                             core, true, 0,0, false).getSecond(); 
-        boolean delay2 = (cache >= 3) && (minValueF + minValueSac > 0);
+        boolean delay2 = (cache >= 3) && (minValueF + minValueSac >= 0);
         boolean delay3 = (time + nToAlloc.getWCET()) <= (nToAlloc.release + Utils.getDagByIndex(dags, nToAlloc.getDagID(), nToAlloc.getDagInstNo()).sched_param.getPeriod());
         boolean delay4 = false;
         Integer futureCore = -1;
@@ -250,21 +253,15 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
             }
         }
         boolean delay = (delay1 || delay2) && delay3 && delay4;
-        //delay = false;
+        delay = false;
         if (!delay){
             return new Pair<Node, Integer>(nToAlloc, core);
         }else{
-            // if (!nToAlloc.notFitCore.contains(core))
-            //     nToAlloc.delayCnt++;
-            // else{
-            //     int m = 0;
-            // }
             nToAlloc.delayCnt++;
             List<Integer> tmp = new ArrayList<>(procs);
             tmp.removeAll(allocProcs);
             nToAlloc.notFitCore.addAll(tmp);
             delayCnt3++;
-            System.out.println("compare delay cnt: " + delayCnt3);
             return new Pair<Node, Integer>(nToAlloc, -1);
         }
     }
@@ -377,7 +374,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
 			affectedNodes.add(nodesInProc.get(j));
 		}
 
-		Long sum = (long) 0;
+		Long sum = (long) SystemParameters.v3 + 1;//空负载的核心优先
         if (affectedNodes.size() > 0){
             Node earliestNode = affectedNodes.get(affectedNodes.size() - 1);
             Long recencyL2 = earliestNode.crp.computeRecency(-1, history_level1, history_level2, history_level3, earliestNode, core, true, 0);
@@ -506,6 +503,9 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
                 Long metric = (long)0;
                 if(isFuture){
                     metric = getSUSacForFutureNodes(n, core, affect, currentExe, history_level1, history_level2, history_level3, currentTime);
+                    // if (metric > 0){
+                    //     futureSac3++;
+                    // }
                 }else{
                     metric = getSUSac(n, core, affect, availableCores, hitCore, history_level1, history_level2, history_level3);
                 }

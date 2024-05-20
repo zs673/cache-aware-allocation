@@ -40,10 +40,11 @@ public class OnlineCacheAwareRobust_v2_1 extends AllocationMethods {
 //
 //		/// **** ///
 //	}
-
+	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> cores, long[] coreTime, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3, List<List<Node>> allocHistory, long systemTime, boolean lcif, List<Node> etHist) {
+			List<Node> history_level3, List<List<Node>> allocHistory, long systemTime, boolean lcif, List<Node> etHist,  
+			List<Double> speeds, Node[] currentExe) {
 
 		if (readyNodes.size() == 0)
 			return;

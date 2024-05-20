@@ -20,7 +20,6 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineCacheAwareNewSimu extends AllocationMethods {
-	static int delayCnt1 = 0;
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> cores, long[] availableTimeAllProcs, List<List<Node>> history_level1,
@@ -35,9 +34,9 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 		}
 
 		readyNodes.stream().forEach(c -> c.partition = -1);
-		if (readyNodes.get(0).getType() == NodeType.SOURCE){
-			System.out.println("A new instance starts");
-		}
+		// if (readyNodes.get(0).getType() == NodeType.SOURCE){
+		// 	System.out.println("A new instance starts");
+		// }
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
@@ -106,9 +105,7 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 
 			Node n = preEligible.get(p.getFirst().intValue());
 			n.partition = availableP.get(p.getSecond().intValue());
-			delayCnt1++;
-			//System.out.println("total delayCnt: " + delayCnt1);
-			// if (n.getDagInstNo() == 1){
+			// if (n.getDagInstNo() == 1|| n.getDagInstNo() == 0){
             //     System.out.println(n + "->" + n.partition);
             // }
 			allocNodes.add(p.getFirst().intValue());

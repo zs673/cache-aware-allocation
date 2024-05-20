@@ -20,8 +20,7 @@ public class HitCore implements Serializable {
 	public int cacheLevel;
 	public int level2ClusterNum;
 	public int level2ClusterSize;
-    public int priority;
-	public int priority1;
+    public double priority;
 
 	public Set<Integer> level1 = new HashSet<>();
 	public Set<Integer> level2 = new HashSet<>();
@@ -33,7 +32,7 @@ public class HitCore implements Serializable {
         this.level3.addAll(level3);
         this.priority = this.level2.size() + this.level1.size() * SystemParameters.alpha; 
 		// this.priority = this.level2.size() * SystemParameters.alpha + this.level1.size();
-		this.priority1 = this.level2.size() + this.level1.size() * 5;
+
     }
 
     public Boolean isEmpty(){

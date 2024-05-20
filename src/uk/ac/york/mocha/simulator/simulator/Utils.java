@@ -1,10 +1,13 @@
 package uk.ac.york.mocha.simulator.simulator;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.python.indexer.Util;
 
 import uk.ac.york.mocha.simulator.entity.DAGtoPython;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
@@ -190,34 +194,34 @@ public class Utils {
 				return ins;
 			else
 				if (hitCore.get(c1).priority != hitCore.get(c2).priority){
-					return -Integer.compare(hitCore.get(c1).priority, hitCore.get(c2).priority);
+					return -Double.compare(hitCore.get(c1).priority, hitCore.get(c2).priority);
 				}
 				return -Long.compare(c1.getWCET(), c2.getWCET());
 		}
 	}
 
-	public static int compareNodeForYHX1(List<DirectedAcyclicGraph> dags, Node c1, Node c2, Map<Node, HitCore> hitCore) {
+	// public static int compareNodeForYHX1(List<DirectedAcyclicGraph> dags, Node c1, Node c2, Map<Node, HitCore> hitCore) {
 
-		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
-		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+	// 	DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+	// 	DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
 
-		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
-			return -1;
-		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
-			return 1;
-		} else {
+	// 	if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
+	// 		return -1;
+	// 	} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
+	// 		return 1;
+	// 	} else {
 
-			int ins = Long.compare(c1.getDagInstNo(), c2.getDagInstNo());
+	// 		int ins = Long.compare(c1.getDagInstNo(), c2.getDagInstNo());
 
-			if (ins != 0)
-				return ins;
-			else
-				if (hitCore.get(c1).priority1 != hitCore.get(c2).priority1){
-					return -Integer.compare(hitCore.get(c1).priority1, hitCore.get(c2).priority1);
-				}
-				return -Long.compare(c1.getWCET(), c2.getWCET());
-		}
-	}
+	// 		if (ins != 0)
+	// 			return ins;
+	// 		else
+	// 			if (hitCore.get(c1).priority1 != hitCore.get(c2).priority1){
+	// 				return -Integer.compare(hitCore.get(c1).priority1, hitCore.get(c2).priority1);
+	// 			}
+	// 			return -Long.compare(c1.getWCET(), c2.getWCET());
+	// 	}
+	// }
 
 
 	public static int compareNodeByID(List<DirectedAcyclicGraph> dags, Node c1, Node c2) {
@@ -399,6 +403,22 @@ public class Utils {
 
 	public static void writeResult(String filename, String result) {
 		writeResult(filename, result, false);
+	}
+
+	public static void writeUtils(String path, List<Double> utils, boolean append) {
+		try{
+			File file = new File(path);
+			if(!file.isFile()){
+				file.createNewFile();
+			}
+			BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+			for (int i = 0; i < utils.size(); i++) {
+				bw.write(utils.get(i) + ",");
+			}
+			bw.close();
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String args[]) {

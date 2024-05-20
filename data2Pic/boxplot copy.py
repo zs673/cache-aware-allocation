@@ -125,12 +125,22 @@ def main():
     # draw_bar(x, NOS_NUM, PATH1)
     # analyse(x, PATH1)
 
-    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/new future node/"
+    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/8/"
     data1 = pd.read_table(PATH1 + '/makespan_1_2.0.txt', sep=',', header=None)
     x = data1.iloc[:, 0:TASK_NUM*INSTANCE_NUM].values
     draw_box(x, NOS_NUM, PATH1)
     plt.clf()
     draw_bar(x, NOS_NUM, PATH1)
+
+    # PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/predict/"
+    # data1 = pd.read_table(PATH1 + '/total_defer_num_1_2.0.txt', sep=',', header=None)
+    # x = data1.iloc[:, 0:TASK_NUM*INSTANCE_NUM].values
+    # test2 = x[TOT_NOS:2*TOT_NOS, :]
+    # test2_sum = test2.sum()
+    # print (test2_sum)
+    # compare = x[2*TOT_NOS:, :]
+    # compare_sum = compare.sum()
+    # print (compare_sum)
 
 if __name__ == '__main__':
     main()

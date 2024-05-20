@@ -30,7 +30,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_test2;
-import uk.ac.york.mocha.simulator.allocation.OnlineYHX_Random;
+import uk.ac.york.mocha.simulator.allocation.OnlineYHX_test;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_compare;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_compare_backup;
 
@@ -219,11 +219,11 @@ public class SimualtorYHX {
             case ONLINE_YHX://第一版比较复杂的那个
                 allocM = new OnlineYHX();
                 break;
-			case ONLINE_YHX_TEST://把结点分到代价最小的那个
+			case ONLINE_YHX_TEST2:
                 allocM2 = new OnlineYHX_test2();
                 break;
-			case ONLINE_YHX_Random://按12345顺序分结点和核
-                allocM = new OnlineYHX_Random();
+			case ONLINE_YHX_TEST:
+                allocM2 = new OnlineYHX_test();
                 break;
 			case ONLINE_YHX_Compare://不断扩大考虑结点范围那个
                 allocM2 = new OnlineYHX_compare();

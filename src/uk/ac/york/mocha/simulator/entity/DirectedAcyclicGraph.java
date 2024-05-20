@@ -147,7 +147,8 @@ public class DirectedAcyclicGraph implements Serializable {
 			n.delayed = -1;
 			n.expectedET = -1;
 			n.rng = n.cvp.rng = rng;
-
+			n.delayCnt = 0;
+			n.notFitCore = new ArrayList<>();
 		}
 
 	}

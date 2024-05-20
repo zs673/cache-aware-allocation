@@ -1,20 +1,22 @@
 import os
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 import numpy as np
 import pandas as pd
 
 def draw_line(data, PATH1):
+    fig, ax = plt.subplots()
     y = np.zeros(TRIAL_NUM)
-    x = np.linspace(1, TRIAL_NUM, TRIAL_NUM)
+    x = np.linspace(1, 5, TRIAL_NUM)
     for i in range(0, TRIAL_NUM):
         data_tmp = data[i*TOT_NOS:(i+1)*TOT_NOS, :]
-        mean_data = data_tmp.mean(axis=0)
-        med_point = np.median(mean_data, axis=0)
-        y[i] = np.around(med_point, 3)
-        # y[i] = med_point
-        # y[i] = mean_data
+        mean_data = round(np.mean(data_tmp), 4)
+        # med_point = np.median(mean_data, axis=0)
+        # y[i] = np.around(med_point, 4)
+        y[i] = mean_data
     
-    plt.plot(x, y, color='r')
+    ax.plot(x, y, color='r')
+    ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.4f'))
     plt.ylabel('Normalized makespan')
     plt.xlabel('value of alpha')
     plt.savefig(PATH1 + "alpha.png", dpi=300)

@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 import org.apache.commons.math3.util.Pair;
 
+import uk.ac.york.mocha.simulator.allocation.OnlineYHX_compare;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
@@ -207,13 +208,17 @@ public class CARVB_General_YHX3 {
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);//运行完的dags + 缓存命中
 
         SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.ONLINE_YHX_TEST, // Hardware.PROC
+		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
+		
+		for (DirectedAcyclicGraph dag : sys.getFirst()){
+			dag.reset();
+		}
 
 		SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
+		Allocation.ONLINE_YHX_TEST, // Hardware.PROC
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
