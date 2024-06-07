@@ -23,7 +23,7 @@ public class OnlineWFWithOrdering extends AllocationMethods {
 		 * Entry for debugging a single node
 		 */
 		for (Node n : readyNodes) {
-			if (n.getDagID() == 0 && n.getDagInstNo() == 6 && n.getId() == 7) {
+			if (n.getDagID() == 2 && n.getDagInstNo() == 9) {
 				break;
 			}
 		}
@@ -40,7 +40,7 @@ public class OnlineWFWithOrdering extends AllocationMethods {
 
 			int core = getCoreIndexWithMinialWorkload(freeProc, history_level1);
 			readyNodes.get(i).partition = core;
-			// if (readyNodes.get(i).getDagInstNo() == 1){
+			// if (readyNodes.get(i).getDagInstNo() == 0){
 			// 	System.out.println(readyNodes.get(i) + "->" + core);
 			// }
 			freeProc.remove(freeProc.indexOf(core));

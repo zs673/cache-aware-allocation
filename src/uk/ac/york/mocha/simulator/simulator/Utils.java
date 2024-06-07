@@ -28,6 +28,7 @@ import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.entity.RecencyProfileReal;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.HitCore;
+import uk.ac.york.mocha.simulator.generator.HitCoreNew;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 
@@ -177,7 +178,7 @@ public class Utils {
 
 	}
 
-	public static int compareNodeForYHX(List<DirectedAcyclicGraph> dags, Node c1, Node c2, Map<Node, HitCore> hitCore) {
+	public static int compareNodeForYHX(List<DirectedAcyclicGraph> dags, Node c1, Node c2, Map<Node, HitCoreNew> hitCore) {
 
 		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
 		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());

@@ -2,6 +2,7 @@ package uk.ac.york.mocha.simulator.experiments_CARVB;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -39,11 +40,11 @@ public class CARVB_General_YHX2 {
 	static int cores = 8;// 4
 	static int nos = 1000;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
-	static int taskNum = 1;// 100
+	static int taskNum = 4;// 100
 
 	static int startUtil = 20;
 	static int incrementUtil = 4;
-	static int endUtil = 20;
+	static int endUtil = 20; 
 
 	static boolean print = false;
 
@@ -71,7 +72,7 @@ public class CARVB_General_YHX2 {
 		
 		// record the instanceNum of task
 		int[] instanceNo = new int[taskNum];
-
+		
 		if (periods != null && hyperperiodNum > 0) {
 			long totalHP = Utils.getHyperPeriod(periods.get(0)) * hyperperiodNum;
 
@@ -87,11 +88,11 @@ public class CARVB_General_YHX2 {
 		}
 
 		List<OneSystemResults> allRes = new ArrayList<>();
-
+		// List<Double> assignedUtils = new ArrayList<>(Collections.nCopies(taskNum, SystemParameters.utilPerTask));
+		// List<Long> period = new ArrayList<>();
+		// period.add((long)16000); period.add((long)18000); 
+		
 		for (int i = 0; i < nos; i++) {// i < nos
-			if (i == 6){
-				int m = 1;
-			}
 			System.out.println(
 					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
 
@@ -190,33 +191,27 @@ public class CARVB_General_YHX2 {
 		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		// lcif, speeds);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
-        SystemParameters.alpha = 4;
-		SimualtorYHX sim0 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
-		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
 
-		for (DirectedAcyclicGraph dag : sys.getFirst()){
-			dag.reset();
-		}
+
+
 		// SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
 		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		// lcif);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);//运行完的dags + 缓存命中
-		SystemParameters.alpha = 4.5;
-		SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
+
+		// Simualtor sim0 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.WORST_FIT_OUR, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif, speeds);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
+
+		SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
+		Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
-        
-		for (DirectedAcyclicGraph dag : sys.getFirst()){
-			dag.reset();
-		}
+		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
 
-        SystemParameters.alpha = 5;
 		SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
@@ -333,7 +328,7 @@ public class CARVB_General_YHX2 {
 		// get_new_metric(pair5);
 		// get_new_metric(pair6);
 		// get_new_metric(pair7);
-		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
+		//List<DirectedAcyclicGraph> m0 = pair0.getFirst();
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
 		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 		// List<DirectedAcyclicGraph> m3 = pair3.getFirst();
@@ -376,7 +371,7 @@ public class CARVB_General_YHX2 {
 			}
 
 			if (count < NoInstances[dags.get(i).id]) {
-				method0.add(m0.get(i));
+				//method0.add(m0.get(i));
 				method1.add(m1.get(i));
 				method2.add(m2.get(i));
 				// method3.add(m3.get(i));
@@ -388,7 +383,7 @@ public class CARVB_General_YHX2 {
 			}
 		}
 
-		allMethods.add(method0);
+		//allMethods.add(method0);
 		allMethods.add(method1);
 		allMethods.add(method2);
 		// allMethods.add(method3);
@@ -398,7 +393,7 @@ public class CARVB_General_YHX2 {
 		// allMethods.add(method7);
 
 		List<double[]> cachePerformance = new ArrayList<>();
-		cachePerformance.add(pair0.getSecond());
+		//cachePerformance.add(pair0.getSecond());
 		cachePerformance.add(pair1.getSecond());
 		cachePerformance.add(pair2.getSecond());
 		// cachePerformance.add(pair3.getSecond());

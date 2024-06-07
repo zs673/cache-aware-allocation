@@ -100,12 +100,12 @@ public class SystemParameters {
 	/* parameters for generic DAGs */
 	public static final double connectProb = 0.2;// 0.2
 	public static final int minLayer = 5;// 5 8*
-	public static final int maxLayer = 10;// 10 12 best:15/20/25 20
+	public static final int maxLayer = 8;// 10 12 best:15/20/25 20
 	// public static int minParal = 2;// 2
 	// public static int maxParal = 30;// 10 best:20 15
 	public static int minParal = 2;// 2
-	public static int maxParal = 30;// 10 best:20 15
-	public static double alpha = 4;
+	public static int maxParal = 50;// 10 best:20 15
+	
 
 	/* parameters for NFJ DAGs */
 	public static final int depth = 5;
@@ -146,13 +146,14 @@ public class SystemParameters {
 	 */
 	public static final long v1 = 0;
 	public static final long v2 = 10000;
-	public static final long v3 = 100000;
+	public static final long v3 = 100000;//100000
 	public static final long v4 = 500000;
 
 	public static final double delta1 = 0.3;
-	public static final double delta2 = 0.5;
+	public static final double delta2 = 0.6;
 	public static final double delta3 = 1.0;
 	public static final double delta4 = 1.0;
+	public static double alpha = (1 - (delta2 + delta1) / 2) / ((1 - (delta2 + delta3) / 2));
 
 	// penalty
 	// public static final double delta1 = 0.3;

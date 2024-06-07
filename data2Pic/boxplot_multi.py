@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def draw_box(x, NOS_NUM, PATH):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6,3))
     ax = fig.add_subplot(facecolor='white')
     # 每个刻度标签下有几个group就有几个箱子
     # group_data = [x[0:TOT_NOS, :], x[TOT_NOS:2*TOT_NOS, :], x[2*TOT_NOS:, :]]
@@ -60,6 +60,7 @@ def draw_box(x, NOS_NUM, PATH):
 
 
 def draw_bar(x, NOS_NUM, PATH):
+    fig = plt.figure(figsize=(6,3))
     OUR = x[2*TOT_NOS:, :].mean(axis=0)
     AJLR = x[TOT_NOS:2*TOT_NOS, :].mean(axis=0)
     EOWF = x[0:TOT_NOS, :].mean(axis=0)
@@ -116,7 +117,7 @@ def analyse(x, PATH1):
 
 TOT_NOS = 1000
 NOS_NUM = 500
-TASK_NUM = 1
+TASK_NUM = 4
 INSTANCE_NUM = 10
 METHOD_NUM = 3
 def main():
@@ -133,16 +134,16 @@ def main():
     # draw_bar(x, NOS_NUM, PATH1)
     # analyse(x, PATH1)
 
-    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/8/"
-    data1 = pd.read_table(PATH1 + '/makespan_1_2.0.txt', sep=',', header=None)
+    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/4dags/"
+    data1 = pd.read_table(PATH1 + '/makespan_4_2.0.txt', sep=',', header=None)
     x = data1.iloc[:, 0:TASK_NUM*INSTANCE_NUM].values
-    x_filter = np.zeros(METHOD_NUM*TOT_NOS, 4*TASK_NUM)
+    x_filter = np.zeros((METHOD_NUM*TOT_NOS, 4*TASK_NUM))
     for i in range(TASK_NUM):
-        x_filter[:, i*4:i*4+3] = x_filter[:, i*INSTANCE_NUM:i*INSTANCE_NUM+3]
-        x_filter[:, i*4+3] = x_filter[:, i*INSTANCE_NUM+9]
-    draw_box(x, NOS_NUM, PATH1)
+        x_filter[:, i*4:i*4+3] = x[:, i*INSTANCE_NUM:i*INSTANCE_NUM+3]
+        x_filter[:, i*4+3] = x[:, i*INSTANCE_NUM+9]
+    draw_box(x_filter, NOS_NUM, PATH1)
     plt.clf()
-    draw_bar(x, NOS_NUM, PATH1)
+    draw_bar(x_filter, NOS_NUM, PATH1)
 
     # PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/predict/"
     # data1 = pd.read_table(PATH1 + '/total_defer_num_1_2.0.txt', sep=',', header=None)

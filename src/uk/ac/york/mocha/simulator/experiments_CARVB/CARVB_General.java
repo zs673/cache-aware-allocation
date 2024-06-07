@@ -2,6 +2,7 @@ package uk.ac.york.mocha.simulator.experiments_CARVB;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -39,7 +40,7 @@ public class CARVB_General {
 	static int cores = 8;// 4
 	static int nos = 1000;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
-	static int taskNum = 2;// 100
+	static int taskNum = 1;// 100
 
 	static int startUtil = 20;
 	static int incrementUtil = 4;
@@ -71,7 +72,7 @@ public class CARVB_General {
 		
 		// record the instanceNum of task
 		int[] instanceNo = new int[taskNum];
-
+		
 		if (periods != null && hyperperiodNum > 0) {
 			long totalHP = Utils.getHyperPeriod(periods.get(0)) * hyperperiodNum;
 
@@ -87,7 +88,10 @@ public class CARVB_General {
 		}
 
 		List<OneSystemResults> allRes = new ArrayList<>();
-
+		// List<Double> assignedUtils = new ArrayList<>(Collections.nCopies(taskNum, SystemParameters.utilPerTask));
+		// List<Long> period = new ArrayList<>();
+		// period.add((long)16000); period.add((long)18000); 
+		
 		for (int i = 0; i < nos; i++) {// i < nos
 			System.out.println(
 					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
@@ -188,18 +192,20 @@ public class CARVB_General {
 		// lcif, speeds);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
 
-		Simualtor sim0 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.WORST_FIT_OUR, // Hardware.PROC
-		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		lcif, speeds);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
+
 
 		// SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
 		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		// lcif);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);//运行完的dags + 缓存命中
-		
+
+		Simualtor sim0 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		Allocation.WORST_FIT_OUR, // Hardware.PROC
+		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		lcif, speeds);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
+
 		SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,

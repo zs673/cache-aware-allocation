@@ -1,6 +1,7 @@
 package uk.ac.york.mocha.simulator.allocation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ import uk.ac.york.mocha.simulator.generator.HitCoreNew;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineYHX_compare_backup extends AllocationMethodsYHX {
+public class OnlineYHX_compare_backup4 extends AllocationMethodsYHX {
     static int delayCnt3 = 0;
     static int futureSac3 = 0;
 
@@ -55,8 +56,8 @@ public class OnlineYHX_compare_backup extends AllocationMethodsYHX {
 		// }
         Map<Node, HitCoreNew> hitCore = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
-		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore));
-        //readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		//readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore));
+        readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
         //debug
         for (Node node : readyNodes){
@@ -77,9 +78,14 @@ public class OnlineYHX_compare_backup extends AllocationMethodsYHX {
         List<Integer> availableP = new ArrayList<>(availableCores);
 
         List<Node> affect = new ArrayList<>(preEligible);
-        List<Node> affectF = new ArrayList<>(readyNodes);
-        affectF.removeAll(preEligible);
-        LinkedList<Node> backupNodes = new LinkedList<>(affectF);
+        // List<Node> affectF = new ArrayList<>(readyNodes);
+        // affectF.removeAll(preEligible);
+        List<Node> affectF = new ArrayList<>();
+        List<Node> futureNodes = getFutureNodes(cores, availableTimeAllProcs, currentExe);
+        List<Node> releaseNodes = getReleseNodes(readyNodes, readyNodes, Arrays.asList(currentExe));
+        //affectF.addAll(futureNodes);
+        affectF.addAll(releaseNodes);
+        // LinkedList<Node> backupNodes = new LinkedList<>(affectF);
 
         Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
                                                             allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, false);
@@ -252,7 +258,7 @@ public class OnlineYHX_compare_backup extends AllocationMethodsYHX {
             }
         }
         boolean delay = (delay1 || delay2) && delay3 && delay4;
-        //delay = false;
+        delay = false;
         if (!delay){
             return new Pair<Node, Integer>(nToAlloc, core);
         }else{
@@ -265,38 +271,52 @@ public class OnlineYHX_compare_backup extends AllocationMethodsYHX {
         }
     }
 
-    private List<Node> getFutureNodes(Node[] currentExe, long nextTime, List<Node> readyNodes, List<List<Node>> history_level1){
-		List<Node> nodesTobedone1 = new ArrayList<>();
-        List<Node> nodesTobedone2 = new ArrayList<>();
-		for (int i = 0; i < history_level1.size(); i++) {
-			if (currentExe[i] != null && currentExe[i].finishAt <= nextTime) {
-				nodesTobedone1.add(currentExe[i]);
-			}else if(currentExe[i] != null && currentExe[i].finishAt > nextTime){
-                nodesTobedone2.add(currentExe[i]);
-            }
-		}
-        List<Node> totNodes = new ArrayList<>(nodesTobedone1);
-        totNodes.addAll(nodesTobedone2);
-        List<Node> releaseBeforeTime = getReleseNodes(nodesTobedone1, nodesTobedone1, new ArrayList<>());
-        List<Node> releaseAfterTime = getReleseNodes(nodesTobedone2, totNodes, new ArrayList<>());
-        if (releaseAfterTime.size() > 0){
-            int debug = 1;
-        }
-		// determine the node to be free -- futureNodes
-        releaseBeforeTime.addAll(readyNodes);
+    private List<Node> getFutureNodes(List<Integer> cores, long[] coreTime, Node[] currentExe){
+        //LinkedHashMap<Integer, Long> id_to_waiting = new LinkedHashMap<>();
+		// determine the core set based on medTime -- futureProc
 
-        List<Node> currentExe_copy = new ArrayList<>();
-        Collections.addAll(currentExe_copy, currentExe);
-        List<Node> release = getReleseNodes(releaseBeforeTime, releaseBeforeTime, currentExe_copy);
-        release.addAll(releaseAfterTime);
-        return release;
+		List<Node> nodesTobedone = new ArrayList<>();
+		for (int i = 0; i < cores.size(); i++) {
+			if (currentExe[i] != null && currentExe[i].finishAt <= coreTime[i]) {
+				nodesTobedone.add(currentExe[i]);
+			}
+
+		}
+		List<Node> futureNodes = getReleseNodes(nodesTobedone, nodesTobedone, new ArrayList<>());
+        return futureNodes;
     }
+    // private List<Node> getFutureNodes(Node[] currentExe, long nextTime, List<Node> readyNodes, List<List<Node>> history_level1){
+	// 	List<Node> nodesTobedone1 = new ArrayList<>();
+    //     List<Node> nodesTobedone2 = new ArrayList<>();
+	// 	for (int i = 0; i < history_level1.size(); i++) {
+	// 		if (currentExe[i] != null && currentExe[i].finishAt <= nextTime) {
+	// 			nodesTobedone1.add(currentExe[i]);
+	// 		}else if(currentExe[i] != null && currentExe[i].finishAt > nextTime){
+    //             nodesTobedone2.add(currentExe[i]);
+    //         }
+	// 	}
+    //     List<Node> totNodes = new ArrayList<>(nodesTobedone1);
+    //     totNodes.addAll(nodesTobedone2);
+    //     List<Node> releaseBeforeTime = getReleseNodes(nodesTobedone1, nodesTobedone1, new ArrayList<>());
+    //     List<Node> releaseAfterTime = getReleseNodes(nodesTobedone2, totNodes, new ArrayList<>());
+    //     if (releaseAfterTime.size() > 0){
+    //         int debug = 1;
+    //     }
+	// 	// determine the node to be free -- futureNodes
+    //     releaseBeforeTime.addAll(readyNodes);
+
+    //     List<Node> currentExe_copy = new ArrayList<>();
+    //     Collections.addAll(currentExe_copy, currentExe);
+    //     List<Node> release = getReleseNodes(releaseBeforeTime, releaseBeforeTime, currentExe_copy);
+    //     release.addAll(releaseAfterTime);
+    //     return release;
+    // }
 
     private List<Node> getReleseNodes(List<Node> nodesTobedone, List<Node> totTobedone, List<Node> extraDone){
-        List<Node> futureNodes = new ArrayList<>();
+        List<Node> releaseNodes = new ArrayList<>();
         for (Node tmp : nodesTobedone) {
 			for (Node child : tmp.getChildren()) {
-				if (futureNodes.contains(child) || child.start != -1) {
+				if (releaseNodes.contains(child) || child.start != -1) {
 					// already added
 					continue;
 				}
@@ -310,11 +330,11 @@ public class OnlineYHX_compare_backup extends AllocationMethodsYHX {
 					}
 				}
 				if (isReady) {
-					futureNodes.add(child);
+					releaseNodes.add(child);
 				}
 			}
 		}
-        return futureNodes;
+        return releaseNodes;
     }
 
     private Map<Node, HitCoreNew> getHitCores(List<Node> readyNodes, List<Integer> availableCores, long[] availableTimeAllProcs, 
@@ -456,7 +476,37 @@ public class OnlineYHX_compare_backup extends AllocationMethodsYHX {
         return sum;
     }
 
-    private Long getSUSacForFutureNodes(Node n, Integer core, List<Node> affect, Node[] currentExe, 
+    // private Long getSUSacForFutureNodes(Node n, Integer core, List<Node> affect, Node[] currentExe, 
+    //         List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, long currentTime){
+
+    //     Long max = Long.MIN_VALUE;
+    //     List<Integer> coreList = new ArrayList<>();
+    //     coreList.add(core);
+    //     Map<Integer, Long> SUT = getSUT(n, coreList, history_level1, history_level2, history_level3);
+    //     Long et_n = (long)n.getWCET() - SUT.get(core);
+    //     long nextTime = currentTime + et_n;
+    //     List <Node> future = getFutureNodes(currentExe, nextTime, affect, history_level1);
+    //     for (int i = 0; i < future.size(); i++){
+    //         Node futureNode = future.get(i);
+    //         long affectedTime1 = futureNode.crp.computeET(-1, history_level1, history_level2,
+    //                         history_level3, futureNode, core, true, et_n, 0,false).getFirst().getFirst();
+    //         long affectedTime2 = futureNode.crp.computeET(-1, history_level1, history_level2, history_level3, futureNode,
+    //                         core, true, 0,0, false).getFirst().getFirst(); 
+    //         long affectedTime = affectedTime1 - affectedTime2;
+
+    //         //affectedTime = affectedTime < 0 ? 0 : affectedTime;
+    //         if (affectedTime < 0) {
+    //             System.err.println("CacheAwareAlloc.setPartition(): the affected time is less than 0!");
+    //             System.exit(-1);
+    //         }
+    //         if (affectedTime > max){
+    //             max = affectedTime;
+    //         }
+    //     }
+    //     return max == Long.MIN_VALUE ? 0 : max;
+    // }
+
+    private Long getSUSacForFutureNodes(Node n, Integer core, List<Node> future, Node[] currentExe, 
             List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, long currentTime){
 
         Long max = Long.MIN_VALUE;
@@ -464,8 +514,6 @@ public class OnlineYHX_compare_backup extends AllocationMethodsYHX {
         coreList.add(core);
         Map<Integer, Long> SUT = getSUT(n, coreList, history_level1, history_level2, history_level3);
         Long et_n = (long)n.getWCET() - SUT.get(core);
-        long nextTime = currentTime + et_n;
-        List <Node> future = getFutureNodes(currentExe, nextTime, affect, history_level1);
         for (int i = 0; i < future.size(); i++){
             Node futureNode = future.get(i);
             long affectedTime1 = futureNode.crp.computeET(-1, history_level1, history_level2,
