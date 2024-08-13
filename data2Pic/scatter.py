@@ -8,7 +8,7 @@ import pandas as pd
 # cache分布（miss L1和L2）分开吧 done
 # 截到350
 def scatter(x, data, PATH):
-    plt.figure()
+    plt.figure(figsize=(8, 3))
     color = ['b', 'y', 'r']
     # x = np.linspace(0.576, 576, 1000)  
     # x_ = np.linspace(START, END, STEP_NUM) 
@@ -24,11 +24,12 @@ def scatter(x, data, PATH):
     plt.ylabel('Normalized makespan')
     plt.xlabel('Workload of the DAG task')
     plt.legend()  
+    plt.tight_layout()
     # plt.show()
     plt.savefig(PATH + "scatter.png", dpi=300)
 
 def scatter_cache(x, data, PATH, flag):
-    plt.figure()
+    plt.figure(figsize=(8, 3))
     color = ['b', 'y', 'r']
     # x = np.linspace(0.576, 576, 1000)  
     # x_ = np.linspace(START, END, STEP_NUM) 
@@ -45,12 +46,12 @@ def scatter_cache(x, data, PATH, flag):
         plt.scatter(x, method_data, s=3, c=color[i], marker = 'o', label=labels[i])
     
     if flag == "L1":
-        plt.ylabel('Recency miss rate at the core levels')
+        plt.ylabel('Recency miss rate')
     elif flag == "L2":
-        plt.ylabel('Recency miss rate at the cluster levels')
-    plt.xlim(START, END)
+        plt.ylabel('Recency miss rate')
     plt.xlabel('Workload of the DAG task')
     plt.legend()  
+    plt.tight_layout()
     # plt.show()
     plt.savefig(PATH + "cache_" + flag + ".png", dpi=300)
 
@@ -64,7 +65,7 @@ END = 250.56#300.096 #576
 STEP_NUM = (int)((END - START) / START + 1)
 def main():
     PATH = "E:/Code/Java/cache-aware-allocation-main/result/util.txt"
-    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/predict/"
+    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/exp_L2cluster/cache/"
     # PATH2 = "E:/Code/Java/cache-aware-allocation-main/result/exp1_2/"
     x = pd.read_table(PATH, sep=',', header=None).iloc[:, 0:TOT_NOS].values
     x = x * 144

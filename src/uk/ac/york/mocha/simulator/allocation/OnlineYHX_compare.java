@@ -272,7 +272,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
             tmp.removeAll(allocProcs);
             nToAlloc.notFitCore.addAll(tmp);
             delayCnt3++;
-            // System.out.println("delay: " + delayCnt3);
+            System.out.println("delay: " + delayCnt3);
             return new Pair<Node, Integer>(nToAlloc, -1);
         }
     }

@@ -161,7 +161,7 @@ def main():
     # draw_bar(x, NOS_NUM, PATH1)
     # analyse(x, PATH1)
 
-    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/predict/"
+    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/divide_wf/"
     data1 = pd.read_table(PATH1 + '/makespan_1_2.0.txt', sep=',', header=None)
     x = data1.iloc[:, 0:TASK_NUM*INSTANCE_NUM].values
     draw_box(x, NOS_NUM, PATH1)
