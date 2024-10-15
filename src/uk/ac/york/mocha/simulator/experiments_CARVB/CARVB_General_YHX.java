@@ -40,9 +40,11 @@ public class CARVB_General_YHX {
 	// static int intanceNum = 10;// 100
 	// static int taskNum = 1;// 100
 	static int cores = 8;// 4
-	static int nos = 5000;// 500/100   //1000次重复实验
+	static int nos = 1500;// 500/100   //1000次重复实验
+	static int tot_nos = 6000;
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
+	static int EXP_IDX = 3; // 0计数
 
 	// static int startUtil = 8;
 	// static int incrementUtil = 8;
@@ -62,12 +64,11 @@ public class CARVB_General_YHX {
 
 	public static void oneTaskWithFaults() {
 		int hyperPeriodNum = -1;
-		int seed = 1000;
 
-		UUnifastDiscard uu = new UUnifastDiscard(4, 1, 1000, SystemParameters.coreNum, false, new Random(seed));
+		UUnifastDiscard uu = new UUnifastDiscard(4, 1, 1000, SystemParameters.coreNum, false, new Random(1000));
 
 		List<Double> utils = new ArrayList<>();
-		while(utils.size() < nos) {
+		while(utils.size() < tot_nos) {
 			double u = uu.getUtils().get(0);
 			// List<Double> us = new ArrayList<>();
 			// us.add(u);
@@ -77,13 +78,15 @@ public class CARVB_General_YHX {
 		String path = "E:/Code/Java/cache-aware-allocation-main/result/util.txt";
 		Utils.writeUtils(path, utils, false);
 		
+		int seed = 5500;
+		List<Double> subUtils = utils.subList(EXP_IDX*nos, (EXP_IDX+1)*nos);
         int[] instanceNo = new int[taskNum];
         for (int j = 0; j < instanceNo.length; j++)
             instanceNo[j] = intanceNum;
         List<OneSystemResults> allRes = new ArrayList<>();
 		for (int i = 0; i < nos; i++) {
 			// SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10000));
-			SystemParameters.utilPerTask = utils.get(i);
+			SystemParameters.utilPerTask = subUtils.get(i);
 			System.out.println(
                 "Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + i);
 			OneSystemResults res = RunOneGroup(taskNum, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);

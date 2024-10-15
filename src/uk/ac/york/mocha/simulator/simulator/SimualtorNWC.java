@@ -9,6 +9,7 @@ import org.apache.commons.math3.util.Pair;
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineCARVB;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
+import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu_YHX;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_2;
@@ -194,6 +195,9 @@ public class SimualtorNWC {
 			//AJLR
 			case CACHE_AWARE_NEW:
 				allocM = new OnlineCacheAwareNewSimu();
+				break;
+			case AJLR_CAP:
+				allocM = new OnlineCacheAwareNewSimu_YHX();
 				break;
 			case CACHE_AWARE_ROBUST_v2_1:
 				allocM = new OnlineCacheAwareRobust_v2_1();

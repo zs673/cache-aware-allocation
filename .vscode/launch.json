@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "OnlineYHX_test",
+            "request": "launch",
+            "mainClass": "uk.ac.york.mocha.simulator.allocation.OnlineYHX_test",
+            "projectName": "cache-aware-allocation-main_de4a1c87"
+        },
+        {
+            "type": "java",
+            "name": "OnlineYHX_test2",
+            "request": "launch",
+            "mainClass": "uk.ac.york.mocha.simulator.allocation.OnlineYHX_test2",
+            "projectName": "cache-aware-allocation-main_de4a1c87"
+        },
+        {
+            "type": "java",
             "name": "CARVB_General_multi",
             "request": "launch",
             "mainClass": "uk.ac.york.mocha.simulator.experiments_CARVB.CARVB_General_multi",

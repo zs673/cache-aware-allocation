@@ -5,12 +5,13 @@ import pandas as pd
 
 
 def draw_box(x, NOS_NUM, PATH):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6.4, 4))
     ax = fig.add_subplot(facecolor='white')
     # 每个刻度标签下有几个group就有几个箱子
     # group_data = [x[0:TOT_NOS, :], x[TOT_NOS:2*TOT_NOS, :], x[2*TOT_NOS:, :]]
 
-    color_list = ['xkcd:grey', 'b', 'y', 'r', 'b']
+    # color_list = ['xkcd:grey', 'b', 'y', 'r', 'b']
+    color_list = ['xkcd:grey', '#1f77b4', '#ff7f0e', '#EEB937', '#78AC31']
     x_labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
     length = TASK_NUM * len(x_labels)
     x_loc = np.arange(length)
@@ -32,7 +33,7 @@ def draw_box(x, NOS_NUM, PATH):
         x1_box = x_loc - ((group_number - 1) / 2) * box_width - ((group_number - 1) / 2) * interval_width
     x_list_box = [x1_box + box_width * i + interval_width * i for i in range(group_number)]
 
-    boxplot_data = [x[0:TOT_NOS, :], x[TOT_NOS:2*TOT_NOS, :], x[3*TOT_NOS:4*TOT_NOS, :],x[4*TOT_NOS:, :]]
+    boxplot_data = [x[0:TOT_NOS, :], x[TOT_NOS:2*TOT_NOS, :], x[2*TOT_NOS:3*TOT_NOS, :], x[3*TOT_NOS:4*TOT_NOS, :],x[4*TOT_NOS:, :]]
     for i in range(len(boxplot_data)):
         ax.boxplot(boxplot_data[i], positions=x_list_box[i], widths=box_width, patch_artist=True,
                 medianprops={'lw': 1, 'color': color_list[i]},
@@ -47,20 +48,23 @@ def draw_box(x, NOS_NUM, PATH):
     ax.set_ylabel('Normalized makespan')
     ax.set_xlabel('Instance index of DAG')
     legend_elements = [plt.Line2D([0], [0], color=color_list[0], label='WF+EO'),
-                    plt.Line2D([0], [0], color=color_list[1], label='AJLR'),
-                    plt.Line2D([0], [0], color=color_list[2], label='ASSGP'),
-                    plt.Line2D([0], [0], color=color_list[3], label='CAP+ASSGP')
+                    plt.Line2D([0], [0], color=color_list[1], label='HWF+AJLR'),
+                    plt.Line2D([0], [0], color=color_list[2], label='CAP+AJLR'),
+                    plt.Line2D([0], [0], color=color_list[3], label='HWF+CARMIP'),
+                    plt.Line2D([0], [0], color=color_list[4], label='CAP+CARMIP(OUR)')
                     ]
     # plt.Line2D([0], [0], color=color_list[4], label='New Priority + New Allocation'
-    plt.legend(handles=legend_elements, loc='lower left', prop={'size':7})
+    plt.legend(handles=legend_elements, loc='lower left', prop={'size':10}, ncol=3)
     fig.tight_layout()
     # plt.show()
     plt.savefig(PATH + "box.png", dpi=300)
 
 
 def draw_bar(x, NOS_NUM, PATH):
+    color_list = ['xkcd:grey', '#1f77b4', '#ff7f0e', '#EEB937', '#78AC31']
     WFEO = x[0:TOT_NOS, :].mean(axis=0)
     AJLR = x[TOT_NOS:2*TOT_NOS, :].mean(axis=0)
+    CAJLR = x[2*TOT_NOS:3*TOT_NOS, :].mean(axis=0)
     A = x[3*TOT_NOS:4*TOT_NOS, :].mean(axis=0)
     B = x[4*TOT_NOS:5*TOT_NOS, :].mean(axis=0)
     # C = x[4*TOT_NOS:, :].mean(axis=0)
@@ -100,10 +104,11 @@ def draw_bar(x, NOS_NUM, PATH):
     x_list_box = [x1_box + box_width * i for i in range(group_number)]
 
         #绘制并列柱状图
-    plt.bar(x_list_box[0], WFEO, box_width, color='xkcd:grey', align='center', label='WF+EO')#柱宽为0.2，标签在柱子中间
-    plt.bar(x_list_box[1], AJLR, box_width, color='b', align='center', label='AJLR')  #柱宽为0.2
-    plt.bar(x_list_box[2] , A, box_width, color='y', align='center', label='ASSGP')#柱宽为0.2，标签在柱子中间
-    plt.bar(x_list_box[3] , B, box_width, color='r', align='center', label='CAP+ASSGP')
+    plt.bar(x_list_box[0], WFEO, box_width, color=color_list[0], align='center', label='WF+EO')#柱宽为0.2，标签在柱子中间
+    plt.bar(x_list_box[1], AJLR, box_width, color=color_list[1], align='center', label='AJLR')  #柱宽为0.2
+    plt.bar(x_list_box[2], CAJLR, box_width, color=color_list[2], align='center', label='CAP+AJLR')  #柱宽为0.2
+    plt.bar(x_list_box[3] , A, box_width, color=color_list[3], align='center', label='CARMIP')#柱宽为0.2，标签在柱子中间
+    plt.bar(x_list_box[4] , B, box_width, color=color_list[4], align='center', label='CAP+CARMIP(OUR)')
     # plt.bar(x_list_box[4] , C, box_width, color='r', align='center', label='New Priority + New Allocation')
 
     plt.ylabel('Normalized makespan')
@@ -111,7 +116,7 @@ def draw_bar(x, NOS_NUM, PATH):
     # plt.xticks(x_size - 1.5 * box_width, x_labels)     #定义X轴标签位置
     plt.xticks(x_list_box[2], x_labels)
 
-    plt.legend(prop={'size':8})                          #显示图例
+    plt.legend(prop={'size':10}, ncol=3)                          #显示图例
     plt.tight_layout()
     # plt.show()                             #显示柱状图
     plt.savefig(PATH + "bar.png", dpi=300)
@@ -148,7 +153,7 @@ TOT_NOS = 1000
 NOS_NUM = 500
 TASK_NUM = 1
 INSTANCE_NUM = 10
-METHOD_NUM = 4
+METHOD_NUM = 5
 def main():
     # PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/core_32_1/"
     # PATH2 = "E:/Code/Java/cache-aware-allocation-main/result/core_32_2/"
@@ -163,7 +168,7 @@ def main():
     # draw_bar(x, NOS_NUM, PATH1)
     # analyse(x, PATH1)
 
-    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/exp_L2cluster/divide_wf/"
+    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/exp0924/divide/"
     data1 = pd.read_table(PATH1 + '/makespan_1_2.0.txt', sep=',', header=None)
     x = data1.iloc[:, 0:TASK_NUM*INSTANCE_NUM].values
     draw_box(x, NOS_NUM, PATH1)

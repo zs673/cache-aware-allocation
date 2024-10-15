@@ -213,12 +213,22 @@ public class CARVB_General_YHX4 {
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);//运行完的dags + 缓存命中
 
-        SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.ONLINE_YHX_TEST, // Hardware.PROC
+        // SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.ONLINE_YHX_TEST, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
+		
+		// for (DirectedAcyclicGraph dag : sys.getFirst()){
+		// 	dag.reset();
+		// }
+
+		SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
+		Hardware.PROC_CACHE, Allocation.AJLR_CAP, // PROC_CACHE
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
-		
+		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
+
 		for (DirectedAcyclicGraph dag : sys.getFirst()){
 			dag.reset();
 		}

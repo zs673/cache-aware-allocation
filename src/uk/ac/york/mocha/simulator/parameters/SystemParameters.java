@@ -66,7 +66,7 @@ public class SystemParameters {
 		CACHE_AWARE_COMPARE, CARVB,
 		CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW,
 		CACHE_AWARE_NEW_BASE, GYY, HSF, GYY_WCET, GYY_old, HEFT, HEFT_NEW, CPOP, CPOP_NEW, gyy_test, sota_with_old,
-		ONLINE_YHX, ONLINE_YHX_TEST, ONLINE_YHX_TEST2, ONLINE_YHX_Random, ONLINE_YHX_Compare
+		ONLINE_YHX, ONLINE_YHX_TEST, ONLINE_YHX_TEST2, ONLINE_YHX_Random, ONLINE_YHX_Compare, AJLR_CAP
 	};
 
 	/**********************************************************************
@@ -100,11 +100,11 @@ public class SystemParameters {
 	/* parameters for generic DAGs */
 	public static final double connectProb = 0.2;// 0.2
 	public static final int minLayer = 5;// 5 8*
-	public static final int maxLayer = 10;// 10 12 best:15/20/25 20
+	public static final int maxLayer = 18;// 10 12 best:15/20/25 20
 	// public static int minParal = 2;// 2
 	// public static int maxParal = 30;// 10 best:20 15
-	public static int minParal = 2;// 2
-	public static int maxParal = 25;// 10 best:20 15
+	public static int minParal = 5;// 2
+	public static int maxParal = 40;// 10 best:20 15
 	
 
 	/* parameters for NFJ DAGs */
