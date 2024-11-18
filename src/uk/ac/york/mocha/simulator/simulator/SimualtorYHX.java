@@ -28,11 +28,9 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
-import uk.ac.york.mocha.simulator.allocation.OnlineYHX;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_test2;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_test;
 import uk.ac.york.mocha.simulator.allocation.OnlineYHX_compare;
-import uk.ac.york.mocha.simulator.allocation.OnlineYHX_compare_backup;
 
 /*
  * This is a Multiprocessor Non-preemptive Multi-DAG Simulator
@@ -216,9 +214,6 @@ public class SimualtorYHX {
 			case CACHE_AWARE_NEW_BASE:
 				allocM = new OnlineCacheAwareNewSimu_base();
 				break;
-            case ONLINE_YHX://第一版比较复杂的那个
-                allocM = new OnlineYHX();
-                break;
 			case ONLINE_YHX_TEST2:
                 allocM2 = new OnlineYHX_test2();
                 break;

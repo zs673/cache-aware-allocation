@@ -1,6 +1,7 @@
 package uk.ac.york.mocha.simulator.generator;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /* A. Burns and R. I. Davis. Improved priority assignment for global Fixed priority pre-emptive 
@@ -102,9 +103,38 @@ public class UUnifastDiscard {
 	}
 	
 	public static void main(String args[]) {
-		for(int i=0; i<1000; i++) {
-			UUnifastDiscard uu = new UUnifastDiscard(8.0, 1, 1000, 8, false, new Random(i));
-			System.out.println(uu.getUtils().get(0));
+		int nos = 6000;
+		UUnifastDiscard uu1 = new UUnifastDiscard(3.2, 1, 1000, 16, false, new Random(1000));
+
+		List<Double> utils1 = new ArrayList<>();
+		while(utils1.size() < nos) {
+			double u = uu1.getUtils().get(0);
+			// List<Double> us = new ArrayList<>();
+			// us.add(u);
+		    if (u * 144 <= 250.56)
+				utils1.add(u);
+		}
+
+		UUnifastDiscard uu2 = new UUnifastDiscard(3.2, 1, 1000, 8, false, new Random(1000));
+
+		List<Double> utils2 = new ArrayList<>();
+		while(utils2.size() < nos) {
+			double u = uu2.getUtils().get(0);
+			// List<Double> us = new ArrayList<>();
+			// us.add(u);
+		    if (u * 144 <= 250.56)
+				utils2.add(u);
+		}
+
+		boolean set = true;
+		for (int i = 0; i < nos; i++){
+			if (!utils1.get(i).equals(utils2.get(i))){
+				System.out.println("Wrong Generation");
+				set = false;
+			}
+		}
+		if (set){
+			System.out.println("Congradulations");
 		}
 	}
 

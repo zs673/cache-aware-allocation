@@ -263,13 +263,13 @@ public class FiveNodeForCompare {
 		OnlineCacheAware_ForCompare.useSynth = true;
 		rng = new Random(seed);
 		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_COMPARE,
-				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf);
+				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
 
 		OnlineCacheAware_ForCompare.useSynth = false;
 		rng = new Random(seed);
 		Simualtor sim2 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_COMPARE,
-				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf);
+				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
 

@@ -434,7 +434,7 @@ public class SimpleAllocationCompare {
 			int taskSeed, int tableSeed, boolean fault) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
-				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, false);
+				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, false, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 //		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
@@ -442,7 +442,7 @@ public class SimpleAllocationCompare {
 //		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, true);
+				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, true, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
@@ -497,7 +497,7 @@ public class SimpleAllocationCompare {
 			int cores, int taskSeed, int tableSeed, boolean fault) {
 
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, true);
+				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, true, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheBFSim.simulate(SystemParameters.printSim);
 
 //		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
@@ -505,7 +505,7 @@ public class SimpleAllocationCompare {
 //		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheWFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, true);
+				RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), cores, tableSeed, true, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();

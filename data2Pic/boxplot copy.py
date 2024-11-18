@@ -4,13 +4,15 @@ import numpy as np
 import pandas as pd
 
 
-def draw_box(x, NOS_NUM, PATH):
+def draw_box(x, NOS_NUM, PATH, NAME):
     fig = plt.figure(figsize=(6.4, 2.8))
     ax = fig.add_subplot(facecolor='white')
     # 每个刻度标签下有几个group就有几个箱子
     # group_data = [x[0:TOT_NOS, :], x[TOT_NOS:2*TOT_NOS, :], x[2*TOT_NOS:, :]]
 
-    color_list = ['#1f77b4', '#ff7f0e', '#EEB937']
+    # color_list = ['#1f77b4', '#ff7f0e', '#EEB937']
+    # color_list = ['#C0D6EA', '#A6C7E2', '#86B7DB']
+    color_list = ['#AABCDB', '#7698C3', '#487DB2']
     x_labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
     length = TASK_NUM * len(x_labels)
     x_loc = np.arange(length)
@@ -44,19 +46,19 @@ def draw_box(x, NOS_NUM, PATH):
     ax.grid(True, ls=':', color='b', alpha=0.3)
     ax.set_xticks(x_loc)
     ax.set_xticklabels(x_labels, rotation=0)
-    ax.set_ylabel('Normalized makespan')
-    ax.set_xlabel('Instance index of DAG')
+    ax.set_ylabel('Normalized makespan', fontsize=20)
+    ax.set_xlabel('Job index of the DAG', fontsize=20)
     legend_elements = [plt.Line2D([0], [0], color=color_list[0], label='WF+EO'),
                     plt.Line2D([0], [0], color=color_list[1], label='AJLR'),
-                    plt.Line2D([0], [0], color=color_list[2], label='CAP+CARMIP')]
+                    plt.Line2D([0], [0], color=color_list[2], label='CAPA+CADE')]
     plt.legend(handles=legend_elements, loc='lower left', prop={'size':7}, ncol=3)
     fig.tight_layout()
     # plt.show()
-    plt.savefig(PATH + "box.png", dpi=300)
+    plt.savefig(PATH + NAME, dpi=300)
 
 
-def draw_bar(x, NOS_NUM, PATH):
-    fig = plt.figure(figsize=(6, 2.8))
+def draw_bar(x, NOS_NUM, PATH, NAME):
+    fig = plt.figure(figsize=(6, 2.5))
     OUR = x[2*TOT_NOS:, :].mean(axis=0)
     AJLR = x[TOT_NOS:2*TOT_NOS, :].mean(axis=0)
     EOWF = x[0:TOT_NOS, :].mean(axis=0)
@@ -70,19 +72,22 @@ def draw_bar(x, NOS_NUM, PATH):
     # plt.bar(x_size, EOWF, bar_width, color='b', align='center', label='WF+EO')#柱宽为0.2，标签在柱子中间
     # plt.bar(x_size + bar_width, AJLR, bar_width, color='y', align='center', label='AJLR')  #柱宽为0.2
     # plt.bar(x_size + 2 * bar_width , OUR, bar_width, color='r', align='center', label='OUR')#柱宽为0.2，标签在柱子中间
+    color_list = ['#AABCDB', '#7698C3', '#487DB2']
 
-    plt.bar(x_size, EOWF, bar_width, color='#1f77b4', align='center', label='WF+EO')  # 蓝色
-    plt.bar(x_size + bar_width, AJLR, bar_width, color='#ff7f0e', align='center', label='AJLR')  # 橙色
-    plt.bar(x_size + 2 * bar_width, OUR, bar_width, color='#EEB937', align='center', label='CAP+CARMIP')  # 绿色
+    plt.bar(x_size, EOWF, bar_width, color=color_list[0], edgecolor='black', align='center', label='WF+EO')  # 蓝色
+    plt.bar(x_size + bar_width, AJLR, bar_width, color=color_list[1], edgecolor='black', align='center', label='AJLR')  # 橙色
+    plt.bar(x_size + 2 * bar_width, OUR, bar_width, color=color_list[2], edgecolor='black', align='center', label='CAPA+CADE')  # 绿色
     # 3D93CD E07647 EEB937
-    plt.ylabel('Normalized makespan')
-    plt.xlabel('Instance index of DAG')
+    plt.ylabel('Normalized makespan', fontsize=12)
+    plt.xlabel('Job index of the DAG', fontsize=12)
     plt.xticks(x_size + bar_width, x_labels)     #定义X轴标签位置
     
-    plt.legend(prop={'size':9}, loc='upper left', ncol=3, framealpha=0.3, bbox_to_anchor=(0, 1.18), columnspacing=8.34, frameon=True)
+    # plt.legend(prop={'size':9}, loc='upper left', ncol=3, framealpha=0.3, bbox_to_anchor=(0, 1.18), columnspacing=8.34, frameon=True)
+    # plt.legend(prop={'size':12}, loc='lower center', ncol=3, framealpha=0.9, bbox_to_anchor=(0.5, -0), columnspacing=3.6, frameon=True)
+    plt.legend(prop={'size':11}, loc='lower center', ncol=3, framealpha=0.9, bbox_to_anchor=(0.5, -0), columnspacing=5, frameon=True)
     plt.tight_layout()
     # plt.show()                             #显示柱状图
-    plt.savefig(PATH + "bar.png", dpi=300)
+    plt.savefig(PATH + NAME, dpi=300, format="pdf")
 
 def numpy_to_str(array):
     return ','.join(str(i) for i in array)
@@ -131,12 +136,13 @@ def main():
     # draw_bar(x, NOS_NUM, PATH1)
     # analyse(x, PATH1)
 
-    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/exp0924/32/"
-    data1 = pd.read_table(PATH1 + '/makespan_1_8.0.txt', sep=',', header=None)
+    PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/1017_noupdateS/16_varyU_0-40_varyT/"
+    NAME = "ep_16core.pdf"
+    data1 = pd.read_table(PATH1 + '/makespan_1_2.1056973431632953.txt', sep=',', header=None)
     x = data1.iloc[:, 0:TASK_NUM*INSTANCE_NUM].values
-    draw_box(x, NOS_NUM, PATH1)
+    draw_box(x, NOS_NUM, PATH1, NAME)
     plt.clf()
-    draw_bar(x, NOS_NUM, PATH1)
+    draw_bar(x, NOS_NUM, PATH1, NAME)
   
     # PATH1 = "E:/Code/Java/cache-aware-allocation-main/result/predict/"
     # data1 = pd.read_table(PATH1 + '/total_defer_num_1_2.0.txt', sep=',', header=None)

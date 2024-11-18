@@ -40,7 +40,7 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
-		Map<Node, HitCore> hitCore_ = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
+//		Map<Node, HitCore> hitCore_ = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 		/*
 		 * Sort ready nodes list by FPS+WF, take first procNum nodes to allocate.  Order nodes by 1) its DAG priority and 2) its WCET.
 		 */
@@ -105,7 +105,7 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 
 			Node n = preEligible.get(p.getFirst().intValue());
 			n.partition = availableP.get(p.getSecond().intValue());
-			// if (n.getDagInstNo() == 0){
+			// if (n.getDagInstNo() == 1){
             //     System.out.println("AJLR: " + n + "->" + n.partition);
             // }
 			allocNodes.add(p.getFirst().intValue());
@@ -240,62 +240,5 @@ public class OnlineCacheAwareNewSimu extends AllocationMethods {
 
 		return new Pair<Integer, Integer>(row, col);
 	}
-
-	private Map<Node, HitCore> getHitCores(List<Node> readyNodes, List<Integer> availableCores, long[] availableTimeAllProcs, 
-            List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, 
-            List<List<Node>> allocHistory, long currentTime, boolean lcif){
-        
-		int level2ClusterNum = history_level2.size();
-		int level2ClusterSize = history_level1.size() / level2ClusterNum;
-        LinkedHashMap<Node, HitCore> map = new LinkedHashMap<>();
-        for (int i = 0; i < readyNodes.size(); i++){
-            Set<Integer> level1HitCore = new HashSet<>();
-            Set<Integer> level2HitCore = new HashSet<>();
-            Set<Integer> level3HitCore = new HashSet<>();
-            Node n = readyNodes.get(i);
-
-            for (int j = 0; j < history_level1.size(); j++) {
-                if (availableCores.contains(j)){
-                    int hitCacheLevel = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, j, true, 0, 0, lcif).getSecond();
-                    switch (hitCacheLevel) {
-                        case 1:
-                            level1HitCore.add(j);
-							int clusterCoreIdx = (j / level2ClusterSize) * level2ClusterSize;
-                            level2HitCore.addAll(IntStream.rangeClosed(clusterCoreIdx, clusterCoreIdx + level2ClusterSize - 1).boxed().collect(Collectors.toSet()));
-							Set<Integer> filteredLevel2 = level2HitCore.stream().filter(element -> availableCores.contains(element) 
-                                                                                        && !level1HitCore.contains(element)).collect(Collectors.toSet());
-							level2HitCore.clear();
-							level2HitCore.addAll(filteredLevel2);
-
-							level3HitCore.addAll(IntStream.rangeClosed(0, history_level1.size() - 1).boxed().collect(Collectors.toSet()));
-							Set<Integer> filteredLevel3 = level3HitCore.stream().filter(element -> availableCores.contains(element) && !level2HitCore.contains(element) 
-                                                                                            && !level1HitCore.contains(element)).collect(Collectors.toSet());
-							level3HitCore.clear();
-							level3HitCore.addAll(filteredLevel3);
-                            break;
-                        case 2:
-							level2HitCore.add(j);
-							level3HitCore.addAll(IntStream.rangeClosed(0, history_level1.size() - 1).boxed().collect(Collectors.toSet()));
-							Set<Integer> _filteredLevel3 = level3HitCore.stream().filter(element -> availableCores.contains(element) && !level2HitCore.contains(element) 
-                                                                                            && !level1HitCore.contains(element)).collect(Collectors.toSet());
-							level3HitCore.clear();
-							level3HitCore.addAll(_filteredLevel3);
-							break;
-						case 3:
-							level3HitCore.add(j);
-							break;
-                        default:
-                            break;
-                    }
-                }
-			}
-
-			map.put(n, new HitCore(level1HitCore, level2HitCore, level3HitCore));
-
-		}
-		return map;
-	}
-
-
 }
 

@@ -15,7 +15,7 @@ public class OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare extends Al
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> cores, long[] availableTimeAllProcs, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
-			boolean lcif, List<Node> etHist) {
+			boolean lcif, List<Node> etHist, List<Double> speeds, Node[] currentExe) {
 
 		List<Integer> availableCores = new ArrayList<>();
 		for (int i = 0; i < cores.size(); i++) {

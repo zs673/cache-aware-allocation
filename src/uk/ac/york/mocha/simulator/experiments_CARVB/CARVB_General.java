@@ -37,14 +37,14 @@ public class CARVB_General {
 	// static int nos = 1;// 500/100   //1000次重复实验
 	// static int intanceNum = 10;// 100
 	// static int taskNum = 1;// 100
-	static int cores = 24;// 4
+	static int cores = 32;// 4
 	static int nos = 1000;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
 
-	static int startUtil = 60;
+	static int startUtil = 80;
 	static int incrementUtil = 4;
-	static int endUtil = 60; 
+	static int endUtil = 80; 
 
 	static boolean print = false;
 

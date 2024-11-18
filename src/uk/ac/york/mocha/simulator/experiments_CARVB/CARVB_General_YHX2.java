@@ -42,9 +42,9 @@ public class CARVB_General_YHX2 {
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
 
-	static int startUtil = 20;
+	static int startUtil = 40;
 	static int incrementUtil = 4;
-	static int endUtil = 20; 
+	static int endUtil = 40; 
 
 	static boolean print = false;
 

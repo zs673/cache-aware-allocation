@@ -11,8 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.python.antlr.op.In;
-
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class HitCoreNew implements Serializable {

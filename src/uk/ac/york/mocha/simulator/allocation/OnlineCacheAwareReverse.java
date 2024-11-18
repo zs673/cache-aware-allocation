@@ -16,7 +16,7 @@ public class OnlineCacheAwareReverse extends AllocationMethods {
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
-			boolean lcif, List<Node> etHist) {
+			boolean lcif, List<Node> etHist, List<Double> speeds, Node[] currentExe) {
 
 		/*
 		 * Entry for debugging a single node

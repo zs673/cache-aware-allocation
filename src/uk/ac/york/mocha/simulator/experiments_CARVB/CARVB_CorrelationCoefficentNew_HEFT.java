@@ -559,11 +559,11 @@ public class CARVB_CorrelationCoefficentNew_HEFT {
 	}
 }
 
-class ChangingNodeInfo {
-	int test = faultType.values().length;
-	double[] changingNodeByPercent = new double[faultType.values().length];
-	double[] changingNodeByFlag = new double[faultType.values().length];
-	double changingNodeAbsolute = -1;
-
-	double makespanChange = -1;
-}
+//class ChangingNodeInfo {
+//	int test = faultType.values().length;
+//	double[] changingNodeByPercent = new double[faultType.values().length];
+//	double[] changingNodeByFlag = new double[faultType.values().length];
+//	double changingNodeAbsolute = -1;
+//
+//	double makespanChange = -1;
+//}

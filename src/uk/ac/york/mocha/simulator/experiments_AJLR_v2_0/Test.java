@@ -247,7 +247,7 @@ public class Test {
 //			System.out.println(dags.get(0).toString());
 
 			Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC, Allocation.FIRST_FIT,
-					RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), 16, seed, true);
+					RecencyType.TIME_DEFAULT, sys.getFirst(),sys.getSecond(), 16, seed, true, null);
 			cacheCASim.simulate(false, 0);
 
 //			System.out.println(dags.get(0).printExeInfo());

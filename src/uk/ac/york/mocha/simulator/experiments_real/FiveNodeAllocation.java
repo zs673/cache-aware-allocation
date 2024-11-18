@@ -285,17 +285,17 @@ public class FiveNodeAllocation {
 
 		rng = new Random(seed);
 		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf);
+				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
 
 		rng = new Random(seed);
 		Simualtor sim2 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
-				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf);
+				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
 		rng = new Random(seed);
 		Simualtor sim3 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.SIMPLE,
-				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf);
+				RecencyType.TIME_DEFAULT, tasks, cache, cores, seed, licf, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = sim3.simulate(print);
 
 		// rng = new Random(seed);

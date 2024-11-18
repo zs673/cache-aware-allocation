@@ -72,6 +72,11 @@ public class RecencyProfileReal extends RecencyProfile implements Serializable {
 
 	}
 
+	@Override
+	public Long computeRecency(long time, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3, Node n, int proc, boolean cacheAware, long additionalTime) {
+		return null;
+	}
+
 	private Pair<Long, Integer> computeET(long time, List<List<Node>> history_level1, List<List<Node>> history_level2,
 			List<Node> history_level3, Node n, int proc, boolean cacheAware, long additionalTime) {
 		/**

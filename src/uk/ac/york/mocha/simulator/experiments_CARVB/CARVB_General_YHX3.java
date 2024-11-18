@@ -3,6 +3,7 @@ package uk.ac.york.mocha.simulator.experiments_CARVB;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 import org.apache.commons.math3.util.Pair;
@@ -12,6 +13,7 @@ import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.generator.SystemGenerator;
+import uk.ac.york.mocha.simulator.generator.UUnifastDiscard;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
@@ -56,17 +58,39 @@ public class CARVB_General_YHX3 {
 
 	public static void oneTaskWithFaults() {
 		int hyperPeriodNum = -1;
-		int seed = 1000;
 
-		for (int i = startUtil; i <= endUtil; i = i + incrementUtil) {
-			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
-			RunOneGroup(taskNum, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);
+		UUnifastDiscard uu = new UUnifastDiscard(3.2, 1, 1000, cores, false, new Random(1000));
+
+		List<Double> utils = new ArrayList<>();
+		while(utils.size() < nos) {
+			double u = uu.getUtils().get(0);
+			// List<Double> us = new ArrayList<>();
+			// us.add(u);
+		    utils.add(u);
 		}
+		String path = "E:/Code/Java/cache-aware-allocation-main/result/util.txt";
+		Utils.writeUtils(path, utils, false);
+		
+		int seed = 1000;
+        int[] instanceNo = new int[taskNum];
+        for (int j = 0; j < instanceNo.length; j++)
+            instanceNo[j] = intanceNum;
+        List<OneSystemResults> allRes = new ArrayList<>();
+		for (int i = 0; i < nos; i++) {
+			// SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10000));
+			SystemParameters.utilPerTask = utils.get(i);
+			System.out.println(
+                "Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + i);
+			OneSystemResults res = RunOneGroup(taskNum, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);
+			allRes.add(res);//每个res都是OneSystemResult类
+			seed++;
+		}
+        new AllSystemsResults(allRes, instanceNo, cores, taskNum, ExpName.predict);
 	}
 
 	static boolean bigger = false;
 
-	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
+	public static OneSystemResults RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
 			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
 			ExpName name) {
 		
@@ -87,31 +111,26 @@ public class CARVB_General_YHX3 {
 			System.out.println("Cannot get same instances number for randomly generated periods.");
 		}
 
-		List<OneSystemResults> allRes = new ArrayList<>();
+        SystemGenerator gen = new SystemGenerator(cores, taskNum, true, true, null, taskSeed, true, print);
+        // Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
+        // 		null, false);//sys: DAG instances + cache
+        // ArrayList<Long> period = new ArrayList<Long>();
+        // period.add((long)144000);
+        Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
+                null, false);//sys: DAG instances + cache
+        speeds = gen.generateCoresSpeed(cores, true);
 
-		for (int i = 0; i < nos; i++) {// i < nos
-			System.out.println(
-					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
-
-			SystemGenerator gen = new SystemGenerator(cores, taskNum, true, true, null, taskSeed + i, true, print);
-			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
-					null, false);//sys: DAG instances + cache
-			speeds = gen.generateCoresSpeed(cores, true);
-
-			OneSystemResults res = null;
-			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed, i);
-
-			allRes.add(res);//每个res都是OneSystemResult类
-			//taskSeed++;
-		}
-		new AllSystemsResults(allRes, instanceNo, cores, taskNum, name);
+        OneSystemResults res = null;
+        res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed);
+		
+		return res;
 	}
 
 	/**
 	 * This test case will generate two fixed DAG structure.
 	 */
 	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys,
-			int tasks, int[] NoInstances, int cores, int taskSeed, int tableSeed, int not) {
+			int tasks, int[] NoInstances, int cores, int taskSeed, int tableSeed) {
 
 		boolean lcif = true;
 
@@ -218,7 +237,7 @@ public class CARVB_General_YHX3 {
 		}
 
 		SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.ONLINE_YHX_TEST, // Hardware.PROC
+		Allocation.ONLINE_YHX_TEST2, // Hardware.PROC
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);

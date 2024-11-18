@@ -17,7 +17,7 @@ public class OnlineAndOffline extends AllocationMethods {
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> availableProcs, long[] availableTimeAllProcs, List<List<Node>> history_level1,
 			List<List<Node>> history_level2, List<Node> history_level3, List<List<Node>> allocHistory, long currentTime,
-			boolean affinity, List<Node> etHist) {
+			boolean affinity, List<Node> etHist, List<Double> speeds, Node[] currentExe) {
 
 		/*
 		 * Entry for debugging a single node
@@ -303,5 +303,4 @@ public class OnlineAndOffline extends AllocationMethods {
 
 		return new Pair<Integer, Integer>(row, col);
 	}
-
 }

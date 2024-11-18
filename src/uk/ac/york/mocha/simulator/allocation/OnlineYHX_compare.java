@@ -22,9 +22,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import org.apache.commons.math3.util.Pair;
-import org.python.antlr.base.boolop;
-
-import it.unimi.dsi.fastutil.Hash;
+//import org.python.antlr.base.boolop;
+//
+//import it.unimi.dsi.fastutil.Hash;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.entity.Node.NodeType;
@@ -59,8 +59,8 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
 		// }
         Map<Node, HitCoreNew> hitCore = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
-		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore));
-        //readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		// readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore));
+        readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
         //debug
         for (Node n : readyNodes) {
@@ -114,7 +114,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
             if (core != -1){
                 hasAlloc = true;
                 n.partition = core;
-                // if (n.getDagInstNo() == 0){
+                // if (n.getDagInstNo() == 1){
                 //     System.out.println("compare:" + n + "->" + core);
                 // }
                 allocNodes.add(n);
@@ -126,7 +126,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
                 preEligible.remove(n);
                 // sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
                 //                         allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, false);
-                sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
+                // sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
             }else{
                 allocNodes.add(n);
                 //更新代价
@@ -135,7 +135,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
                 preEligible.remove(n);
                 // sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
                 //                         allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, false);
-                sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
+                // sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
                 // sacrificeF = getSacrifice(preEligible, affectF, hitCore, availableCores, availableTimeAllProcs, 
                 //                         allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, true);
             }
@@ -252,7 +252,7 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
         }
         // boolean delay = (delay1 || delay2) && delay3 && delay4;
         boolean delay = delay1 && delay3 && delay4;
-        //delay = false;
+        delay = false;
         if (!delay){
             return new Pair<Node, Integer>(nToAlloc, core);
         }else{
@@ -429,16 +429,16 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
     }
 
     private static Pair<Map<Integer, Long>, Map<Node, Long>> maskTable(Map<Node,List<Pair<Integer, Long>>> filteredTable, Node node, Integer core){
-        Map<Node, List<Pair<Integer, Long>>> newFilteredTable = new HashMap<>();
+        // Map<Node, List<Pair<Integer, Long>>> newFilteredTable = new HashMap<>();
 
-        for (Map.Entry<Node, List<Pair<Integer, Long>>> entry : filteredTable.entrySet()) {
-            List<Pair<Integer, Long>> newCoreSpeedPairs = new ArrayList<>();
-            for (Pair<Integer, Long> pair : entry.getValue()) {
-                // Copy each pair to avoid modifying the original
-                newCoreSpeedPairs.add(new Pair<>(pair.getFirst(), pair.getSecond()));
-            }
-            newFilteredTable.put(entry.getKey(), newCoreSpeedPairs);
-        }
+        // for (Map.Entry<Node, List<Pair<Integer, Long>>> entry : filteredTable.entrySet()) {
+        //     List<Pair<Integer, Long>> newCoreSpeedPairs = new ArrayList<>();
+        //     for (Pair<Integer, Long> pair : entry.getValue()) {
+        //         // Copy each pair to avoid modifying the original
+        //         newCoreSpeedPairs.add(new Pair<>(pair.getFirst(), pair.getSecond()));
+        //     }
+        //     newFilteredTable.put(entry.getKey(), newCoreSpeedPairs);
+        // }
 
         Map<Integer, Long> maxPerCore = new HashMap<>();
         for (Map.Entry<Node, List<Pair<Integer, Long>>> entry : filteredTable.entrySet()) {

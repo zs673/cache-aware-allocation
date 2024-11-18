@@ -8,7 +8,6 @@ import java.util.Scanner;
 
 import org.apache.commons.math3.util.Pair;
 
-import ch.qos.logback.classic.pattern.Util;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
@@ -65,7 +64,7 @@ public class CARVB_General_YHX {
 	public static void oneTaskWithFaults() {
 		int hyperPeriodNum = -1;
 
-		UUnifastDiscard uu = new UUnifastDiscard(4, 1, 1000, SystemParameters.coreNum, false, new Random(1000));
+		UUnifastDiscard uu = new UUnifastDiscard(3.2, 1, 1000, cores, false, new Random(1000));
 
 		List<Double> utils = new ArrayList<>();
 		while(utils.size() < tot_nos) {

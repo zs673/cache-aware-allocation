@@ -13,7 +13,7 @@ public class onlineBFD extends AllocationMethods {
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
 			List<Integer> availableProcs, long[] procs, List<List<Node>> history_level1, List<List<Node>> history_level2,
-			List<Node> history_level3, List<List<Node>> allocHistory, long currentTime, boolean affinity, List<Node> etHist) {
+			List<Node> history_level3, List<List<Node>> allocHistory, long currentTime, boolean affinity, List<Node> etHist, List<Double> speeds, Node[] currentExe) {
 
 		if (readyNodes.size() == 0 || availableProcs.size() == 0)
 			return;

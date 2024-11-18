@@ -213,15 +213,15 @@ public class EP_Methods {
 			int taskSeed, int tableSeed) {
 
 		Simualtor cacheWFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = cacheWFSim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheFFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.FIRST_FIT,
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheFFSim.simulate(SystemParameters.printSim);
 		
 		Simualtor cacheBFSim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.BEST_FIT,
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheBFSim.simulate(SystemParameters.printSim);
 		
 //		Simualtor cacheRASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.RANDOM,
@@ -229,7 +229,7 @@ public class EP_Methods {
 //		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheRASim.simulate(SystemParameters.printSim);
 
 		Simualtor cacheCASim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE,
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, true);
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, true, null);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair4 = cacheCASim.simulate(SystemParameters.printSim);
 
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();

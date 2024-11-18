@@ -20,9 +20,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import org.apache.commons.math3.util.Pair;
-import org.python.antlr.base.boolop;
-
-import it.unimi.dsi.fastutil.Hash;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.entity.Node.NodeType;
@@ -54,8 +51,8 @@ public class OnlineYHX_defer_backup_version1 extends AllocationMethodsYHX {
 		}
         Map<Node, HitCore> hitCore = getHitCores(readyNodes, availableCores, availableTimeAllProcs, history_level1, history_level2, history_level3, allocHistory, currentTime, lcif);
 
-		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore));
-        //readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
+		//readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore));
+        readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
         //debug
         for (Node node : readyNodes){
@@ -137,14 +134,14 @@ public class OnlineYHX_defer_backup_version1 extends AllocationMethodsYHX {
                 affect.remove(n);
                 affectF.add(n);
                 preEligible.remove(n);
-                if (backupNodes.size() > 0){
-                    Node backup = backupNodes.removeFirst();
-                    preEligible.addLast(backup);
-                    affect.add(backup);
-                    affectF.remove(backup);
-                    speedUpTable = getSUTForAllNodes(preEligible, availableP, history_level1, history_level2, history_level3);
-                    k--;
-                }
+//                if (backupNodes.size() > 0){
+//                    Node backup = backupNodes.removeFirst();
+//                    preEligible.addLast(backup);
+//                    affect.add(backup);
+//                    affectF.remove(backup);
+//                    speedUpTable = getSUTForAllNodes(preEligible, availableP, history_level1, history_level2, history_level3);
+//                    k--;
+//                }
                 sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
                                         history_level1, history_level2, history_level3, false);
                 sacrificeF = getSacrifice(preEligible, affectF, hitCore, availableCores, availableTimeAllProcs, 
