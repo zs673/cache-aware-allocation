@@ -27,6 +27,7 @@ import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
 import uk.ac.york.mocha.simulator.simulator.SimualtorGYY;
 import uk.ac.york.mocha.simulator.simulator.SimualtorHEFT;
 import uk.ac.york.mocha.simulator.simulator.SimualtorYHX;
+import uk.ac.york.mocha.simulator.simulator.SimualtorYHX2;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 import java.io.*;
@@ -252,7 +253,24 @@ public class CARVB_General_YHX4_copy {
 			dag.reset();
 		}
 
-		SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.ONLINE_YHX_TEST2, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
+
+        // for (DirectedAcyclicGraph dag : sys.getFirst()){
+		// 	dag.reset();
+		// }
+
+        // SimualtorYHX sim3 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.ONLINE_YHX_Compare, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair3 = sim3.simulate(print);
+
+
+		SimualtorYHX2 sim2 = new SimualtorYHX2(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 		Allocation.ONLINE_YHX_TEST2, // Hardware.PROC
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
@@ -262,12 +280,11 @@ public class CARVB_General_YHX4_copy {
 			dag.reset();
 		}
 
-        SimualtorYHX sim3 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
+        SimualtorYHX2 sim3 = new SimualtorYHX2(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		Allocation.ONLINE_YHX_SYN, // Hardware.PROC
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = sim3.simulate(print);
-
 
 		// SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE

@@ -22,12 +22,7 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
 import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
 import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
-import uk.ac.york.mocha.simulator.simulator.Simualtor;
-import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
-import uk.ac.york.mocha.simulator.simulator.SimualtorGYY;
-import uk.ac.york.mocha.simulator.simulator.SimualtorHEFT;
-import uk.ac.york.mocha.simulator.simulator.SimualtorYHX;
-import uk.ac.york.mocha.simulator.simulator.Utils;
+import uk.ac.york.mocha.simulator.simulator.*;
 
 import java.io.*;
 
@@ -39,8 +34,8 @@ public class CARVB_General_copy {
 	// static int nos = 1;// 500/100   //1000次重复实验
 	// static int intanceNum = 10;// 100
 	// static int taskNum = 1;// 100
-	static int cores = 8;// 4
-	static int nos = 10;// 500/100   //1000次重复实验
+	static int cores = 24;// 4
+	static int nos = 1000;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
 
@@ -58,7 +53,7 @@ public class CARVB_General_copy {
 	public static void oneTaskWithFaults() {
 		int hyperPeriodNum = -1;
 
-		UUnifastDiscard uu = new UUnifastDiscard(3.2, 1, 1000, cores, false, new Random(1000));
+		UUnifastDiscard uu = new UUnifastDiscard(9.6, 1, 1000, cores, false, new Random(1000));
 
 		List<Double> utils = new ArrayList<>();
 		while(utils.size() < nos) {
@@ -227,10 +222,15 @@ public class CARVB_General_copy {
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
 
-		SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
-		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		lcif);
+		// SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.ONLINE_YHX_Compare, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
+		SimualtorYHX2 sim2 = new SimualtorYHX2(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.ONLINE_YHX_SYN, // Hardware.PROC
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+				lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
 

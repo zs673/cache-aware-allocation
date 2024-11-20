@@ -8,6 +8,13 @@
             "type": "java",
             "name": "CARVB_General_copy",
             "request": "launch",
+            "mainClass": "CARVB_General_copy",
+            "projectName": "cache-aware-allocation-main"
+        },
+        {
+            "type": "java",
+            "name": "CARVB_General_copy",
+            "request": "launch",
             "mainClass": "uk.ac.york.mocha.simulator.experiments_CARVB.CARVB_General_copy",
             "projectName": "cache-aware-allocation-main_de4a1c87"
         },
