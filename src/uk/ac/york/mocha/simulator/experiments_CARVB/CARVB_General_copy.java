@@ -222,16 +222,16 @@ public class CARVB_General_copy {
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
 
-		// SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		// Allocation.ONLINE_YHX_Compare, // Hardware.PROC
-		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		// lcif);
-		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
-		SimualtorYHX2 sim2 = new SimualtorYHX2(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-				Allocation.ONLINE_YHX_SYN, // Hardware.PROC
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-				lcif);
+		SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
+		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
+		// SimualtorYHX2 sim2 = new SimualtorYHX2(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// 		Allocation.ONLINE_YHX_SYN, // Hardware.PROC
+		// 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// 		lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
 
 		// SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL,

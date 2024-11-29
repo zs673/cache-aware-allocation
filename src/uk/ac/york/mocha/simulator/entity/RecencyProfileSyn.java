@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.Pair;
@@ -35,7 +36,7 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 			List<Node> history_level3, Node n, int proc, boolean cacheAware, long additionalTime, long variation, boolean error) {
 
 		Pair<Long, Integer> res = computeET(time, history_level1, history_level2, history_level3, n, proc, cacheAware, additionalTime);
-
+		
 		if (n != null && error) {
 			// double err = n.cvp.rng.nextDouble() * 2 - 1;
 
@@ -46,8 +47,17 @@ public class RecencyProfileSyn extends RecencyProfile implements Serializable {
 			// double err = n.cvp.rng.nextDouble() * n.cvp.getRange()*2 +
 			// n.cvp.getMedian() ;
 			// double err = n.cvp.getRange()*2 + n.cvp.getMedian();
-
+			
+			
+			// boolean flag = new Random().nextDouble() < SystemParameters.pe;
 			double err = variation == -1 ? n.cvp.getRange() : variation;
+			
+			// double err = 0;
+			// if (flag){
+			// 	err = SystemParameters.pr;
+			// }
+
+			
 			// double err = Double.parseDouble(df.format(((double) variation /
 			// (double) 100)));
 

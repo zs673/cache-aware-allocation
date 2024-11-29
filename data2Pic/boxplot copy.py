@@ -58,7 +58,8 @@ def draw_box(x, NOS_NUM, PATH, NAME):
 
 
 def draw_bar(x, NOS_NUM, PATH, NAME):
-    fig = plt.figure(figsize=(6, 2.5))
+    # fig = plt.figure(figsize=(6, 2.5))
+    fig = plt.figure(figsize=(7, 4.5))
     OUR = x[2*TOT_NOS:, :].mean(axis=0)
     AJLR = x[TOT_NOS:2*TOT_NOS, :].mean(axis=0)
     EOWF = x[0:TOT_NOS, :].mean(axis=0)
@@ -72,7 +73,8 @@ def draw_bar(x, NOS_NUM, PATH, NAME):
     # plt.bar(x_size, EOWF, bar_width, color='b', align='center', label='WF+EO')#柱宽为0.2，标签在柱子中间
     # plt.bar(x_size + bar_width, AJLR, bar_width, color='y', align='center', label='AJLR')  #柱宽为0.2
     # plt.bar(x_size + 2 * bar_width , OUR, bar_width, color='r', align='center', label='OUR')#柱宽为0.2，标签在柱子中间
-    color_list = ['#AABCDB', '#7698C3', '#487DB2']
+    # color_list = ['#AABCDB', '#7698C3', '#487DB2']
+    color_list = ['#999999', '#30617F', '#AED9E6']
 
     plt.bar(x_size, EOWF, bar_width, color=color_list[0], edgecolor='black', align='center', label='WF+EO')  # 蓝色
     plt.bar(x_size + bar_width, AJLR, bar_width, color=color_list[1], edgecolor='black', align='center', label='AJLR')  # 橙色

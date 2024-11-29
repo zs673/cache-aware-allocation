@@ -123,6 +123,8 @@ public class SystemParameters {
 	public static int fault_rate = 5;
 	public static int fault_range = 10;
 	public static int fault_median = 5;
+	public static double pr = 0;
+	public static double pe = 0;
 
 	/**********************************************************************
 	 **************************** Recency table ***************************
@@ -153,7 +155,8 @@ public class SystemParameters {
 	public static final double delta2 = 0.6;
 	public static final double delta3 = 1.0;
 	public static final double delta4 = 1.0;
-	public static double alpha = (1 - (delta2 + delta1) / 2) / ((1 - (delta2 + delta3) / 2));
+	// public static double alpha = (1 - (delta2 + delta1) / 2) / ((1 - (delta2 + delta3) / 2));
+	public static double alpha = 4;
 
 	// penalty
 	// public static final double delta1 = 0.3;

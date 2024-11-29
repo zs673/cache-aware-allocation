@@ -113,7 +113,7 @@ public class CARVB_General_YHX4 {
 	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys,
 			int tasks, int[] NoInstances, int cores, int taskSeed, int tableSeed, int not) {
 
-		boolean lcif = true;
+		boolean lcif = false;
 
 		//get the features for each node for each DAG 1******
 		// String python_file = "data_process/mlp.py";
@@ -206,12 +206,20 @@ public class CARVB_General_YHX4 {
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif, speeds);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair = sim.simulate(print);
+
+		for (DirectedAcyclicGraph dag : sys.getFirst()){
+			dag.reset();
+		}
 		
 		SimualtorNWC sim0 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);//运行完的dags + 缓存命中
+
+		for (DirectedAcyclicGraph dag : sys.getFirst()){
+			dag.reset();
+		}
 
         // SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 		// Allocation.ONLINE_YHX_TEST, // Hardware.PROC
@@ -249,6 +257,9 @@ public class CARVB_General_YHX4 {
 		lcif);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = sim3.simulate(print);
 
+		for (DirectedAcyclicGraph dag : sys.getFirst()){
+			dag.reset();
+		}
 
 		// SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE

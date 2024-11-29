@@ -201,6 +201,29 @@ public class Utils {
 		}
 	}
 
+	public static int compareNodeForYHXNew(List<DirectedAcyclicGraph> dags, Node c1, Node c2, Map<Node, Double> priority) {
+
+		DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
+		DirectedAcyclicGraph dag2 = Utils.getDagByIndex(dags, c2.getDagID(), c2.getDagInstNo());
+
+		if (dag1.getSchedParameters().getPriority() > dag2.getSchedParameters().getPriority()) {
+			return -1;
+		} else if (dag1.getSchedParameters().getPriority() < dag2.getSchedParameters().getPriority()) {
+			return 1;
+		} else {
+
+			int ins = Long.compare(c1.getDagInstNo(), c2.getDagInstNo());
+
+			if (ins != 0)
+				return ins;
+			else
+				if (priority.get(c1) != priority.get(c2)){
+					return -Double.compare(priority.get(c1), priority.get(c2));
+				}
+				return -Long.compare(c1.getWCET(), c2.getWCET());
+		}
+	}
+
 	// public static int compareNodeForYHX1(List<DirectedAcyclicGraph> dags, Node c1, Node c2, Map<Node, HitCore> hitCore) {
 
 	// 	DirectedAcyclicGraph dag1 = Utils.getDagByIndex(dags, c1.getDagID(), c1.getDagInstNo());
@@ -406,7 +429,7 @@ public class Utils {
 		writeResult(filename, result, false);
 	}
 
-	public static void writeUtils(String path, List<Double> utils, boolean append) {
+	public static void writeUtils(String path, List<?> utils, boolean append) {
 		try{
 			File file = new File(path);
 			if(!file.isFile()){

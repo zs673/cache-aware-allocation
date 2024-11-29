@@ -23,6 +23,7 @@ import uk.ac.york.mocha.simulator.entity.Node.NodeType;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
 import uk.ac.york.mocha.simulator.parameters.SchedulingParameters;
 import uk.ac.york.mocha.simulator.parameters.StructuralParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 
 public class DirectedAcyclicGraph implements Serializable {
 
@@ -236,6 +237,7 @@ public class DirectedAcyclicGraph implements Serializable {
 			 */
 			int nodeNum = rng.nextInt(dag_param.parallelism_max - dag_param.parallelism_min)
 					+ dag_param.parallelism_min;
+			// nodeNum = dag_param.parallelism_min;
 			// int nodeNum = rng.nextInt(dag_param.getParallelism()) + 1;
 			// System.out.println(nodeNum);
 			List<Node> nodePerLayer = new ArrayList<>();

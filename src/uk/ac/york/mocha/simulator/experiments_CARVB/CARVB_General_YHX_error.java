@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import org.apache.commons.math3.util.Pair;
 
+import uk.ac.york.mocha.simulator.allocation.OnlineYHX_compare;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
@@ -31,28 +32,22 @@ import uk.ac.york.mocha.simulator.simulator.Utils;
 
 import java.io.*;
 
-public class CARVB_General_YHX {
+public class CARVB_General_YHX_error {
 
-	static DecimalFormat df = new DecimalFormat("#.####");
+	static DecimalFormat df = new DecimalFormat("#.###");
 
 	// static int cores = 8;// 4
 	// static int nos = 1;// 500/100   //1000次重复实验
 	// static int intanceNum = 10;// 100
 	// static int taskNum = 1;// 100
 	static int cores = 8;// 4
-	static int nos = 1500;// 500/100   //1000次重复实验
-	static int tot_nos = 6000;
+	static int nos = 6000;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
-	static int EXP_IDX = 1; // 0计数
 
-	// static int startUtil = 8;
-	// static int incrementUtil = 8;
-	// static int endUtil = 40000;
-
-	static int startUtil = 40;
-	static int incrementUtil = 40;
-	static int endUtil = 40000;
+	static int startUtil = 20;
+	static int incrementUtil = 4;
+	static int endUtil = 20; 
 
 	static boolean print = false;
 
@@ -68,25 +63,47 @@ public class CARVB_General_YHX {
 		UUnifastDiscard uu = new UUnifastDiscard(3.2, 1, 1000, cores, false, new Random(1000));
 
 		List<Double> utils = new ArrayList<>();
-		while(utils.size() < tot_nos) {
+		while(utils.size() < nos) {
 			double u = uu.getUtils().get(0);
 			// List<Double> us = new ArrayList<>();
 			// us.add(u);
-			if (u * 144 <= 250.56)
-				utils.add(u);
+		    utils.add(u);
 		}
 		String path = "E:/Code/Java/cache-aware-allocation-main/result/util.txt";
 		Utils.writeUtils(path, utils, false);
-		
-		int seed = 2500;
-		List<Double> subUtils = utils.subList(EXP_IDX*nos, (EXP_IDX+1)*nos);
+
+        // List<Double> Pr = new ArrayList<>();
+        // List<Double> Pe = new ArrayList<>();
+        // Random rng1 = new Random(1000);
+        // Random rng2 = new Random(1000);
+        // while(Pr.size() < nos) {
+		// 	Double pr = rng1.nextDouble(0, 100 + 1);
+        //     if (pr > 100){
+        //         continue;
+        //     }
+		//     Pr.add(pr / 100);
+		// }
+        // path = "E:/Code/Java/cache-aware-allocation-main/result/pr.txt";
+        // Utils.writeUtils(path, Pr, bigger);
+        // while(Pe.size() < nos) {
+		// 	Double pe = rng2.nextDouble(0, 50 + 1);
+        //     if (pe > 50){
+        //         continue;
+        //     }
+		//     Pe.add(pe / 100);
+		// }
+        // path = "E:/Code/Java/cache-aware-allocation-main/result/pe.txt";
+		// Utils.writeUtils(path, Pe, bigger);
+
+
+		int seed = 1000;
         int[] instanceNo = new int[taskNum];
         for (int j = 0; j < instanceNo.length; j++)
             instanceNo[j] = intanceNum;
         List<OneSystemResults> allRes = new ArrayList<>();
 		for (int i = 0; i < nos; i++) {
 			// SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10000));
-			SystemParameters.utilPerTask = subUtils.get(i);
+			SystemParameters.utilPerTask = utils.get(i); 
 			System.out.println(
                 "Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + i);
 			OneSystemResults res = RunOneGroup(taskNum, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);
@@ -122,10 +139,10 @@ public class CARVB_General_YHX {
         SystemGenerator gen = new SystemGenerator(cores, taskNum, true, true, null, taskSeed, true, print);
         // Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
         // 		null, false);//sys: DAG instances + cache
-        ArrayList<Long> period = new ArrayList<Long>();
-        period.add((long)144000);
+        // ArrayList<Long> period = new ArrayList<Long>();
+        // period.add((long)144000);
         Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
-                period, false);//sys: DAG instances + cache
+                null, false);//sys: DAG instances + cache
         speeds = gen.generateCoresSpeed(cores, true);
 
         OneSystemResults res = null;
@@ -216,36 +233,56 @@ public class CARVB_General_YHX {
 		// lcif, speeds);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
 
-		Simualtor sim0 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		Allocation.WORST_FIT_OUR, // Hardware.PROC
-		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		lcif, speeds);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
+		// Simualtor sim0 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.WORST_FIT_OUR, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif, speeds);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);
 
 		// SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
 		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		// lcif);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);//运行完的dags + 缓存命中
+
+		// Simualtor sim = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.WORST_FIT_OUR, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif, speeds);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair = sim.simulate(print);
 		
-		SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
+		SimualtorNWC sim0 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);//运行完的dags + 缓存命中
+		Pair<List<DirectedAcyclicGraph>, double[]> pair0 = sim0.simulate(print);//运行完的dags + 缓存命中
 
-		SimualtorYHX sim2 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+        for (DirectedAcyclicGraph dag : sys.getFirst()){
+			dag.reset();
+		}
+
+        SimualtorYHX sim1 = new SimualtorYHX(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
 		Allocation.ONLINE_YHX_Compare, // Hardware.PROC
 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
 		lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
+
+
 		// SimualtorYHX2 sim2 = new SimualtorYHX2(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
-		// 		Allocation.ONLINE_YHX_SYN, // Hardware.PROC
-		// 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
-		// 		lcif);
+		// Allocation.ONLINE_YHX_TEST2, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
+        // for (DirectedAcyclicGraph dag : sys.getFirst()){
+		// 	dag.reset();
+		// }
 
+        // SimualtorYHX2 sim3 = new SimualtorYHX2(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.ONLINE_YHX_SYN, // Hardware.PROC
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair3 = sim3.simulate(print);
 
 		// SimualtorNWC sim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
 		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW, // PROC_CACHE
@@ -356,9 +393,10 @@ public class CARVB_General_YHX {
 		// get_new_metric(pair5);
 		// get_new_metric(pair6);
 		// get_new_metric(pair7);
+		// List<DirectedAcyclicGraph> m = pair.getFirst();
 		List<DirectedAcyclicGraph> m0 = pair0.getFirst();
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
-		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
+		// List<DirectedAcyclicGraph> m2 = pair2.getFirst();
 		// List<DirectedAcyclicGraph> m3 = pair3.getFirst();
 		// List<DirectedAcyclicGraph> m4 = pair4.getFirst();
 		// List<DirectedAcyclicGraph> m5 = pair5.getFirst();
@@ -373,15 +411,16 @@ public class CARVB_General_YHX {
 		 */
 
 		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
-
+		
+		// List<DirectedAcyclicGraph> method = new ArrayList<>();
 		List<DirectedAcyclicGraph> method0 = new ArrayList<>();
 		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method3 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method4 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method5 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method6 = new ArrayList<>();
-		List<DirectedAcyclicGraph> method7 = new ArrayList<>();
+		// List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+		// List<DirectedAcyclicGraph> method3 = new ArrayList<>();
+		// List<DirectedAcyclicGraph> method4 = new ArrayList<>();
+		// List<DirectedAcyclicGraph> method5 = new ArrayList<>();
+		// List<DirectedAcyclicGraph> method6 = new ArrayList<>();
+		// List<DirectedAcyclicGraph> method7 = new ArrayList<>();
 
 		List<DirectedAcyclicGraph> dags = sys.getFirst();
 
@@ -399,10 +438,11 @@ public class CARVB_General_YHX {
 			}
 
 			if (count < NoInstances[dags.get(i).id]) {
+				// method.add(m.get(i));
 				method0.add(m0.get(i));
 				method1.add(m1.get(i));
-				method2.add(m2.get(i));
-				// method3.add(m3.get(i));
+				// method2.add(m2.get(i));
+			    // method3.add(m3.get(i));
 				// method4.add(m4.get(i));
 				// method5.add(m5.get(i));
 				// method6.add(m6.get(i));
@@ -411,9 +451,10 @@ public class CARVB_General_YHX {
 			}
 		}
 
+		// allMethods.add(method);
 		allMethods.add(method0);
 		allMethods.add(method1);
-		allMethods.add(method2);
+		// allMethods.add(method2);
 		// allMethods.add(method3);
 		// allMethods.add(method4);
 		// allMethods.add(method5);
@@ -421,9 +462,10 @@ public class CARVB_General_YHX {
 		// allMethods.add(method7);
 
 		List<double[]> cachePerformance = new ArrayList<>();
+		// cachePerformance.add(pair.getSecond());
 		cachePerformance.add(pair0.getSecond());
 		cachePerformance.add(pair1.getSecond());
-		cachePerformance.add(pair2.getSecond());
+		// cachePerformance.add(pair2.getSecond());
 		// cachePerformance.add(pair3.getSecond());
 		// cachePerformance.add(pair4.getSecond());
 		// cachePerformance.add(pair5.getSecond());
