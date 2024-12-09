@@ -48,7 +48,7 @@ public class OnlineCacheAwareNewSimu_YHX extends AllocationMethods {
 		//  */
 		// readyNodes.sort((c1, c2) -> Utils.compareNodeForYHX(dags, c1, c2, hitCore));
 
-		Map<Node, Double> pri = nodeOrdering(readyNodes, availableCores, history_level1, history_level2, history_level3);
+		Map<Node, Double> pri = nodeOrdering2(readyNodes, availableCores, history_level1, history_level2, history_level3);
 		readyNodes.sort((c1, c2) -> Utils.compareNodeForYHXNew(dags, c1, c2, pri));
 		// readyNodes.sort((c1, c2) -> Utils.compareNode(dags, c1, c2));
 
@@ -331,6 +331,78 @@ public class OnlineCacheAwareNewSimu_YHX extends AllocationMethods {
                         contentionSum +=  1 / contentionWeight[nHit-1][otherHit-1];
                     }
                 }
+                // contentionSum = contentionSum == 0 ? 1 : contentionSum;
+                if (nHit == 1){
+                    pri += level2ClusterSize / contentionSum;
+                } else if (nHit == 2){
+                    // ==pri += weight[clusterIndex] / contentionSum;
+                    pri +=  1 / contentionSum;
+                } 
+                // else if (nHit == 3){
+                //     pri += availableCore.size() / contentionSum;
+                // } 
+            } 
+            // pri = pri == 0 ? Double.MIN_VALUE : pri;
+            priority.put(n, pri); 
+        }
+        return priority;
+    }
+
+	private Map<Node, Double> nodeOrdering2(List<Node> readyNodes, List<Integer> availableCore, List<List<Node>> history_level1, List<List<Node>> history_level2, List<Node> history_level3){
+        int level2ClusterNum = history_level2.size();
+        int level2ClusterSize = history_level1.size() / level2ClusterNum;
+        // int coreNum = history_level1.size();
+        // double[] weight = new double[level2ClusterNum];
+
+        // for (int i = 0; i < availableCore.size(); i++){
+        //     Integer core = availableCore.get(i);
+        //     weight[core / level2ClusterSize] = weight[core / level2ClusterSize] + 1;
+        // }
+
+        // double[][] contentionWeight = new double[3][3];
+        // contentionWeight[0][0] = 1; contentionWeight[0][1] = 1; contentionWeight[0][2] = 1;
+        // contentionWeight[1][0] = 1; contentionWeight[2][0] = 1; contentionWeight[2][2] = availableCore.size();
+
+        Map<Node, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < readyNodes.size(); i++){
+            Node n = readyNodes.get(i);
+            List<Integer> list = new ArrayList<>();
+            for (int j = 0; j < availableCore.size(); j++){
+                Integer core = availableCore.get(j);
+                Integer nHit = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, 0, false).getSecond();
+                // Integer cache = hit.get(n)
+                if (nHit >= 3)  continue;
+                list.add(core);
+            }
+            map.put(n, list);
+        }
+
+        Map<Node, Double> priority = new HashMap<>();
+        for (int i = 0; i < readyNodes.size(); i++){
+            Node n = readyNodes.get(i);
+            Double pri = (double)0;
+            for (int j = 0; j < availableCore.size(); j++){
+                Integer core = availableCore.get(j);
+                Integer nHit = n.crp.computeET(-1, history_level1, history_level2, history_level3, n, core, true, 0, 0, false).getSecond();
+                // Integer cache = hit.get(n)
+                if (nHit >= 3)  continue;
+                // Integer clusterIndex = core / level2ClusterSize;
+                // contentionWeight[1][1] = weight[clusterIndex]; contentionWeight[2][1] = weight[clusterIndex]; contentionWeight[1][2] = weight[clusterIndex];
+                // Double contentionSum = (double)10e-6;
+                Double contentionSum = (double)1;
+                for (int k = 0; k < readyNodes.size(); k++){
+                    Node other = readyNodes.get(k);
+                    if (n == other) continue;
+                    Integer otherHit = other.crp.computeET(-1, history_level1, history_level2, history_level3, other, core, true, 0, 0, false).getSecond();
+
+                    if (otherHit >= 3 || nHit >= 3){
+                    }else{
+                        contentionSum +=  1 / map.get(other).size();
+                    }
+                }
+                // if (contentionSum == 10e-6){
+                //     System.out.println(1);
+                // }
                 // contentionSum = contentionSum == 0 ? 1 : contentionSum;
                 if (nHit == 1){
                     pri += level2ClusterSize / contentionSum;

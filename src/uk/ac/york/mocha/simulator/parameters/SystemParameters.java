@@ -99,12 +99,12 @@ public class SystemParameters {
 
 	/* parameters for generic DAGs */
 	public static final double connectProb = 0.2;// 0.2
-	public static final int minLayer = 5;// 5 8*
-	public static final int maxLayer = 18;// 10 12 best:15/20/25 20
+	public static final int minLayer = 10;// 5 8*
+	public static final int maxLayer = 10;// 10 12 best:15/20/25 20
 	// public static int minParal = 2;// 2
 	// public static int maxParal = 30;// 10 best:20 15
-	public static int minParal = 5;// 2
-	public static int maxParal = 40;// 10 best:20 15
+	public static int minParal = 30;// 2
+	public static int maxParal = 31;// if not equal, NO +1
 	
 
 	/* parameters for NFJ DAGs */

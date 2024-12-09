@@ -37,14 +37,14 @@ public class CARVB_General {
 	// static int nos = 1;// 500/100   //1000次重复实验
 	// static int intanceNum = 10;// 100
 	// static int taskNum = 1;// 100
-	static int cores = 32;// 4
-	static int nos = 1000;// 500/100   //1000次重复实验
+	static int cores = 4;// 4
+	static int nos = 500;// 500/100   //1000次重复实验
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
 
-	static int startUtil = 80;
+	static int startUtil = 24; // 16 * 0.25 * 10  12*0.3*10
 	static int incrementUtil = 4;
-	static int endUtil = 80; 
+	static int endUtil = 24; 
 
 	static boolean print = false;
 
@@ -57,7 +57,7 @@ public class CARVB_General {
 	public static void oneTaskWithFaults() {
 		int hyperPeriodNum = -1;
 		int seed = 1000;
-
+		String name = "16_18_8_0.25";
 		for (int i = startUtil; i <= endUtil; i = i + incrementUtil) {
 			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
 			RunOneGroup(taskNum, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);
@@ -96,7 +96,9 @@ public class CARVB_General {
 			System.out.println(
 					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
 
-			SystemGenerator gen = new SystemGenerator(cores, taskNum, true, true, null, taskSeed + i, true, print);
+			List<Double> assigned = new ArrayList<>();
+			assigned.add(SystemParameters.utilPerTask);
+			SystemGenerator gen = new SystemGenerator(cores, taskNum, true, true, assigned, taskSeed + i, true, print);
 			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
 					null, false);//sys: DAG instances + cache
 			speeds = gen.generateCoresSpeed(cores, true);

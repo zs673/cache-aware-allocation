@@ -32,7 +32,7 @@ import uk.ac.york.mocha.simulator.generator.HitCoreNew;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineYHX_compare extends AllocationMethodsYHX {
+public class OnlineYHX_compare_backup1204 extends AllocationMethodsYHX {
     static int delayCnt3 = 0;
     static int futureSac3 = 0;
     static int missCnt = 0;
@@ -72,86 +72,85 @@ public class OnlineYHX_compare extends AllocationMethodsYHX {
 			}
 		}
 
-        List<Node> backupNodes = new LinkedList<>(readyNodes);
-        List<Integer> allocProcs = new ArrayList<>();
-		List<Node> allocNodes = new ArrayList<>();
+        /*
+         * only take the nodes which will be allocated in this allocation run into account
+         */
+		List<Node> preEligible = new ArrayList<>();
+		for (int i = 0; i < availableCores.size(); i++) {
+			if (readyNodes.size() == i)
+				break;
+			preEligible.add(readyNodes.get(i)); //找readyNode和空闲核的最小值
+		}
         List<Integer> availableP = new ArrayList<>(availableCores);
-        while(backupNodes.size() > 0 && availableP.size() > 0){
 
-            /*
-            * only take the nodes which will be allocated in this allocation run into account
-            */
-            List<Node> preEligible = new ArrayList<>();
-            for (int i = 0; i < availableP.size(); i++) {
-                // if (readyNodes.size() == i)
-                //     break;
+        List<Node> affect = new ArrayList<>(preEligible);
+		List<Integer> allocProcs = new ArrayList<>();
+		List<Node> allocNodes = new ArrayList<>();
+        List<Node> backupNodes = new LinkedList<>(readyNodes);
+        backupNodes.removeAll(preEligible);
+        Map<Node, List<Pair<Integer, Long>>> speedUpTable = getSUTForAllNodes(preEligible, availableCores, history_level1, history_level2, history_level3);
+        // Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
+        // allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, false); 
+        Map<Node, List<Pair<Integer, Long>>> sacrificeF = new LinkedHashMap<>();  
+        Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
 
-                if (backupNodes.size() == i)
-                    break;
-                preEligible.add(backupNodes.get(i)); //找readyNode和空闲核的最小值
-            }
-            backupNodes.removeAll(preEligible);
-
-            // List<Node> affect = new ArrayList<>(preEligible);
-            Map<Node, List<Pair<Integer, Long>>> speedUpTable = getSUTForAllNodes(preEligible, availableP, history_level1, history_level2, history_level3);
-            // Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
-            // allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, false); 
-            Map<Node, List<Pair<Integer, Long>>> sacrificeF = new LinkedHashMap<>();  
-            Map<Node, List<Pair<Integer, Long>>> sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
-
-            //空闲core的history_level1
-            List<List<Node>> historyCut = new ArrayList<>();
-            for (int i = 0; i < history_level1.size(); i++) {
-                if (availableP.contains(i))
-                    historyCut.add(history_level1.get(i));
-            }
-            //空闲core的分配历史 索引和availableP对应（存的空闲core id）
-            List<List<Node>> allocHistoryCut = new ArrayList<>();
-            for (int i = 0; i < allocHistory.size(); i++) {
-                if (availableP.contains(i))
-                    allocHistoryCut.add(allocHistory.get(i));
-            }
+		//空闲core的history_level1
+		List<List<Node>> historyCut = new ArrayList<>();
+		for (int i = 0; i < history_level1.size(); i++) {
+			if (availableP.contains(i))
+				historyCut.add(history_level1.get(i));
+		}
+		//空闲core的分配历史 索引和availableP对应（存的空闲core id）
+		List<List<Node>> allocHistoryCut = new ArrayList<>();
+		for (int i = 0; i < allocHistory.size(); i++) {
+			if (availableP.contains(i))
+				allocHistoryCut.add(allocHistory.get(i));
+		}
+        
+        // Integer availableNodes = preEligible.size();
+        // for (int k = 0; k < availableP.size(); k++) {
+		// 	if (k >= availableNodes)
+				// break;//没那么多node分到多的核上
+		while (preEligible.size() > 0) {
             
-            // Integer availableNodes = preEligible.size();
-            // for (int k = 0; k < availableP.size(); k++) {
-            // 	if (k >= availableNodes)
-                    // break;//没那么多node分到多的核上
-            while (preEligible.size() > 0) {
-                
-                Pair<Node, Integer> p = setPartition2(dags, speedUpTable, sacrifice, sacrificeF, allocNodes, allocProcs, allocHistoryCut, allocHistory,
-                preEligible, availableP, cores, availableTimeAllProcs, currentTime, lcif, history_level1, history_level2,
-                history_level3);
-                Node n = p.getFirst(); Integer core = p.getSecond();
-                if (core != -1){
-                    hasAlloc = true;
-                    n.partition = core;
-                    allocNodes.add(n);
-                    allocProcs.add(core);
+			Pair<Node, Integer> p = setPartition2(dags, speedUpTable, sacrifice, sacrificeF, allocNodes, allocProcs, allocHistoryCut, allocHistory,
+            preEligible, availableP, cores, availableTimeAllProcs, currentTime, lcif, history_level1, history_level2,
+            history_level3);
+            Node n = p.getFirst(); Integer core = p.getSecond();
+            if (core != -1){
+                hasAlloc = true;
+                n.partition = core;
+                allocNodes.add(n);
+                allocProcs.add(core);
 
-                    localRunqueue.get(n.partition).add(n);//加到localRunqueue
-                    preEligible.remove(n);
-                    // sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
-                }else{
-                    allocNodes.add(n);
-                    preEligible.remove(n);
-                    // if (backupNodes.size() > 0){
-                    //     Node backup = backupNodes.removeFirst();
-                    //     preEligible.addLast(backup);
-                    //     speedUpTable = getSUTForAllNodes(preEligible, availableP, history_level1, history_level2, history_level3);
-                    //     // k--;
-                    // }
-
-                    // sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
-                    //                         allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, false);
-                    // sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
-                    // sacrificeF = getSacrifice(preEligible, affectF, hitCore, availableCores, availableTimeAllProcs, 
-                    //                         allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, true);
-                }
-
+                localRunqueue.get(n.partition).add(n);//加到localRunqueue
+                //更新代价
+                affect.remove(n);
+                preEligible.remove(n);
+                // sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
+                //                         allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, false);
                 // sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
+            }else{
+                allocNodes.add(n);
+                //更新代价
+                affect.remove(n);
+                // affectF.add(n);
+                preEligible.remove(n);
+                if (backupNodes.size() > 0){
+                    Node backup = backupNodes.removeFirst();
+                    preEligible.addLast(backup);
+                    speedUpTable = getSUTForAllNodes(preEligible, availableP, history_level1, history_level2, history_level3);
+                    // k--;
+                }
+                // sacrifice = getSacrifice(preEligible, affect, hitCore, availableCores, availableTimeAllProcs, 
+                //                         allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, false);
+                // sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
+                // sacrificeF = getSacrifice(preEligible, affectF, hitCore, availableCores, availableTimeAllProcs, 
+                //                         allocHistory, currentExe, history_level1, history_level2, history_level3, currentTime, true);
             }
-            availableP.removeAll(allocProcs);
-        }
+
+            sacrifice = getSacrifice_new(preEligible, availableP, allocProcs, speedUpTable);
+		}
 			
 		//从readyNode移走已分配的结点
 		for (int i = 0; i < readyNodes.size(); i++) {

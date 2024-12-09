@@ -67,7 +67,8 @@ public class CARVB_General_YHX4_copy {
 			double u = uu.getUtils().get(0);
 			// List<Double> us = new ArrayList<>();
 			// us.add(u);
-		    utils.add(u);
+			if (0.8 <= u  && u <= 3.2)
+		    	utils.add(u);
 		}
 		String path = "E:/Code/Java/cache-aware-allocation-main/result/util.txt";
 		Utils.writeUtils(path, utils, false);

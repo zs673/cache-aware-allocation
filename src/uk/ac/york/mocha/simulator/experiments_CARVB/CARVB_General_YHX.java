@@ -44,7 +44,7 @@ public class CARVB_General_YHX {
 	static int tot_nos = 6000;
 	static int intanceNum = 10;// 100
 	static int taskNum = 1;// 100
-	static int EXP_IDX = 1; // 0计数
+	static int EXP_IDX = 3; // 0计数
 
 	// static int startUtil = 8;
 	// static int incrementUtil = 8;
@@ -78,7 +78,7 @@ public class CARVB_General_YHX {
 		String path = "E:/Code/Java/cache-aware-allocation-main/result/util.txt";
 		Utils.writeUtils(path, utils, false);
 		
-		int seed = 2500;
+		int seed = 5500;
 		List<Double> subUtils = utils.subList(EXP_IDX*nos, (EXP_IDX+1)*nos);
         int[] instanceNo = new int[taskNum];
         for (int j = 0; j < instanceNo.length; j++)

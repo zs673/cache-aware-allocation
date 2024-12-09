@@ -1,0 +1,7 @@
+import uk.ac.york.mocha.simulator.simulator.experiments_CARVB.CARVB_General;
+
+public class Exgroup3_alpha {
+    public static void main(String args[]) {
+		CARVB_General.oneTaskWithFaults();
+	}
+}
