@@ -43,12 +43,13 @@ public class CARVB_CorrelationCoefficentNew {
 	static int nop = 5;
 	static int[] allCores = { 4 };
 	static boolean print = false;
-	
+
 	static boolean append = false;
 
-	static double effectFactor[] = { -1.0, 1.0 };
+	// static double effectFactor[] = { -1.0, 1.0 };
 	// static double effectFactor[] = { -0.9, -0.8, -0.7, -0.6, -0.5, -0.4,
 	// -0.3, -0.2 - 0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, };
+	static double effectFactor[] = { 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 };
 
 	static double[] judgementLine = { 0.1 };
 
@@ -62,7 +63,7 @@ public class CARVB_CorrelationCoefficentNew {
 
 	public static void faults(int cores, double judgement, int instanceNum, int nop) {
 		final int initialSeed = 1000;
-		
+
 		List<Thread> runners = new ArrayList<>();
 
 		for (int i = 0; i < nop; i++) {
@@ -77,7 +78,7 @@ public class CARVB_CorrelationCoefficentNew {
 					for (int i = 0; i < effectFactor.length; i++) {
 						double effect = effectFactor[i];
 
-						String folderName = "result/" + "faults_new/";
+						String folderName = "result/" + "new_carvb/";
 						String fileName = "/random" + "_" + cores + "_" + judgement + "_" + effect + "_" + id + ".txt";
 						Utils.writeResult(folderName, fileName, "", false);
 
@@ -98,8 +99,6 @@ public class CARVB_CorrelationCoefficentNew {
 				e.printStackTrace();
 			}
 	}
-	
-	
 
 	public static void runOneThread(int cores, double judgement, int instanceNum, int startingSeed, int workload,
 			int id, double effect) {
@@ -209,40 +208,40 @@ public class CARVB_CorrelationCoefficentNew {
 			double max = 0;
 
 			switch (type) {
-			case high_et:
-				all.sort((c1, c2) -> compareNodebyET(c1, c2, false));
-				value = n.getWCET();
-				max = all.get(0).getWCET();
-				break;
-			case high_pathET:
-				all.sort((c1, c2) -> compareNodebyPathET(c1, c2, false));
-				value = n.pathET;
-				max = all.get(0).pathET;
-				break;
-			case high_in_degree:
-				all.sort((c1, c2) -> compareNodebyInDegree(c1, c2, false));
-				value = n.getParent().size();
-				max = all.get(0).getParent().size();
-				break;
-			case high_out_degree:
-				all.sort((c1, c2) -> compareNodebyOutDegree(c1, c2, false));
-				value = n.getChildren().size();
-				max = all.get(0).getChildren().size();
-				break;
-			case high_in_out_degree:
-				all.sort((c1, c2) -> compareNodebyInAndOutDegree(c1, c2, false));
-				value = n.getChildren().size() + n.getParent().size();
-				max = all.get(0).getChildren().size() + all.get(0).getParent().size();
-				break;
-			case high_pathNum:
-				all.sort((c1, c2) -> compareNodebyPathNum(c1, c2, false));
-				value = n.pathNum;
-				max = all.get(0).pathNum;
-				break;
-			default:
-				System.err.println("Line 416: Unkown type in method compareNodes(), type: " + type.toString());
-				System.exit(-1);
-				break;
+				case high_et:
+					all.sort((c1, c2) -> compareNodebyET(c1, c2, false));
+					value = n.getWCET();
+					max = all.get(0).getWCET();
+					break;
+				case high_pathET:
+					all.sort((c1, c2) -> compareNodebyPathET(c1, c2, false));
+					value = n.pathET;
+					max = all.get(0).pathET;
+					break;
+				case high_in_degree:
+					all.sort((c1, c2) -> compareNodebyInDegree(c1, c2, false));
+					value = n.getParent().size();
+					max = all.get(0).getParent().size();
+					break;
+				case high_out_degree:
+					all.sort((c1, c2) -> compareNodebyOutDegree(c1, c2, false));
+					value = n.getChildren().size();
+					max = all.get(0).getChildren().size();
+					break;
+				case high_in_out_degree:
+					all.sort((c1, c2) -> compareNodebyInAndOutDegree(c1, c2, false));
+					value = n.getChildren().size() + n.getParent().size();
+					max = all.get(0).getChildren().size() + all.get(0).getParent().size();
+					break;
+				case high_pathNum:
+					all.sort((c1, c2) -> compareNodebyPathNum(c1, c2, false));
+					value = n.pathNum;
+					max = all.get(0).pathNum;
+					break;
+				default:
+					System.err.println("Line 416: Unkown type in method compareNodes(), type: " + type.toString());
+					System.exit(-1);
+					break;
 			}
 
 			int indexN = all.indexOf(n);
@@ -373,7 +372,7 @@ public class CARVB_CorrelationCoefficentNew {
 
 		out += df.format(changingNodeAbs) + " " + df.format(makespan);
 
-		String folderName = "result/" + "faults_new/";
+		String folderName = "result/" + "new_carvb/";
 		String fileName = "/random" + "_" + cores + "_" + judgement + "_" + effect + "_" + id + ".txt";
 
 		Utils.writeResult(folderName, fileName, out, append);
