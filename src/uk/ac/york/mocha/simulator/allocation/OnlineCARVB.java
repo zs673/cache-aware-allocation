@@ -182,7 +182,7 @@ public class OnlineCARVB extends AllocationMethods {
 //						.toString(etHistOneNode.stream().map(c -> c[1]).collect(Collectors.toList()).toArray()));
 //				System.out.println(
 //						"Node: " + n.getFullName() + ", Speed-up: " + Arrays.toString(speedUpTable.get(i).toArray()));
-
+//jjy
 				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 					if (!allocProcs.contains(j)) {
 						long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
