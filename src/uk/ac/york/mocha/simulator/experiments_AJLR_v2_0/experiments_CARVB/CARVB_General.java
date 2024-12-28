@@ -1,0 +1,318 @@
+package uk.ac.york.mocha.simulator.experiments_CARVB;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.util.Pair;
+import org.python.antlr.PythonParser.for_stmt_return;
+
+import jnr.ffi.StructLayout.int32_t;
+import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
+import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
+import uk.ac.york.mocha.simulator.generator.SystemGenerator;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.Allocation;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.ExpName;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.Hardware;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.RecencyType;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters.SimuType;
+import uk.ac.york.mocha.simulator.resultAnalyzer.AllSystemsResults;
+import uk.ac.york.mocha.simulator.resultAnalyzer.OneSystemResults;
+import uk.ac.york.mocha.simulator.simulator.Simualtor;
+import uk.ac.york.mocha.simulator.simulator.SimualtorNWC;
+import uk.ac.york.mocha.simulator.simulator.Utils;
+
+public class CARVB_General {
+
+	static DecimalFormat df = new DecimalFormat("#.###");
+
+	static int cores = 4;
+	static int nos = 400; //number of system
+	static int intanceNum = 100;
+
+	static int startUtil = 4;
+	static int incrementUtil = 4;
+	static int endUtil = 36;
+
+	static boolean print = false;
+
+	public static void main(String args[]) {
+		oneTaskWithFaults();
+	}
+
+	public static void oneTaskWithFaults() {
+		int hyperPeriodNum = -1;
+		int seed = 1000;
+
+		for (int i = startUtil; i <= endUtil; i = i + incrementUtil) {
+			SystemParameters.utilPerTask = Double.parseDouble(df.format((double) i / (double) 10));
+			RunOneGroup(1, intanceNum, hyperPeriodNum, true, null, seed, seed, null, nos, true, ExpName.predict);
+		}
+	}
+
+	static boolean bigger = false;
+
+	public static void RunOneGroup(int taskNum, int intanceNum, int hyperperiodNum, boolean takeAllUtil,
+			List<List<Double>> util, int taskSeed, int tableSeed, List<List<Long>> periods, int NoS, boolean randomC,
+			ExpName name) {
+
+		int[] instanceNo = new int[taskNum];
+
+		if (periods != null && hyperperiodNum > 0) {
+			long totalHP = Utils.getHyperPeriod(periods.get(0)) * hyperperiodNum;
+
+			for (int i = 0; i < periods.size(); i++) {
+				int insNo = (int) (totalHP / periods.get(0).get(i));
+				instanceNo[i] = insNo > intanceNum ? insNo : intanceNum;
+			}
+		} else if (intanceNum > 0) {
+			for (int i = 0; i < instanceNo.length; i++)
+				instanceNo[i] = intanceNum;
+		} else {
+			System.out.println("Cannot get same instances number for randomly generated periods.");
+		}
+
+		List<OneSystemResults> allRes = new ArrayList<>();
+
+		for (int i = 0; i < nos; i++) {
+			System.out.println(
+					"Util per task: " + SystemParameters.utilPerTask + " --- Current system number: " + (i + 1));
+
+			SystemGenerator gen = new SystemGenerator(cores, 1, true, true, null, taskSeed + i, true, print);
+			Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys = gen.generatedDAGInstancesInOneHP(intanceNum, -1,
+					null, false);
+
+			OneSystemResults res = null;
+			res = testOneCaseThreeMethod(sys, taskNum, instanceNo, cores, taskSeed, tableSeed, i);
+
+			allRes.add(res);
+			taskSeed++;
+		}
+		new AllSystemsResults(allRes, instanceNo, cores, taskNum, name);
+	}
+
+	/**
+	 * This test case will generate two fixed DAG structure.
+	 */
+	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys,
+			int tasks, int[] NoInstances, int cores, int taskSeed, int tableSeed, int not) {
+
+		boolean lcif = true;
+
+		double cc_sens = 0;
+
+		for (int k = 0; k < SystemParameters.cc_weights.length; k++) {
+			cc_sens += SystemParameters.cc_weights[k];//相关系数
+		}
+		//敏感度计算
+		for (DirectedAcyclicGraph d : sys.getFirst()) {
+			for (Node n : d.getFlatNodes()) {
+				n.sensitivity = 0;
+				for (int k = 0; k < n.weights.length; k++) {
+					n.sensitivity += n.weights[k] * SystemParameters.cc_weights[k] / cc_sens;
+				}
+			}
+		}
+
+		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
+
+		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
+
+		// for (DirectedAcyclicGraph d : sys.getFirst()) {
+		// for (Node n : d.getFlatNodes()) {
+		// n.sensitivity = 0;
+		// for (int k = 0; k < n.weights.length; k++) {
+		// n.sensitivity += n.weights[k];
+		// }
+		// }
+		// }
+		//
+		// SimualtorNWC cacheCASim = new SimualtorNWC(SimuType.CLOCK_LEVEL,
+		// Hardware.PROC_CACHE,
+		// Allocation.CACHE_AWARE_PREDICT_R, RecencyType.TIME_DEFAULT,
+		// sys.getFirst(), sys.getSecond(), cores,
+		// tableSeed, lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 =
+		// cacheCASim.simulate(print);
+
+		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
+
+		// system 里面的dag都是一样的
+		List<List<Node>> allpaths = sys.getFirst().getFirst().allpaths;
+		List<List<Node>> Candidates = new ArrayList<>();
+		List<Node>allnode = sys.getFirst().getFirst().getFlatNodes();
+		int nodesize = allnode.size();
+		List<Long> WCETlList = new ArrayList<>();
+		for (int i = 0; i < nodesize; i++) {
+			WCETlList.add((long) 0);
+		}
+		for(Node n:allnode){
+			WCETlList.set(n.getId(), n.WCET);
+		}
+
+		Long maxlowerbound = (long) 0;
+		Long[] upperboundList = new Long[allpaths.size()];
+
+		for (int i = 0; i < allpaths.size(); i++) {
+			Long temp =(long) 0;
+			for (Node n : allpaths.get(i)) {
+				temp += n.WCET;
+			}
+			upperboundList[i] = temp;
+			temp = temp / 2; // 这里假设下界就是上界的1/2，maybe可以改进
+			maxlowerbound = temp > maxlowerbound ? temp : maxlowerbound;
+		}
+		// 假设是正态分布<均值，方差>，方差用上下界决定
+		// List<Pair<Integer, Integer>> distributedList = new ArrayList<>();
+		for (int i = 0; i < allpaths.size(); i++) {
+			if (upperboundList[i] > maxlowerbound) {
+				Candidates.add(allpaths.get(i));
+
+				// distributedList
+				// 		.add(new Pair<>(upperboundList[i] + upperboundList[i] / 2, Candidates.getLast().size() * 20));
+			}
+		}
+		// 正态分布的差也是正态分布
+		List<Double> ProbabilityList = new ArrayList<>();
+		for (int i = 0; i < Candidates.size(); i++) {
+			// int mu = distributedList.get(i).getFirst();
+			// int sigma = distributedList.get(i).getSecond();
+			double Probability = 1;
+			for (int j = 0; j < Candidates.size(); j++) {
+				if (i == j) {
+					continue;
+				}
+				// 去掉相同节点，保持独立性
+				List<Integer> l1 = new ArrayList<>();
+				for (Node n : Candidates.get(i)) {
+					l1.add(n.getId());
+				}
+
+				List<Integer> l2 = new ArrayList<>();
+				for (Node n : Candidates.get(j)) {
+					l2.add(n.getId());
+				}
+
+				// 收集需要移除的节点 ID
+				List<Integer> toRemoveFromL1l2 = new ArrayList<>();
+
+				for (Node n : Candidates.get(i)) {
+					if (l2.contains(n.getId())) {
+						toRemoveFromL1l2.add(n.getId());
+					}
+				}
+
+				// 从 l1 和 l2 中批量移除相同的节点 ID
+				l1.removeAll(toRemoveFromL1l2);
+				l2.removeAll(toRemoveFromL1l2);
+				double coefficient=1.0;
+
+				int mu1=0;
+				double sigma12=0;
+				for(int id:l1){
+					Long W=WCETlList.get(id);
+					mu1+=W;
+					sigma12+=(1/ coefficient)*(1/ coefficient)*W*W;
+				}
+
+				int mu2 = 0;
+				double sigma22 = 0;
+				for (int id : l2) {
+					mu2 += WCETlList.get(id);
+					sigma22 += (1 / coefficient) * (1 / coefficient) * WCETlList.get(id) * WCETlList.get(id);
+				}
+
+				int muxy = mu2-mu1;
+				double sigmaxy = Math.sqrt(sigma12+sigma22);
+				// 构造一个正太分布
+				NormalDistribution sumDist = new NormalDistribution(muxy, sigmaxy);
+				double cdf = sumDist.cumulativeProbability(0);
+				Probability *= cdf * 10;
+			}
+			ProbabilityList.add(Probability);
+		}
+
+		List<Double> sensitivitylList = new ArrayList<>();
+		for (int i = 0; i < nodesize; i++) {
+			sensitivitylList.add(0.0);
+		}
+		for (int i = 0; i < Candidates.size(); i++) {
+			for (Node n : Candidates.get(i)) {
+				sensitivitylList.set(n.getId(), sensitivitylList.get(n.getId()) + ProbabilityList.get(i));
+			}
+		}
+
+
+		// 敏感度计算
+		for (DirectedAcyclicGraph d : sys.getFirst()) {
+			for (Node n : d.getFlatNodes()) {
+				n.sensitivity = sensitivitylList.get(n.getId());
+			}
+		}
+
+
+		SimualtorNWC cacheCASim4 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair4 = cacheCASim4.simulate(print);
+
+		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
+		List<DirectedAcyclicGraph> m2 = pair2.getFirst();
+		List<DirectedAcyclicGraph> m3 = pair3.getFirst();
+		List<DirectedAcyclicGraph> m4 = pair4.getFirst();
+
+		List<List<DirectedAcyclicGraph>> allMethods = new ArrayList<>();
+
+		List<DirectedAcyclicGraph> method1 = new ArrayList<>();
+		List<DirectedAcyclicGraph> method2 = new ArrayList<>();
+		List<DirectedAcyclicGraph> method3 = new ArrayList<>();
+		List<DirectedAcyclicGraph> method4 = new ArrayList<>();
+
+		List<DirectedAcyclicGraph> dags = sys.getFirst();
+
+		/*
+		 * get a number of instances from each DAG based on long[] NoInstances.
+		 */
+		int count = 0;
+		int currentID = -1;
+		for (int i = 0; i < dags.size(); i++) {
+			if (currentID != dags.get(i).id) {
+
+				currentID = dags.get(i).id;
+				count = 0;
+			}
+
+			if (count < NoInstances[dags.get(i).id]) {
+				method1.add(m1.get(i));
+				method2.add(m2.get(i));
+				method3.add(m3.get(i));
+				method4.add(m4.get(i));
+
+				count++;
+			}
+		}
+
+		allMethods.add(method1);
+		allMethods.add(method2);
+		allMethods.add(method3);
+		allMethods.add(method4);
+
+		List<double[]> cachePerformance = new ArrayList<>();
+		cachePerformance.add(pair1.getSecond());
+		cachePerformance.add(pair2.getSecond());
+		cachePerformance.add(pair3.getSecond());
+		cachePerformance.add(pair4.getSecond());
+
+		OneSystemResults result = new OneSystemResults(allMethods, cachePerformance);
+
+		return result;
+	}
+}

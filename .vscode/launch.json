@@ -6,6 +6,41 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CARVB_CorrelationCoefficentNew",
+            "request": "launch",
+            "mainClass": "uk.ac.york.mocha.simulator.experiments_CARVB.CARVB_CorrelationCoefficentNew",
+            "projectName": "cache-aware-allocation_c57443f7"
+        },
+        {
+            "type": "java",
+            "name": "CARVB_Rule2",
+            "request": "launch",
+            "mainClass": "uk.ac.york.mocha.simulator.experiments_CARVB.CARVB_Rule2",
+            "projectName": "cache-aware-allocation_c57443f7"
+        },
+        {
+            "type": "java",
+            "name": "CARVB_ERROR_CRP",
+            "request": "launch",
+            "mainClass": "uk.ac.york.mocha.simulator.experiments_CARVB.CARVB_ERROR_CRP",
+            "projectName": "cache-aware-allocation_c57443f7"
+        },
+        {
+            "type": "java",
+            "name": "CARVB_Empricial",
+            "request": "launch",
+            "mainClass": "uk.ac.york.mocha.simulator.experiments_CARVB.CARVB_Empricial",
+            "projectName": "cache-aware-allocation_c57443f7"
+        },
+        {
+            "type": "java",
+            "name": "CARVB_General",
+            "request": "launch",
+            "mainClass": "uk.ac.york.mocha.simulator.experiments_CARVB.CARVB_General",
+            "projectName": "cache-aware-allocation_c57443f7"
+        },
+        {
+            "type": "java",
             "name": "Test",
             "request": "launch",
             "mainClass": "uk.ac.york.mocha.simulator.experiments_AJLR_v2_0.Test",
