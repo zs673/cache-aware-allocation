@@ -30,7 +30,7 @@ public class CARVB_General {
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	static int cores = 4;
-	static int nos = 5; //number of system
+	static int nos = 400; //number of system
 	static int intanceNum = 100;
 
 	static int startUtil = 4;
