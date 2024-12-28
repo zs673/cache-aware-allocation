@@ -168,7 +168,7 @@ public class CARVB_General {
 				temp += n.WCET;
 			}
 			upperboundList[i] = temp;
-			temp = temp / 2; // 这里假设下界就是上界的1/2，maybe可以改进
+			temp = (long) (temp*0.3); // 这里假设下界就是上界的0.3，maybe可以改进
 			maxlowerbound = temp > maxlowerbound ? temp : maxlowerbound;
 		}
 		// 假设是正态分布<均值，方差>，方差用上下界决定
@@ -184,8 +184,6 @@ public class CARVB_General {
 		// 正态分布的差也是正态分布
 		List<Double> ProbabilityList = new ArrayList<>();
 		for (int i = 0; i < Candidates.size(); i++) {
-			// int mu = distributedList.get(i).getFirst();
-			// int sigma = distributedList.get(i).getSecond();
 			double Probability = 1;
 			for (int j = 0; j < Candidates.size(); j++) {
 				if (i == j) {
@@ -214,30 +212,34 @@ public class CARVB_General {
 				// 从 l1 和 l2 中批量移除相同的节点 ID
 				l1.removeAll(toRemoveFromL1l2);
 				l2.removeAll(toRemoveFromL1l2);
-				double coefficient=1.0;
+				double coefficient=3; //设定几sigam拒绝
 
-				int mu1=0;
+				double mu1=0;
 				double sigma12=0;
 				for(int id:l1){
 					Long W=WCETlList.get(id);
-					mu1+=W;
-					sigma12+=(1/ coefficient)*(1/ coefficient)*W*W;
+					double t = W * (0.3 + 1) / 2;
+					mu1+=t;
+					sigma12+=(1/ coefficient)*(1/ coefficient)*t*t;
 				}
 
-				int mu2 = 0;
+				double mu2 = 0;
 				double sigma22 = 0;
 				for (int id : l2) {
-					mu2 += WCETlList.get(id);
-					sigma22 += (1 / coefficient) * (1 / coefficient) * WCETlList.get(id) * WCETlList.get(id);
+					Long W = WCETlList.get(id);
+					double t=W * (0.3 + 1) / 2;
+					mu2 += t;
+					sigma22 += (1 / coefficient) * (1 / coefficient) *t* t;
 				}
 
-				int muxy = mu2-mu1;
+				double muxy = mu2-mu1;
 				double sigmaxy = Math.sqrt(sigma12+sigma22);
 				// 构造一个正太分布
 				NormalDistribution sumDist = new NormalDistribution(muxy, sigmaxy);
 				double cdf = sumDist.cumulativeProbability(0);
-				Probability *= cdf * 10;
+				Probability *= cdf * 5;//避免概率太小梯度消失（感觉和梯度消失有点像\(^o^)/~
 			}
+			// Probability+=1;
 			ProbabilityList.add(Probability);
 		}
 
@@ -245,14 +247,20 @@ public class CARVB_General {
 		for (int i = 0; i < nodesize; i++) {
 			sensitivitylList.add(0.0);
 		}
+		// 敏感度计算 在候选路径的上的节点先加1分
+		for (int i = 0; i < Candidates.size(); i++) {
+			for (Node n : Candidates.get(i)) {
+				if(sensitivitylList.get(n.getId())==0){
+					sensitivitylList.set(n.getId(), 1.0);
+				}
+			}
+		}
+
 		for (int i = 0; i < Candidates.size(); i++) {
 			for (Node n : Candidates.get(i)) {
 				sensitivitylList.set(n.getId(), sensitivitylList.get(n.getId()) + ProbabilityList.get(i));
 			}
 		}
-
-
-		// 敏感度计算
 		for (DirectedAcyclicGraph d : sys.getFirst()) {
 			for (Node n : d.getFlatNodes()) {
 				n.sensitivity = sensitivitylList.get(n.getId());
