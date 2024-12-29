@@ -104,26 +104,27 @@ public class CARVB_General {
 
 		double cc_sens = 0;
 
-		for (int k = 0; k < SystemParameters.cc_weights.length; k++) {
-			cc_sens += SystemParameters.cc_weights[k];//相关系数
-		}
-		//敏感度计算
-		for (DirectedAcyclicGraph d : sys.getFirst()) {
-			for (Node n : d.getFlatNodes()) {
-				n.sensitivity = 0;
-				for (int k = 0; k < n.weights.length; k++) {
-					n.sensitivity += n.weights[k] * SystemParameters.cc_weights[k] / cc_sens;
-				}
-			}
-		}
+		// for (int k = 0; k < SystemParameters.cc_weights.length; k++) {
+		// 	cc_sens += SystemParameters.cc_weights[k];//相关系数
+		// }
+		// //敏感度计算
+		// for (DirectedAcyclicGraph d : sys.getFirst()) {
+		// 	for (Node n : d.getFlatNodes()) {
+		// 		n.sensitivity = 0;
+		// 		for (int k = 0; k < n.weights.length; k++) {
+		// 			n.sensitivity += n.weights[k] * SystemParameters.cc_weights[k] / cc_sens;
+		// 		}
+		// 	}
+		// }
 
-		Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
+		// Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
+		// 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
 
-		SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
+		// SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
+		// 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
+
 
 		// for (DirectedAcyclicGraph d : sys.getFirst()) {
 		// for (Node n : d.getFlatNodes()) {
@@ -142,9 +143,9 @@ public class CARVB_General {
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 =
 		// cacheCASim.simulate(print);
 
-		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
-				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
-		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
+		// SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+		// 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
 
 		// system 里面的dag都是一样的
 		List<List<Node>> allpaths = sys.getFirst().getFirst().allpaths;
@@ -168,7 +169,7 @@ public class CARVB_General {
 				temp += n.WCET;
 			}
 			upperboundList[i] = temp;
-			temp = (long) (temp*0.3); // 这里假设下界就是上界的0.3，maybe可以改进
+			temp = (long) (temp*0.3); // 这里设下界就是上界的0.3
 			maxlowerbound = temp > maxlowerbound ? temp : maxlowerbound;
 		}
 		// 假设是正态分布<均值，方差>，方差用上下界决定
@@ -267,7 +268,22 @@ public class CARVB_General {
 			}
 		}
 
+		SystemParameters.m = 0;
+		SimualtorNWC cacheCASim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheCASim1.simulate(print);
 
+		SystemParameters.m = 1;
+		SimualtorNWC cacheCASim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim2.simulate(print);
+
+		SystemParameters.m = 2;
+		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
+		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
+
+		SystemParameters.m = 3;
 		SimualtorNWC cacheCASim4 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair4 = cacheCASim4.simulate(print);

@@ -2,12 +2,16 @@ package uk.ac.york.mocha.simulator.allocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.DoubleStream;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.apache.commons.math3.util.Pair;
 
+import it.unimi.dsi.fastutil.Arrays;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineCARVB extends AllocationMethods {
@@ -169,10 +173,39 @@ public class OnlineCARVB extends AllocationMethods {
 					valuesET[k] = etHistOneNode.get(k)[0];
 					valuesCache[k] = etHistOneNode.get(k)[1];
 				}
+				
+				if(SystemParameters.m==0){
+					//中位数
+					Median med = new Median();
+					standardET = (long) Math.round(med.evaluate(valuesET));
+					standardCache = (long) Math.round(med.evaluate(valuesCache));
+					
+				}else if(SystemParameters.m == 1){
+					// 25%分位数
+					Percentile percentile = new Percentile();
+					standardET = (long) Math.round(percentile.evaluate(valuesET));
+					standardCache = (long) Math.round(percentile.evaluate(valuesCache));
+				}
+				else if(SystemParameters.m == 2){
+					// //最小值
+					if(etHistOneNode.size()>0){
+					standardCache=(long) valuesCache[0];
+					for (int j = 1; j < valuesCache.length; j++) {
+					if (valuesCache[j] < standardCache) {
+					standardCache = (long) valuesCache[j]; // 更新最小值
+					}
+					}
+					standardET = (long) valuesET[0];
+					for (int j = 1; j < valuesET.length; j++) {
+					if (valuesET[j] < standardET) {
+					standardET = (long) valuesET[j]; // 更新最小值
+					}
+					}
+					}
+				}
 
-				Median med = new Median();
-				standardET = (long) Math.round(med.evaluate(valuesET));
-				standardCache = (long) Math.round(med.evaluate(valuesCache));
+
+
 //				}
 
 //				System.out.println("Node: " + n.getFullName() + ", reference ET: " + standardET);

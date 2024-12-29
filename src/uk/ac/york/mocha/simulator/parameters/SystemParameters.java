@@ -7,6 +7,7 @@ public class SystemParameters {
 	public static final int etHist_start = 1;
 	// public static final int instNo_x1 = 10;
 	// public static final int instNo_x2 = 80;
+	public static int m = 0;
 
 	public static double[] d_weights = { 0.120, 0.097, 0.010, 0.014, 0.055, 0.069 };
 	// public static double[] cc_weights = { 0.4559, 0.5999, 0.4010, 0.3558,
@@ -62,7 +63,8 @@ public class SystemParameters {
 	// public static double[] cc_weights = { 0.3787, 0.3083, 0.2319, 0.2153,
 	// 0.3189, 0.3272 }; // 1.0
 
-	public static double[] cc_weights = { 0.1770, -0.0212, 0.1372, 0.1047, 0.2033, 0.2131 }; // all data
+	// public static double[] cc_weights = { 0.1770, -0.0212, 0.1372, 0.1047, 0.2033, 0.2131 }; // all data
+	public static double[] cc_weights = { 0.358, 0.292, 0.194, 0.278, 0.303, 0.548 }; // all data
 
 	// public static double[] cc_weights = { 0.4961, 0.4343, 0.2314, 0.2055,
 	// 0.3454, 0.3642 }; // one way increase
