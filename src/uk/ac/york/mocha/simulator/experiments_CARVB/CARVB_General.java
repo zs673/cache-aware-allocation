@@ -10,6 +10,7 @@ import org.python.antlr.PythonParser.for_stmt_return;
 
 import jnr.ffi.StructLayout.int32_t;
 import uk.ac.york.mocha.simulator.allocation.OnlineCARVB;
+import uk.ac.york.mocha.simulator.allocation.OnlineCARVB_SEEN;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.generator.CacheHierarchy;
@@ -31,7 +32,7 @@ public class CARVB_General {
 	static DecimalFormat df = new DecimalFormat("#.###");
 
 	static int cores = 4;
-	static int nos = 5; //number of system
+	static int nos = 5; // number of system
 	static int intanceNum = 100;
 
 	static int startUtil = 4;
@@ -106,40 +107,48 @@ public class CARVB_General {
 		double cc_sens = 0;
 
 		// for (int k = 0; k < SystemParameters.cc_weights.length; k++) {
-		// 	cc_sens += SystemParameters.cc_weights[k];//相关系数
+		// cc_sens += SystemParameters.cc_weights[k];//相关系数
 		// }
 		// //敏感度计算
 		// for (DirectedAcyclicGraph d : sys.getFirst()) {
-		// 	for (Node n : d.getFlatNodes()) {
-		// 		n.sensitivity = 0;
-		// 		for (int k = 0; k < n.weights.length; k++) {
-		// 			n.sensitivity += n.weights[k] * SystemParameters.cc_weights[k] / cc_sens;
-		// 		}
-		// 	}
+		// for (Node n : d.getFlatNodes()) {
+		// n.sensitivity = 0;
+		// for (int k = 0; k < n.weights.length; k++) {
+		// n.sensitivity += n.weights[k] * SystemParameters.cc_weights[k] / cc_sens;
+		// }
+		// }
 		// }
 
-		// Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.WORST_FIT,
-		// 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
+		// Simualtor sim1 = new Simualtor(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+		// Allocation.WORST_FIT,
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair1 = sim1.simulate(print);
 
-		// SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
-		// 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, lcif);
+		// SimualtorNWC sim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
+		// Hardware.PROC_CACHE, Allocation.CACHE_AWARE_NEW,
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// lcif);
 		// Pair<List<DirectedAcyclicGraph>, double[]> pair2 = sim2.simulate(print);
 
-		// SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
-		// 		RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
-		// Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
+		// SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL,
+		// Hardware.PROC_CACHE, Allocation.CARVB,
+		// RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed,
+		// false);
+		// Pair<List<DirectedAcyclicGraph>, double[]> pair3 =
+		// cacheCASim3.simulate(print);
 
 		// system 里面的dag都是一样的
 		List<List<Node>> allpaths = sys.getFirst().getFirst().allpaths;
 		List<List<Node>> Candidates = new ArrayList<>();
-		List<Node>allnode = sys.getFirst().getFirst().getFlatNodes();
+		List<Node> allnode = sys.getFirst().getFirst().getFlatNodes();
 		int nodesize = allnode.size();
 		List<Long> WCETlList = new ArrayList<>();
 		for (int i = 0; i < nodesize; i++) {
 			WCETlList.add((long) 0);
+			OnlineCARVB_SEEN.etHistOneNode.add(new ArrayList<>()); //一些丑陋代码，必要的初始化
 		}
-		for(Node n:allnode){
+		for (Node n : allnode) {
 			WCETlList.set(n.getId(), n.WCET);
 		}
 
@@ -147,12 +156,12 @@ public class CARVB_General {
 		Long[] upperboundList = new Long[allpaths.size()];
 
 		for (int i = 0; i < allpaths.size(); i++) {
-			Long temp =(long) 0;
+			Long temp = (long) 0;
 			for (Node n : allpaths.get(i)) {
 				temp += n.WCET;
 			}
 			upperboundList[i] = temp;
-			temp = (long) (temp*0.3); // 这里设下界就是上界的0.3
+			temp = (long) (temp * 0.3); // 这里设下界就是上界的0.3
 			maxlowerbound = temp > maxlowerbound ? temp : maxlowerbound;
 		}
 		// 假设是正态分布<均值，方差>，方差用上下界决定
@@ -162,7 +171,8 @@ public class CARVB_General {
 				Candidates.add(allpaths.get(i));
 
 				// distributedList
-				// 		.add(new Pair<>(upperboundList[i] + upperboundList[i] / 2, Candidates.getLast().size() * 20));
+				// .add(new Pair<>(upperboundList[i] + upperboundList[i] / 2,
+				// Candidates.getLast().size() * 20));
 			}
 		}
 		// 正态分布的差也是正态分布
@@ -196,32 +206,32 @@ public class CARVB_General {
 				// 从 l1 和 l2 中批量移除相同的节点 ID
 				l1.removeAll(toRemoveFromL1l2);
 				l2.removeAll(toRemoveFromL1l2);
-				double coefficient=3; //设定几sigam拒绝
+				double coefficient = 3; // 设定几sigam拒绝
 
-				double mu1=0;
-				double sigma12=0;
-				for(int id:l1){
-					Long W=WCETlList.get(id);
+				double mu1 = 0;
+				double sigma12 = 0;
+				for (int id : l1) {
+					Long W = WCETlList.get(id);
 					double t = W * (0.3 + 1) / 2;
-					mu1+=t;
-					sigma12+=(1/ coefficient)*(1/ coefficient)*t*t;
+					mu1 += t;
+					sigma12 += (1 / coefficient) * (1 / coefficient) * t * t;
 				}
 
 				double mu2 = 0;
 				double sigma22 = 0;
 				for (int id : l2) {
 					Long W = WCETlList.get(id);
-					double t=W * (0.3 + 1) / 2;
+					double t = W * (0.3 + 1) / 2;
 					mu2 += t;
-					sigma22 += (1 / coefficient) * (1 / coefficient) *t* t;
+					sigma22 += (1 / coefficient) * (1 / coefficient) * t * t;
 				}
 
-				double muxy = mu2-mu1;
-				double sigmaxy = Math.sqrt(sigma12+sigma22);
+				double muxy = mu2 - mu1;
+				double sigmaxy = Math.sqrt(sigma12 + sigma22);
 				// 构造一个正太分布
 				NormalDistribution sumDist = new NormalDistribution(muxy, sigmaxy);
 				double cdf = sumDist.cumulativeProbability(0);
-				Probability *= cdf*2;//避免概率太小梯度消失（感觉和梯度消失有点像\(^o^)/~
+				Probability *= cdf * 2;// 避免概率太小梯度消失（感觉和梯度消失有点像\(^o^)/~
 			}
 			// Probability+=1;
 			ProbabilityList.add(Probability);
@@ -233,11 +243,11 @@ public class CARVB_General {
 		}
 		// 敏感度计算 在候选路径的上的节点先加1分
 		// for (int i = 0; i < Candidates.size(); i++) {
-		// 	for (Node n : Candidates.get(i)) {
-		// 		if(sensitivitylList.get(n.getId())==0){
-		// 			sensitivitylList.set(n.getId(), 1.0);
-		// 		}
-		// 	}
+		// for (Node n : Candidates.get(i)) {
+		// if(sensitivitylList.get(n.getId())==0){
+		// sensitivitylList.set(n.getId(), 1.0);
+		// }
+		// }
 		// }
 
 		for (int i = 0; i < Candidates.size(); i++) {
@@ -250,31 +260,32 @@ public class CARVB_General {
 				n.sensitivity = sensitivitylList.get(n.getId());
 			}
 		}
-		OnlineCARVB.etHistOneNode=new ArrayList<>();
+		// OnlineCARVB.etHistOneNode=new ArrayList<>();
 
-		SystemParameters.m = 0;
-		SimualtorNWC cacheCASim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+
+		SimualtorNWC cacheCASim1 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE,
+				Allocation.CACHE_AWARE_NEW,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair1 = cacheCASim1.simulate(print);
-		OnlineCARVB.etHistOneNode = new ArrayList<>();
+		// OnlineCARVB.etHistOneNode = new ArrayList<>();
 
-		SystemParameters.m = 1;
+
 		SimualtorNWC cacheCASim2 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim2.simulate(print);
-		OnlineCARVB.etHistOneNode = new ArrayList<>();
+		// OnlineCARVB.etHistOneNode = new ArrayList<>();
 
-		SystemParameters.m = 2;
-		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+		SystemParameters.m = 0;
+		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB_SEEN,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
-		OnlineCARVB.etHistOneNode = new ArrayList<>();
+		// OnlineCARVB.etHistOneNode = new ArrayList<>();
 
-		SystemParameters.m = 3;
-		SimualtorNWC cacheCASim4 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB,
+
+		SimualtorNWC cacheCASim4 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB_MSF,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair4 = cacheCASim4.simulate(print);
-		OnlineCARVB.etHistOneNode = new ArrayList<>();
+		// OnlineCARVB.etHistOneNode = new ArrayList<>();
 
 		List<DirectedAcyclicGraph> m1 = pair1.getFirst();
 		List<DirectedAcyclicGraph> m2 = pair2.getFirst();

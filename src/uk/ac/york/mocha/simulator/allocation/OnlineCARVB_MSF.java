@@ -14,7 +14,8 @@ import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineCARVB extends AllocationMethods {
+public class OnlineCARVB_MSF extends AllocationMethods {
+	public static List<Long> etHistOneNode = new ArrayList<>();
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
@@ -129,98 +130,13 @@ public class OnlineCARVB extends AllocationMethods {
 
 		for (int i = 0; i < speedUpTable.size(); i++) {
 			if (!allocNodes.contains(i)) {
-				/**
-				 * The native version: speed-up the sensitive nodes as much as I can.
-				 */
-				// long max = Long.MIN_VALUE;
-				// for (int j = 0; j < speedUpTable.get(i).size(); j++) {
-				// if (!allocProcs.contains(j)) {
-				// if (max < speedUpTable.get(i).get(j)) {
-				// max = speedUpTable.get(i).get(j);
-				// row = i;
-				// col = j;
-				// }
-				// }
-				// }
 
-				/**
-				 * The new version: maintain a stable speed-up.
-				 */
 				long minDiff = Long.MAX_VALUE;
 				long standardET = 0;
 				long standardCache = 0;
 
 				Node n = preEligible.get(i);
-				List<long[]> etHistOneNode = Utils.getETHistroy(n, etHist);
 
-				// if (etHistOneNode.size() >= SystemParameters.etHist_threshold) {
-				/**
-				 * max
-				 */
-				// standardET = etHistOneNode.stream().mapToLong(a -> a).max().getAsLong();
-
-				/**
-				 * Average
-				 */
-				// standardET = (long) Math.round(etHistOneNode.stream().mapToLong(a ->
-				// a).average().getAsDouble());
-
-				/**
-				 * Median
-				 */
-				double[] valuesET = new double[etHistOneNode.size()];
-				double[] valuesCache = new double[etHistOneNode.size()];
-				for (int k = 0; k < etHistOneNode.size(); k++) {
-					valuesET[k] = etHistOneNode.get(k)[0];
-					valuesCache[k] = etHistOneNode.get(k)[1];
-				}
-				Median med = new Median();
-				standardET = (long) Math.round(med.evaluate(valuesET));
-				standardCache = (long) Math.round(med.evaluate(valuesCache));
-
-				// if (SystemParameters.m == 0) {
-				// 	// 中位数
-				// 	Median med = new Median();
-				// 	standardET = (long) Math.round(med.evaluate(valuesET));
-				// 	// standardCache = (long) Math.round(med.evaluate(valuesCache));
-
-				// } else if (SystemParameters.m == 1) {
-				// 	// 25%分位数
-				// 	Percentile percentile = new Percentile(25);
-				// 	standardET = (long) Math.round(percentile.evaluate(valuesET));
-				// 	// standardCache = (long) Math.round(percentile.evaluate(valuesCache));
-				// } else if (SystemParameters.m == 2) {
-				// 	// //最小值
-				// 	if (etHistOneNode.size() > 0) {
-				// 		// standardCache=(long) valuesCache[0];
-				// 		// for (int j = 1; j < valuesCache.length; j++) {
-				// 		// if (valuesCache[j] < standardCache) {
-				// 		// standardCache = (long) valuesCache[j]; // 更新最小值
-				// 		// }
-				// 		// }
-				// 		standardET = (long) valuesET[0];
-				// 		for (int j = 1; j < valuesET.length; j++) {
-				// 			if (valuesET[j] < standardET) {
-				// 				standardET = (long) valuesET[j]; // 更新最小值
-				// 			}
-				// 		}
-				// 	}
-				// }
-
-				// }
-
-				// System.out.println("Node: " + n.getFullName() + ", reference ET: " +
-				// standardET);
-				// System.out.println("Node: " + n.getFullName() + ", observed ET: " + Arrays
-				// .toString(etHistOneNode.stream().map(c ->
-				// c[0]).collect(Collectors.toList()).toArray()));
-				// System.out.println("Node: " + n.getFullName() + ", observed Cache: " + Arrays
-				// .toString(etHistOneNode.stream().map(c ->
-				// c[1]).collect(Collectors.toList()).toArray()));
-				// System.out.println(
-				// "Node: " + n.getFullName() + ", Speed-up: " +
-				// Arrays.toString(speedUpTable.get(i).toArray()));
-				// jjy
 				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 					if (!allocProcs.contains(j)) {
 						long expectedET = n.getWCET() - speedUpTable.get(i).get(j);

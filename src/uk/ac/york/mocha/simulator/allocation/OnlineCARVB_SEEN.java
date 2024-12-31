@@ -14,7 +14,8 @@ import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
-public class OnlineCARVB extends AllocationMethods {
+public class OnlineCARVB_SEEN extends AllocationMethods {
+	public static List<List<Long>> etHistOneNode = new ArrayList<>();
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
@@ -151,7 +152,7 @@ public class OnlineCARVB extends AllocationMethods {
 				long standardCache = 0;
 
 				Node n = preEligible.get(i);
-				List<long[]> etHistOneNode = Utils.getETHistroy(n, etHist);
+				// List<long[]> etHistOneNode = Utils.getETHistroy(n, etHist);
 
 				// if (etHistOneNode.size() >= SystemParameters.etHist_threshold) {
 				/**
@@ -168,44 +169,47 @@ public class OnlineCARVB extends AllocationMethods {
 				/**
 				 * Median
 				 */
-				double[] valuesET = new double[etHistOneNode.size()];
-				double[] valuesCache = new double[etHistOneNode.size()];
-				for (int k = 0; k < etHistOneNode.size(); k++) {
-					valuesET[k] = etHistOneNode.get(k)[0];
-					valuesCache[k] = etHistOneNode.get(k)[1];
+				List<Long> valuesETlLongs = OnlineCARVB_SEEN.etHistOneNode.get(n.getId());
+				double[] valuesET = new double[valuesETlLongs.size()];
+				for (int k = 0; k < valuesETlLongs.size(); k++) {
+					valuesET[k] = valuesETlLongs.get(k) != null ? valuesETlLongs.get(k) : 0.0; // 处理 null 元素
 				}
-				Median med = new Median();
-				standardET = (long) Math.round(med.evaluate(valuesET));
-				standardCache = (long) Math.round(med.evaluate(valuesCache));
-
-				// if (SystemParameters.m == 0) {
-				// 	// 中位数
-				// 	Median med = new Median();
-				// 	standardET = (long) Math.round(med.evaluate(valuesET));
-				// 	// standardCache = (long) Math.round(med.evaluate(valuesCache));
-
-				// } else if (SystemParameters.m == 1) {
-				// 	// 25%分位数
-				// 	Percentile percentile = new Percentile(25);
-				// 	standardET = (long) Math.round(percentile.evaluate(valuesET));
-				// 	// standardCache = (long) Math.round(percentile.evaluate(valuesCache));
-				// } else if (SystemParameters.m == 2) {
-				// 	// //最小值
-				// 	if (etHistOneNode.size() > 0) {
-				// 		// standardCache=(long) valuesCache[0];
-				// 		// for (int j = 1; j < valuesCache.length; j++) {
-				// 		// if (valuesCache[j] < standardCache) {
-				// 		// standardCache = (long) valuesCache[j]; // 更新最小值
-				// 		// }
-				// 		// }
-				// 		standardET = (long) valuesET[0];
-				// 		for (int j = 1; j < valuesET.length; j++) {
-				// 			if (valuesET[j] < standardET) {
-				// 				standardET = (long) valuesET[j]; // 更新最小值
-				// 			}
-				// 		}
-				// 	}
+				
+				// new double[OnlineCARVB_SEEN.etHistOneNode.size()];
+				// double[] valuesCache = new double[etHistOneNode.size()];
+				// for (int k = 0; k < OnlineCARVB_SEEN.etHistOneNode.get(0).length; k++) {
+				// 	valuesET[k] = OnlineCARVB_SEEN.etHistOneNode.get(k);
+				// 	// valuesCache[k] = etHistOneNode.get(k)[1];
 				// }
+
+				if (SystemParameters.m == 0) {
+					// 中位数
+					Median med = new Median();
+					standardET = (long) Math.round(med.evaluate(valuesET));
+					// standardCache = (long) Math.round(med.evaluate(valuesCache));
+
+				} else if (SystemParameters.m == 1) {
+					// 25%分位数
+					Percentile percentile = new Percentile(25);
+					standardET = (long) Math.round(percentile.evaluate(valuesET));
+					// standardCache = (long) Math.round(percentile.evaluate(valuesCache));
+				} else if (SystemParameters.m == 2) {
+					// //最小值
+					if (etHistOneNode.size() > 0) {
+						// standardCache=(long) valuesCache[0];
+						// for (int j = 1; j < valuesCache.length; j++) {
+						// if (valuesCache[j] < standardCache) {
+						// standardCache = (long) valuesCache[j]; // 更新最小值
+						// }
+						// }
+						standardET = (long) valuesET[0];
+						for (int j = 1; j < valuesET.length; j++) {
+							if (valuesET[j] < standardET) {
+								standardET = (long) valuesET[j]; // 更新最小值
+							}
+						}
+					}
+				}
 
 				// }
 
@@ -224,7 +228,8 @@ public class OnlineCARVB extends AllocationMethods {
 				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 					if (!allocProcs.contains(j)) {
 						long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
-
+						OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).add(expectedET);
+						
 						if (minDiff > Math.abs((standardET) - expectedET)) {
 							minDiff = Math.abs((standardET) - expectedET);
 							chosen_speedUp = speedUpTable.get(i).get(j);

@@ -63,7 +63,8 @@ public class SystemParameters {
 	// public static double[] cc_weights = { 0.3787, 0.3083, 0.2319, 0.2153,
 	// 0.3189, 0.3272 }; // 1.0
 
-	// public static double[] cc_weights = { 0.1770, -0.0212, 0.1372, 0.1047, 0.2033, 0.2131 }; // all data
+	// public static double[] cc_weights = { 0.1770, -0.0212, 0.1372, 0.1047,
+	// 0.2033, 0.2131 }; // all data
 	public static double[] cc_weights = { 0.358, 0.292, 0.194, 0.278, 0.303, 0.548 }; // all data
 
 	// public static double[] cc_weights = { 0.4961, 0.4343, 0.2314, 0.2055,
@@ -114,9 +115,10 @@ public class SystemParameters {
 	public enum Allocation {
 		SIMPLE, RANDOM, BEST_FIT, FIRST_FIT, WORST_FIT, WORST_FIT_OUR, CACHE_AWARE, CACHE_AWARE_NEW,
 		CACHE_AWARE_ROBUST_v2_1, CACHE_AWARE_ROBUST_v2_2, OFFLINE_CACHE_AWARE, CACHE_AWARE_OUR, CACHE_AWARE_RESERVE,
-		CACHE_AWARE_COMPARE, CARVB,
-		CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW, CACHE_AWARE_NEW_BASE
-
+		CACHE_AWARE_COMPARE,
+		CACHE_AWARE_PREDICT_WCET, WORST_FIT_NEW, WORST_FIT_NEW_BASE, FIXED_SCHEDULE_ALLOCATION_NEW,
+		CACHE_AWARE_NEW_BASE,
+		CARVB, CARVB_SEEN, CARVB_MSF
 	};
 
 	/**********************************************************************
