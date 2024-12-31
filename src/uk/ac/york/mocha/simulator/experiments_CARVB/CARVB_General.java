@@ -279,7 +279,7 @@ public class CARVB_General {
 		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB_SEEN,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);
-		// OnlineCARVB.etHistOneNode = new ArrayList<>();
+		OnlineCARVB_SEEN.etHistOneNode = new ArrayList<>();
 
 
 		SimualtorNWC cacheCASim4 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB_MSF,

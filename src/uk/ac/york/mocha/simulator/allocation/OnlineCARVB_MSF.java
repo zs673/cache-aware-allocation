@@ -15,7 +15,6 @@ import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineCARVB_MSF extends AllocationMethods {
-	public static List<Long> etHistOneNode = new ArrayList<>();
 
 	@Override
 	public void allocate(List<DirectedAcyclicGraph> dags, List<Node> readyNodes, List<List<Node>> localRunqueue,
