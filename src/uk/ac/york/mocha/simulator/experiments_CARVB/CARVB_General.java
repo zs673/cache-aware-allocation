@@ -231,7 +231,7 @@ public class CARVB_General {
 				// 构造一个正太分布
 				NormalDistribution sumDist = new NormalDistribution(muxy, sigmaxy);
 				double cdf = sumDist.cumulativeProbability(0);
-				Probability *= cdf * 2;// 避免概率太小梯度消失（感觉和梯度消失有点像\(^o^)/~
+				Probability *= cdf * 5;// 避免概率太小梯度消失（感觉和梯度消失有点像\(^o^)/~
 			}
 			// Probability+=1;
 			ProbabilityList.add(Probability);
@@ -275,7 +275,7 @@ public class CARVB_General {
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim2.simulate(print);
 		// OnlineCARVB.etHistOneNode = new ArrayList<>();
 
-		SystemParameters.m = 0;
+		SystemParameters.m = 3;
 		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB_SEEN,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);

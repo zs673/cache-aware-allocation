@@ -130,113 +130,99 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 
 		for (int i = 0; i < speedUpTable.size(); i++) {
 			if (!allocNodes.contains(i)) {
-				/**
-				 * The native version: speed-up the sensitive nodes as much as I can.
-				 */
-				// long max = Long.MIN_VALUE;
-				// for (int j = 0; j < speedUpTable.get(i).size(); j++) {
-				// if (!allocProcs.contains(j)) {
-				// if (max < speedUpTable.get(i).get(j)) {
-				// max = speedUpTable.get(i).get(j);
-				// row = i;
-				// col = j;
-				// }
-				// }
-				// }
 
-				/**
-				 * The new version: maintain a stable speed-up.
-				 */
 				long minDiff = Long.MAX_VALUE;
 				long standardET = 0;
 				long standardCache = 0;
 
 				Node n = preEligible.get(i);
-				// List<long[]> etHistOneNode = Utils.getETHistroy(n, etHist);
 
-				// if (etHistOneNode.size() >= SystemParameters.etHist_threshold) {
-				/**
-				 * max
-				 */
-				// standardET = etHistOneNode.stream().mapToLong(a -> a).max().getAsLong();
 
-				/**
-				 * Average
-				 */
-				// standardET = (long) Math.round(etHistOneNode.stream().mapToLong(a ->
-				// a).average().getAsDouble());
+				if(SystemParameters.m == 3){
+					//第一轮取最小值
+					if(standardET==0){
+						standardET = Long.MAX_VALUE;
+						for (int j = 0; j < speedUpTable.get(i).size(); j++) {
+							if (!allocProcs.contains(j)) {
+								long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
+								if(expectedET<standardET){
+									standardET=expectedET;
+									chosen_speedUp = speedUpTable.get(i).get(j);
+									row = i;
+									col = j;
 
-				/**
-				 * Median
-				 */
-				List<Long> valuesETlLongs = OnlineCARVB_SEEN.etHistOneNode.get(n.getId());
-				double[] valuesET = new double[valuesETlLongs.size()];
-				for (int k = 0; k < valuesETlLongs.size(); k++) {
-					valuesET[k] = valuesETlLongs.get(k) != null ? valuesETlLongs.get(k) : 0.0; // 处理 null 元素
-				}
-				
-				// new double[OnlineCARVB_SEEN.etHistOneNode.size()];
-				// double[] valuesCache = new double[etHistOneNode.size()];
-				// for (int k = 0; k < OnlineCARVB_SEEN.etHistOneNode.get(0).length; k++) {
-				// 	valuesET[k] = OnlineCARVB_SEEN.etHistOneNode.get(k);
-				// 	// valuesCache[k] = etHistOneNode.get(k)[1];
-				// }
-
-				if (SystemParameters.m == 0) {
-					// 中位数
-					Median med = new Median();
-					standardET = (long) Math.round(med.evaluate(valuesET));
-					// standardCache = (long) Math.round(med.evaluate(valuesCache));
-
-				} else if (SystemParameters.m == 1) {
-					// 25%分位数
-					Percentile percentile = new Percentile(25);
-					standardET = (long) Math.round(percentile.evaluate(valuesET));
-					// standardCache = (long) Math.round(percentile.evaluate(valuesCache));
-				} else if (SystemParameters.m == 2) {
-					// //最小值
-					if (etHistOneNode.size() > 0) {
-						// standardCache=(long) valuesCache[0];
-						// for (int j = 1; j < valuesCache.length; j++) {
-						// if (valuesCache[j] < standardCache) {
-						// standardCache = (long) valuesCache[j]; // 更新最小值
-						// }
-						// }
-						standardET = (long) valuesET[0];
-						for (int j = 1; j < valuesET.length; j++) {
-							if (valuesET[j] < standardET) {
-								standardET = (long) valuesET[j]; // 更新最小值
+								}
 							}
 						}
 					}
-				}
-
-				// }
-
-				// System.out.println("Node: " + n.getFullName() + ", reference ET: " +
-				// standardET);
-				// System.out.println("Node: " + n.getFullName() + ", observed ET: " + Arrays
-				// .toString(etHistOneNode.stream().map(c ->
-				// c[0]).collect(Collectors.toList()).toArray()));
-				// System.out.println("Node: " + n.getFullName() + ", observed Cache: " + Arrays
-				// .toString(etHistOneNode.stream().map(c ->
-				// c[1]).collect(Collectors.toList()).toArray()));
-				// System.out.println(
-				// "Node: " + n.getFullName() + ", Speed-up: " +
-				// Arrays.toString(speedUpTable.get(i).toArray()));
-				// jjy
-				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
-					if (!allocProcs.contains(j)) {
-						long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
-						OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).add(expectedET);
-						
-						if (minDiff > Math.abs((standardET) - expectedET)) {
-							minDiff = Math.abs((standardET) - expectedET);
-							chosen_speedUp = speedUpTable.get(i).get(j);
-							row = i;
-							col = j;
+					//
+					for (int j = 0; j < speedUpTable.get(i).size(); j++) {
+						long mint2=Long.MAX_VALUE;// 当前可加速的最大值
+						if (!allocProcs.contains(j)) {
+							long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
+							mint2 =mint2<expectedET?mint2:expectedET;
+							//寻找是否有更大的加速，有就上升
+							if(expectedET<standardET){
+								if (minDiff > Math.abs((standardET) - expectedET)) {
+									minDiff = Math.abs((standardET) - expectedET);
+									chosen_speedUp = speedUpTable.get(i).get(j);
+									row = i;
+									col = j;
+								}
+							}
+						}
+						//如果没有更大的加速，就下降
+						if(mint2>standardET){
+							int a=1;//调整下降比例
+							standardET=(mint2+standardET*a)/(1+a);
 						}
 					}
+				}else{
+					List<Long> valuesETlLongs = OnlineCARVB_SEEN.etHistOneNode.get(n.getId());
+					double[] valuesET = new double[valuesETlLongs.size()];
+					for (int k = 0; k < valuesETlLongs.size(); k++) {
+						valuesET[k] = valuesETlLongs.get(k) != null ? valuesETlLongs.get(k) : 0.0; // 处理 null 元素
+					}
+
+					if (SystemParameters.m == 0) {
+						// 中位数
+						Median med = new Median();
+						standardET = (long) Math.round(med.evaluate(valuesET));
+						// standardCache = (long) Math.round(med.evaluate(valuesCache));
+
+					} else if (SystemParameters.m == 1) {
+						// 25%分位数
+						Percentile percentile = new Percentile(25);
+						standardET = (long) Math.round(percentile.evaluate(valuesET));
+						// standardCache = (long) Math.round(percentile.evaluate(valuesCache));
+					} else if (SystemParameters.m == 2) {
+						// //最小值
+						if (valuesET.length > 0) {
+							double mint = valuesET[0];
+							for (int j = 1; j < valuesET.length; j++) {
+								if (valuesET[j] < mint) {
+									mint = valuesET[j]; // 更新最小值
+								}
+							}
+							standardET = (long) mint;
+						}
+					}
+
+
+					for (int j = 0; j < speedUpTable.get(i).size(); j++) {
+						if (!allocProcs.contains(j)) {
+							long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
+							OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).add(expectedET);
+
+							if (minDiff > Math.abs((standardET) - expectedET)) {
+								minDiff = Math.abs((standardET) - expectedET);
+								chosen_speedUp = speedUpTable.get(i).get(j);
+								row = i;
+								col = j;
+							}
+						}
+					}
+
 				}
 
 				break;
