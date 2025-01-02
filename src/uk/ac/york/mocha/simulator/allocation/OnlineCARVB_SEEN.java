@@ -139,14 +139,15 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 
 
 				if(SystemParameters.m == 3){
+					long historyET=0;
 					//第一轮取最小值
-					if(standardET==0){
-						standardET = Long.MAX_VALUE;
+					if(OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).size()==0){
+						historyET = Long.MAX_VALUE;
 						for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 							if (!allocProcs.contains(j)) {
 								long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
-								if(expectedET<standardET){
-									standardET=expectedET;
+								if(expectedET< historyET){
+									historyET=expectedET;
 									chosen_speedUp = speedUpTable.get(i).get(j);
 									row = i;
 									col = j;
@@ -154,29 +155,41 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 								}
 							}
 						}
+						OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).add(historyET);
 					}
-					//
-					for (int j = 0; j < speedUpTable.get(i).size(); j++) {
+					else{
+						historyET=OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).getFirst();
 						long mint2=Long.MAX_VALUE;// 当前可加速的最大值
-						if (!allocProcs.contains(j)) {
-							long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
-							mint2 =mint2<expectedET?mint2:expectedET;
-							//寻找是否有更大的加速，有就上升
-							if(expectedET<standardET){
-								if (minDiff > Math.abs((standardET) - expectedET)) {
-									minDiff = Math.abs((standardET) - expectedET);
-									chosen_speedUp = speedUpTable.get(i).get(j);
-									row = i;
-									col = j;
+						int minj=-1;
+						for (int j = 0; j < speedUpTable.get(i).size(); j++) {
+							if (!allocProcs.contains(j)) {
+								long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
+								if(expectedET<mint2){
+									mint2=expectedET;
+									minj=j;
+								}
+								//寻找是否有更大的加速，有就上升
+								if(expectedET<= historyET){
+									if (minDiff > Math.abs((historyET) - expectedET)) {
+										minDiff = Math.abs((historyET) - expectedET);
+										chosen_speedUp = speedUpTable.get(i).get(j);
+										row = i;
+										col = j;
+										OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).set(0, expectedET);
+									}
 								}
 							}
-						}
+
+						}		
 						//如果没有更大的加速，就下降
-						if(mint2>standardET){
-							int a=1;//调整下降比例
-							standardET=(mint2+standardET*a)/(1+a);
-						}
+						if(mint2> historyET){
+							historyET=historyET+(mint2-historyET)/2;
+							OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).set(0, historyET);
+							row=i;
+							col=minj;
+						}				
 					}
+
 				}else{
 					List<Long> valuesETlLongs = OnlineCARVB_SEEN.etHistOneNode.get(n.getId());
 					double[] valuesET = new double[valuesETlLongs.size()];
