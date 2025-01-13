@@ -137,17 +137,16 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 
 				Node n = preEligible.get(i);
 
-
-				if(SystemParameters.m == 3){
-					long historyET=0;
-					//第一轮取最小值
-					if(OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).size()==0){
+				if (SystemParameters.m == 3) {
+					long historyET = 0;
+					// 第一轮取最小值
+					if (OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).size() == 0) {
 						historyET = Long.MAX_VALUE;
 						for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 							if (!allocProcs.contains(j)) {
 								long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
-								if(expectedET< historyET){
-									historyET=expectedET;
+								if (expectedET < historyET) {
+									historyET = expectedET;
 									chosen_speedUp = speedUpTable.get(i).get(j);
 									row = i;
 									col = j;
@@ -156,20 +155,19 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 							}
 						}
 						OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).add(historyET);
-					}
-					else{
-						historyET=OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).getFirst();
-						long mint2=Long.MAX_VALUE;// 当前可加速的最大值
-						int minj=-1;
+					} else {
+						historyET = OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).getFirst();
+						long mint2 = Long.MAX_VALUE;// 当前可加速的最大值
+						int minj = -1;
 						for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 							if (!allocProcs.contains(j)) {
 								long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
-								if(expectedET<mint2){
-									mint2=expectedET;
-									minj=j;
+								if (expectedET < mint2) {
+									mint2 = expectedET;
+									minj = j;
 								}
-								//寻找是否有更大的加速，有就上升
-								if(expectedET<= historyET){
+								// 寻找是否有更大的加速，有就上升
+								if (expectedET <= historyET) {
 									if (minDiff > Math.abs((historyET) - expectedET)) {
 										minDiff = Math.abs((historyET) - expectedET);
 										chosen_speedUp = speedUpTable.get(i).get(j);
@@ -180,17 +178,17 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 								}
 							}
 
-						}		
-						//如果没有更大的加速，就下降
-						if(mint2> historyET){
-							historyET=historyET+(mint2-historyET)/2;
+						}
+						// 如果没有更大的加速，就下降
+						if (mint2 > historyET) {
+							historyET = historyET + (mint2 - historyET) / 2;
 							OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).set(0, historyET);
-							row=i;
-							col=minj;
-						}				
+							row = i;
+							col = minj;
+						}
 					}
 
-				}else{
+				} else if (SystemParameters.m < 3) {
 					List<Long> valuesETlLongs = OnlineCARVB_SEEN.etHistOneNode.get(n.getId());
 					double[] valuesET = new double[valuesETlLongs.size()];
 					for (int k = 0; k < valuesETlLongs.size(); k++) {
@@ -221,11 +219,41 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 						}
 					}
 
-
 					for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 						if (!allocProcs.contains(j)) {
 							long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
-							OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).add(expectedET);
+							if (expectedET < n.getWCET() * 0.8) {
+								OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).add(expectedET);
+							}
+							if (minDiff > Math.abs((standardET) - expectedET)) {
+								minDiff = Math.abs((standardET) - expectedET);
+								chosen_speedUp = speedUpTable.get(i).get(j);
+								row = i;
+								col = j;
+							}
+						}
+					}
+
+				} else {
+					if (n.sensitivity > 0) {
+						//MCF
+						List<long[]> etHistOneNode = Utils.getETHistroy(n, etHist);
+						double[] valuesET = new double[etHistOneNode.size()];
+						double[] valuesCache = new double[etHistOneNode.size()];
+						for (int k = 0; k < etHistOneNode.size(); k++) {
+							valuesET[k] = etHistOneNode.get(k)[0];
+							valuesCache[k] = etHistOneNode.get(k)[1];
+						}
+						Median med = new Median();
+						standardET = (long) Math.round(med.evaluate(valuesET));
+						standardCache = (long) Math.round(med.evaluate(valuesCache));
+
+					} else {
+						standardET = 0;//MSF
+					}
+					for (int j = 0; j < speedUpTable.get(i).size(); j++) {
+						if (!allocProcs.contains(j)) {
+							long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
 
 							if (minDiff > Math.abs((standardET) - expectedET)) {
 								minDiff = Math.abs((standardET) - expectedET);
@@ -235,6 +263,7 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 							}
 						}
 					}
+
 
 				}
 

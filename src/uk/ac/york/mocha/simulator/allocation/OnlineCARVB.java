@@ -178,49 +178,7 @@ public class OnlineCARVB extends AllocationMethods {
 				standardET = (long) Math.round(med.evaluate(valuesET));
 				standardCache = (long) Math.round(med.evaluate(valuesCache));
 
-				// if (SystemParameters.m == 0) {
-				// 	// 中位数
-				// 	Median med = new Median();
-				// 	standardET = (long) Math.round(med.evaluate(valuesET));
-				// 	// standardCache = (long) Math.round(med.evaluate(valuesCache));
 
-				// } else if (SystemParameters.m == 1) {
-				// 	// 25%分位数
-				// 	Percentile percentile = new Percentile(25);
-				// 	standardET = (long) Math.round(percentile.evaluate(valuesET));
-				// 	// standardCache = (long) Math.round(percentile.evaluate(valuesCache));
-				// } else if (SystemParameters.m == 2) {
-				// 	// //最小值
-				// 	if (etHistOneNode.size() > 0) {
-				// 		// standardCache=(long) valuesCache[0];
-				// 		// for (int j = 1; j < valuesCache.length; j++) {
-				// 		// if (valuesCache[j] < standardCache) {
-				// 		// standardCache = (long) valuesCache[j]; // 更新最小值
-				// 		// }
-				// 		// }
-				// 		standardET = (long) valuesET[0];
-				// 		for (int j = 1; j < valuesET.length; j++) {
-				// 			if (valuesET[j] < standardET) {
-				// 				standardET = (long) valuesET[j]; // 更新最小值
-				// 			}
-				// 		}
-				// 	}
-				// }
-
-				// }
-
-				// System.out.println("Node: " + n.getFullName() + ", reference ET: " +
-				// standardET);
-				// System.out.println("Node: " + n.getFullName() + ", observed ET: " + Arrays
-				// .toString(etHistOneNode.stream().map(c ->
-				// c[0]).collect(Collectors.toList()).toArray()));
-				// System.out.println("Node: " + n.getFullName() + ", observed Cache: " + Arrays
-				// .toString(etHistOneNode.stream().map(c ->
-				// c[1]).collect(Collectors.toList()).toArray()));
-				// System.out.println(
-				// "Node: " + n.getFullName() + ", Speed-up: " +
-				// Arrays.toString(speedUpTable.get(i).toArray()));
-				// jjy
 				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 					if (!allocProcs.contains(j)) {
 						long expectedET = n.getWCET() - speedUpTable.get(i).get(j);

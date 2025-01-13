@@ -2,6 +2,7 @@ package uk.ac.york.mocha.simulator.experiments_CARVB;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -99,6 +100,7 @@ public class CARVB_General {
 	/**
 	 * This test case will generate two fixed DAG structure.
 	 */
+	@SuppressWarnings("unchecked")
 	public static OneSystemResults testOneCaseThreeMethod(Pair<List<DirectedAcyclicGraph>, CacheHierarchy> sys,
 			int tasks, int[] NoInstances, int cores, int taskSeed, int tableSeed, int not) {
 
@@ -255,6 +257,16 @@ public class CARVB_General {
 				sensitivitylList.set(n.getId(), sensitivitylList.get(n.getId()) + ProbabilityList.get(i));
 			}
 		}
+		//只给前10%的节点保留值（MCF)，后百分90%用MSF,sensitivity设为0
+		List<Double>temp= sensitivitylList;
+		temp.sort(Comparator.reverseOrder());
+		Double tn=temp.get((int)50*temp.size()/100);
+		for(int i=0;i<sensitivitylList.size();i++){
+			if(sensitivitylList.get(i)<tn){
+				sensitivitylList.set(i, 0.0);
+			}
+		}
+
 		for (DirectedAcyclicGraph d : sys.getFirst()) {
 			for (Node n : d.getFlatNodes()) {
 				n.sensitivity = sensitivitylList.get(n.getId());
@@ -275,7 +287,7 @@ public class CARVB_General {
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim2.simulate(print);
 		// OnlineCARVB.etHistOneNode = new ArrayList<>();
 
-		SystemParameters.m = 3;
+		SystemParameters.m = 4;
 		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB_SEEN,
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair3 = cacheCASim3.simulate(print);

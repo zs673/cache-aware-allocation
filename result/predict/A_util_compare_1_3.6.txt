@@ -2,7 +2,7 @@
 
 Data analysis for each instance 
 AVG,MED,MAX,MIN
--0,0,0,-0.001,
+0,0,0,0,
 0,0,0,0,
 0,0,0,0,
 -0,0,0,-0.005,
