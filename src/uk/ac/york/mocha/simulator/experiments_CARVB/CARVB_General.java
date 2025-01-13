@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.Pair;
 import org.python.antlr.PythonParser.for_stmt_return;
+import org.python.antlr.ast.If;
 
 import jnr.ffi.StructLayout.int32_t;
 import uk.ac.york.mocha.simulator.allocation.OnlineCARVB;
@@ -233,7 +234,7 @@ public class CARVB_General {
 				// 构造一个正太分布
 				NormalDistribution sumDist = new NormalDistribution(muxy, sigmaxy);
 				double cdf = sumDist.cumulativeProbability(0);
-				Probability *= cdf * 5;// 避免概率太小梯度消失（感觉和梯度消失有点像\(^o^)/~
+				Probability *= cdf * 2;// 避免概率太小梯度消失（感觉和梯度消失有点像\(^o^)/~
 			}
 			// Probability+=1;
 			ProbabilityList.add(Probability);
@@ -257,19 +258,22 @@ public class CARVB_General {
 				sensitivitylList.set(n.getId(), sensitivitylList.get(n.getId()) + ProbabilityList.get(i));
 			}
 		}
-		//只给前10%的节点保留值（MCF)，后百分90%用MSF,sensitivity设为0
+		//只给前10%的节点（MSF)，后百分90%用MCF,sensitivityL设为1
 		List<Double>temp= sensitivitylList;
 		temp.sort(Comparator.reverseOrder());
-		Double tn=temp.get((int)50*temp.size()/100);
-		for(int i=0;i<sensitivitylList.size();i++){
-			if(sensitivitylList.get(i)<tn){
-				sensitivitylList.set(i, 0.0);
-			}
-		}
+		Double tn=temp.get((int)10*temp.size()/100);
+		// for(int i=0;i<sensitivitylList.size();i++){
+		// 	if(sensitivitylList.get(i)<tn){
+		// 		sensitivitylList.set(i, 0.0);
+		// 	}
+		// }
 
 		for (DirectedAcyclicGraph d : sys.getFirst()) {
 			for (Node n : d.getFlatNodes()) {
 				n.sensitivity = sensitivitylList.get(n.getId());
+				if(n.sensitivity>=tn){
+					n.sensitivityL=1;
+				}
 			}
 		}
 		// OnlineCARVB.etHistOneNode=new ArrayList<>();
@@ -286,6 +290,7 @@ public class CARVB_General {
 				RecencyType.TIME_DEFAULT, sys.getFirst(), sys.getSecond(), cores, tableSeed, false);
 		Pair<List<DirectedAcyclicGraph>, double[]> pair2 = cacheCASim2.simulate(print);
 		// OnlineCARVB.etHistOneNode = new ArrayList<>();
+
 
 		SystemParameters.m = 4;
 		SimualtorNWC cacheCASim3 = new SimualtorNWC(SimuType.CLOCK_LEVEL, Hardware.PROC_CACHE, Allocation.CARVB_SEEN,

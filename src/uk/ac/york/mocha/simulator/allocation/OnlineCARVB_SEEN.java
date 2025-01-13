@@ -235,8 +235,11 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 					}
 
 				} else {
-					if (n.sensitivity > 0) {
-						//MCF
+					if (n.sensitivityL > 0) {
+						standardET = 0;// MSF
+
+					} else {
+						// MCF
 						List<long[]> etHistOneNode = Utils.getETHistroy(n, etHist);
 						double[] valuesET = new double[etHistOneNode.size()];
 						double[] valuesCache = new double[etHistOneNode.size()];
@@ -247,9 +250,6 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 						Median med = new Median();
 						standardET = (long) Math.round(med.evaluate(valuesET));
 						standardCache = (long) Math.round(med.evaluate(valuesCache));
-
-					} else {
-						standardET = 0;//MSF
 					}
 					for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 						if (!allocProcs.contains(j)) {

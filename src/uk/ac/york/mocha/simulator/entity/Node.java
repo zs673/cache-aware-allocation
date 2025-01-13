@@ -59,6 +59,7 @@ public class Node implements Serializable {
 	
 
 	public double sensitivity = -1;
+	public double sensitivityL = -1;
 
 	/*
 	 * The priority of the node
