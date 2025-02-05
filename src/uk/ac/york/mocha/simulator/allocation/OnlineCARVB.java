@@ -2,12 +2,16 @@ package uk.ac.york.mocha.simulator.allocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.DoubleStream;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.apache.commons.math3.util.Pair;
 
+import it.unimi.dsi.fastutil.Arrays;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
+import uk.ac.york.mocha.simulator.parameters.SystemParameters;
 import uk.ac.york.mocha.simulator.simulator.Utils;
 
 public class OnlineCARVB extends AllocationMethods {
@@ -23,7 +27,7 @@ public class OnlineCARVB extends AllocationMethods {
 			if (localRunqueue.get(i).size() == 0 && availableTimeAllProcs[i] <= currentTime)
 				availableCores.add(i);
 		}
-		
+
 		if (readyNodes.size() == 0 || availableCores.size() == 0)
 			return;
 
@@ -128,16 +132,16 @@ public class OnlineCARVB extends AllocationMethods {
 				/**
 				 * The native version: speed-up the sensitive nodes as much as I can.
 				 */
-//				long max = Long.MIN_VALUE;
-//				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
-//					if (!allocProcs.contains(j)) {
-//						if (max < speedUpTable.get(i).get(j)) {
-//							max = speedUpTable.get(i).get(j);
-//							row = i;
-//							col = j;
-//						}
-//					}
-//				}
+				// long max = Long.MIN_VALUE;
+				// for (int j = 0; j < speedUpTable.get(i).size(); j++) {
+				// if (!allocProcs.contains(j)) {
+				// if (max < speedUpTable.get(i).get(j)) {
+				// max = speedUpTable.get(i).get(j);
+				// row = i;
+				// col = j;
+				// }
+				// }
+				// }
 
 				/**
 				 * The new version: maintain a stable speed-up.
@@ -149,16 +153,17 @@ public class OnlineCARVB extends AllocationMethods {
 				Node n = preEligible.get(i);
 				List<long[]> etHistOneNode = Utils.getETHistroy(n, etHist);
 
-//				if (etHistOneNode.size() >= SystemParameters.etHist_threshold) {
+				// if (etHistOneNode.size() >= SystemParameters.etHist_threshold) {
 				/**
 				 * max
 				 */
-//					standardET = etHistOneNode.stream().mapToLong(a -> a).max().getAsLong();
+				// standardET = etHistOneNode.stream().mapToLong(a -> a).max().getAsLong();
 
 				/**
 				 * Average
 				 */
-//					standardET = (long) Math.round(etHistOneNode.stream().mapToLong(a -> a).average().getAsDouble());
+				// standardET = (long) Math.round(etHistOneNode.stream().mapToLong(a ->
+				// a).average().getAsDouble());
 
 				/**
 				 * Median
@@ -169,26 +174,17 @@ public class OnlineCARVB extends AllocationMethods {
 					valuesET[k] = etHistOneNode.get(k)[0];
 					valuesCache[k] = etHistOneNode.get(k)[1];
 				}
-
 				Median med = new Median();
 				standardET = (long) Math.round(med.evaluate(valuesET));
 				standardCache = (long) Math.round(med.evaluate(valuesCache));
-//				}
 
-//				System.out.println("Node: " + n.getFullName() + ", reference ET: " + standardET);
-//				System.out.println("Node: " + n.getFullName() + ", observed ET: " + Arrays
-//						.toString(etHistOneNode.stream().map(c -> c[0]).collect(Collectors.toList()).toArray()));
-//				System.out.println("Node: " + n.getFullName() + ", observed Cache: " + Arrays
-//						.toString(etHistOneNode.stream().map(c -> c[1]).collect(Collectors.toList()).toArray()));
-//				System.out.println(
-//						"Node: " + n.getFullName() + ", Speed-up: " + Arrays.toString(speedUpTable.get(i).toArray()));
 
 				for (int j = 0; j < speedUpTable.get(i).size(); j++) {
 					if (!allocProcs.contains(j)) {
 						long expectedET = n.getWCET() - speedUpTable.get(i).get(j);
 
-						if (minDiff > Math.abs(standardET - expectedET)) {
-							minDiff = Math.abs(standardET - expectedET);
+						if (minDiff > Math.abs((standardET) - expectedET)) {
+							minDiff = Math.abs((standardET) - expectedET);
 							chosen_speedUp = speedUpTable.get(i).get(j);
 							row = i;
 							col = j;

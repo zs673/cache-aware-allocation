@@ -8,6 +8,9 @@ import org.apache.commons.math3.util.Pair;
 
 import uk.ac.york.mocha.simulator.allocation.AllocationMethods;
 import uk.ac.york.mocha.simulator.allocation.OnlineCARVB;
+import uk.ac.york.mocha.simulator.allocation.OnlineCARVB;
+import uk.ac.york.mocha.simulator.allocation.OnlineCARVB_MSF;
+import uk.ac.york.mocha.simulator.allocation.OnlineCARVB_SEEN;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareNewSimu;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare;
 import uk.ac.york.mocha.simulator.allocation.OnlineCacheAwareRobust_v2_1;
@@ -91,7 +94,7 @@ public class SimualtorNWC {
 	List<Node> history_level3;
 
 	List<Node> etHist = new ArrayList<>();
-//	List<List<List<Long>>> et_history = new ArrayList<>();
+	// List<List<List<Long>>> et_history = new ArrayList<>();
 
 	DecimalFormat df = new DecimalFormat("#.###");
 
@@ -178,50 +181,56 @@ public class SimualtorNWC {
 		AllocationMethods allocM = null;
 
 		switch (alloc) {
-		case SIMPLE:
-			allocM = new SimpleAllocation();
-			break;
-		case WORST_FIT_NEW:
-			allocM = new OnlineWFDNewSimu();
-			break;
-		case WORST_FIT_NEW_BASE:
-			allocM = new OnlineWFDNewSimu_Base();
-			break;
-		case FIXED_SCHEDULE_ALLOCATION_NEW:
-			allocM = new OnlineFixedScheduleAllocation();
-			break;
-		case CACHE_AWARE_NEW:
-			allocM = new OnlineCacheAwareNewSimu();
-			break;
-		case CACHE_AWARE_ROBUST_v2_1:
-			allocM = new OnlineCacheAwareRobust_v2_1();
-			break;
-		case CACHE_AWARE_ROBUST_v2_2:
-			allocM = new OnlineCacheAwareRobust_v2_2();
-			break;
-		case CARVB:
-			allocM = new OnlineCARVB();
-			break;
-		case CACHE_AWARE_PREDICT_WCET:
-			allocM = new OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare();
-			break;
-		case CACHE_AWARE_NEW_BASE:
-			allocM = new OnlineCacheAwareNewSimu_base();
-			break;
-		default:
-			System.err.println("The simualtion method is NOT supported! ");
-			System.exit(-1);
-			return null;
+			case SIMPLE:
+				allocM = new SimpleAllocation();
+				break;
+			case WORST_FIT_NEW:
+				allocM = new OnlineWFDNewSimu();
+				break;
+			case WORST_FIT_NEW_BASE:
+				allocM = new OnlineWFDNewSimu_Base();
+				break;
+			case FIXED_SCHEDULE_ALLOCATION_NEW:
+				allocM = new OnlineFixedScheduleAllocation();
+				break;
+			case CACHE_AWARE_NEW:
+				allocM = new OnlineCacheAwareNewSimu();
+				break;
+			case CACHE_AWARE_ROBUST_v2_1:
+				allocM = new OnlineCacheAwareRobust_v2_1();
+				break;
+			case CACHE_AWARE_ROBUST_v2_2:
+				allocM = new OnlineCacheAwareRobust_v2_2();
+				break;
+			case CARVB:
+				allocM = new OnlineCARVB();
+				break;
+			case CARVB_SEEN:
+				allocM = new OnlineCARVB_SEEN();
+				break;
+			case CARVB_MSF:
+				allocM = new OnlineCARVB_MSF();
+				break;
+			case CACHE_AWARE_PREDICT_WCET:
+				allocM = new OnlineCacheAwarePredictiability_WCET_Sensitivity_Compare();
+				break;
+			case CACHE_AWARE_NEW_BASE:
+				allocM = new OnlineCacheAwareNewSimu_base();
+				break;
+			default:
+				System.err.println("The simualtion method is NOT supported! ");
+				System.exit(-1);
+				return null;
 		}
 
 		switch (hardware) {
-		case PROC:
-			cacheAware = false;
-			break;
-		case PROC_CACHE:
-			cacheAware = true;
-		default:
-			break;
+			case PROC:
+				cacheAware = false;
+				break;
+			case PROC_CACHE:
+				cacheAware = true;
+			default:
+				break;
 		}
 
 		debug_output_begin(printSim);
@@ -273,14 +282,14 @@ public class SimualtorNWC {
 		if (readyDAGs.size() > 0)
 			return false;
 
-//		for (Node n : currentExe) {
-//			if (n != null)
-//				return false;
-//		}
-//
-//		for (List<Node> nl : localRunQueue)
-//			if (nl.size() > 0)
-//				return false;
+		// for (Node n : currentExe) {
+		// if (n != null)
+		// return false;
+		// }
+		//
+		// for (List<Node> nl : localRunQueue)
+		// if (nl.size() > 0)
+		// return false;
 
 		return true;
 	}
@@ -437,7 +446,8 @@ public class SimualtorNWC {
 				long realET = ETWithCache.getFirst().getFirst();
 				n.variation = ETWithCache.getFirst().getSecond();
 
-				if (n.getDagInstNo() >= SystemParameters.etHist_start) { // && n.getDagInstNo() < SystemParameters.endInstNo
+				if (n.getDagInstNo() >= SystemParameters.etHist_start) { // && n.getDagInstNo() <
+																			// SystemParameters.endInstNo
 					etHist.add(n);
 				}
 
@@ -445,7 +455,7 @@ public class SimualtorNWC {
 				coreTime[n.partition] = n.finishAt = systemTime + realET;
 				n.expectedET = realET;
 				n.expectedCache = ETWithCache.getSecond();
-				
+
 				int cacheEffects = ETWithCache.getSecond();
 				cachePerformance[cacheEffects - 1] = cachePerformance[cacheEffects - 1] + 1;
 
