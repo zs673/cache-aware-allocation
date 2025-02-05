@@ -9,6 +9,7 @@ import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.apache.commons.math3.util.Pair;
 
 import it.unimi.dsi.fastutil.Arrays;
+import jnr.ffi.Struct.LONG;
 import uk.ac.york.mocha.simulator.entity.DirectedAcyclicGraph;
 import uk.ac.york.mocha.simulator.entity.Node;
 import uk.ac.york.mocha.simulator.parameters.SystemParameters;
@@ -236,9 +237,18 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 
 				} else {
 					if (n.sensitivityL > 0) {
+
+						if (OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).size() == 2) {
+							Integer r = OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).getFirst().intValue();
+							Integer c = OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).getLast().intValue();
+							if (!allocProcs.contains(c)) {
+								return new Pair<Integer, Integer>(i, c);
+							}
+						}
 						standardET = 0;// MSF
 
 					} else {
+						// standardET = 0;// MSF
 						// MCF
 						List<long[]> etHistOneNode = Utils.getETHistroy(n, etHist);
 						double[] valuesET = new double[etHistOneNode.size()];
@@ -263,7 +273,14 @@ public class OnlineCARVB_SEEN extends AllocationMethods {
 							}
 						}
 					}
+					if (OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).size() < 2) {
+						OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).add(Long.valueOf(row));
+						OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).add(Long.valueOf(col));
 
+					} else {
+						OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).set(0, Long.valueOf(row));
+						OnlineCARVB_SEEN.etHistOneNode.get(n.getId()).set(1, Long.valueOf(col));
+					}
 
 				}
 

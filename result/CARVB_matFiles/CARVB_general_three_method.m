@@ -13,7 +13,7 @@ uSpec2 = '_4.0';
 wid = 800;
 len = 300;
 
-systemNo = 500;
+systemNo = 10;
 metric_makespan = 'makespan_';
 metric = 'makespan_abs_';
 

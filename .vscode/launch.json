@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CARVB_General",
+            "request": "launch",
+            "mainClass": "CARVB_General",
+            "projectName": "cache-aware-allocation_8117c167"
+        },
+        {
+            "type": "java",
             "name": "Test",
             "request": "launch",
             "mainClass": "uk.ac.york.mocha.simulator.experiments_AJLR_v2_0.Test",
